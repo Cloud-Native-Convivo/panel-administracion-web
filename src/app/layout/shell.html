@@ -1,0 +1,86 @@
+<div class="flex h-screen bg-white overflow-hidden">
+  <!-- Sidebar -->
+  <aside class="w-60 flex-shrink-0 h-screen bg-white border-r border-[#E2E8F0] flex flex-col overflow-y-auto">
+    <div class="h-16 flex items-center px-5 border-b border-[#E2E8F0] flex-shrink-0">
+      <div class="flex items-center gap-2.5">
+        <div class="w-7 h-7 bg-[#0D9488] rounded-md flex items-center justify-center flex-shrink-0">
+          <lucide-icon [img]="icBuilding" [size]="14" class="text-white" />
+        </div>
+        <span class="font-serif text-xl text-[#00201B] tracking-tight">Convivo</span>
+      </div>
+    </div>
+
+    <nav class="flex-1 py-4 px-3 overflow-y-auto">
+      <div class="space-y-0.5">
+        @for (item of navItems; track item.id) {
+          <button
+            (click)="go(item.id)"
+            [class]="
+              isActive(item.id)
+                ? 'w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors bg-teal-50 text-[#0D9488] font-medium'
+                : 'w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors text-[#00201B] hover:bg-gray-50 font-normal'
+            "
+          >
+            <lucide-icon
+              [img]="item.icon"
+              [size]="17"
+              [strokeWidth]="isActive(item.id) ? 2 : 1.75"
+              [class]="isActive(item.id) ? 'text-[#0D9488]' : 'text-[#00201B]'"
+            />
+            <span>{{ item.label }}</span>
+          </button>
+        }
+      </div>
+
+      <div class="mt-5 pt-4 border-t border-[#E2E8F0]">
+        <p class="px-3 text-[10px] text-gray-400 uppercase tracking-widest font-medium mb-2">Próximamente</p>
+        <div class="space-y-0.5">
+          @for (item of soonItems; track item.label) {
+            <div class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-gray-400 cursor-not-allowed select-none opacity-50">
+              <lucide-icon [img]="item.icon" [size]="17" [strokeWidth]="1.75" />
+              <span class="flex-1">{{ item.label }}</span>
+              <lucide-icon [img]="icLock" [size]="11" />
+            </div>
+          }
+        </div>
+      </div>
+    </nav>
+  </aside>
+
+  <!-- Columna principal -->
+  <div class="flex-1 flex flex-col overflow-hidden min-w-0">
+    <!-- Header -->
+    <header class="h-16 bg-white border-b border-[#E2E8F0] flex items-center px-8 gap-6 flex-shrink-0">
+      <h1 class="font-serif text-xl text-[#00201B] flex-shrink-0 leading-none">{{ title }}</h1>
+      <div class="flex-1"></div>
+      <div class="relative">
+        <lucide-icon [img]="icSearch" [size]="15" class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+        <input
+          class="pl-9 pr-4 py-2 text-sm bg-gray-50 border border-[#E2E8F0] rounded-lg w-64 focus:outline-none focus:ring-2 focus:ring-teal-100 focus:border-[#0D9488] transition-colors placeholder:text-gray-400"
+          placeholder="Buscar..."
+        />
+      </div>
+      <div class="flex items-center gap-3 pl-3 border-l border-[#E2E8F0]">
+        <div class="text-right">
+          <p class="text-sm font-medium text-[#00201B] leading-tight">Jorge Morales D.</p>
+          <p class="text-xs text-gray-400 leading-tight">Administrador</p>
+        </div>
+        <div class="w-9 h-9 rounded-full bg-[#0D9488] flex items-center justify-center text-white text-xs font-semibold flex-shrink-0">
+          JM
+        </div>
+        <button
+          (click)="logout()"
+          class="p-1.5 text-gray-400 hover:text-[#00201B] hover:bg-gray-100 rounded-lg transition-colors"
+          title="Cerrar sesión"
+        >
+          <lucide-icon [img]="icLogout" [size]="16" />
+        </button>
+      </div>
+    </header>
+
+    <!-- Pantalla activa -->
+    <main class="flex-1 overflow-hidden bg-white">
+      <router-outlet />
+    </main>
+  </div>
+</div>

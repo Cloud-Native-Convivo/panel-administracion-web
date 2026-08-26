@@ -1,0 +1,119 @@
+<div class="h-full overflow-y-auto">
+  <div class="p-8 max-w-7xl">
+    <!-- Saludo -->
+    <div class="mb-7">
+      <h2 class="font-serif text-2xl text-[#00201B] mb-0.5">Buenos días, Jorge.</h2>
+      <p class="text-sm text-gray-400">Condominio Los Álamos · Sábado, 22 de agosto de 2026</p>
+    </div>
+
+    <!-- Tarjetas KPI -->
+    <div class="grid grid-cols-4 gap-5 mb-7">
+      @for (kpi of kpis; track kpi.label) {
+        <div class="bg-white border border-[#E2E8F0] rounded-xl p-5 hover:border-[#0D9488]/30 transition-colors">
+          <div class="w-10 h-10 rounded-lg flex items-center justify-center mb-4" [class]="kpi.color">
+            <lucide-icon [img]="kpi.icon" [size]="19" [strokeWidth]="1.75" />
+          </div>
+          <p class="text-3xl font-semibold text-[#00201B] tracking-tight mb-0.5">{{ kpi.value }}</p>
+          <p class="text-sm font-medium text-[#00201B] mb-0.5">{{ kpi.label }}</p>
+          <p class="text-xs text-gray-400">{{ kpi.sub }}</p>
+        </div>
+      }
+    </div>
+
+    <!-- Grilla principal -->
+    <div class="grid grid-cols-3 gap-6">
+      <!-- Próximas reservas -->
+      <div class="col-span-2 bg-white border border-[#E2E8F0] rounded-xl overflow-hidden">
+        <div class="px-6 py-4 border-b border-[#E2E8F0] flex items-center justify-between">
+          <h3 class="font-serif text-lg text-[#00201B]">Próximas reservas</h3>
+          <button
+            (click)="go('reservas')"
+            class="text-sm text-[#0D9488] hover:text-[#005047] font-medium transition-colors"
+          >
+            Ver todas →
+          </button>
+        </div>
+        <table class="w-full">
+          <thead>
+            <tr class="border-b border-[#E2E8F0] bg-gray-50/50">
+              <th class="text-left text-[11px] text-gray-400 font-medium px-6 py-3 uppercase tracking-wide">Espacio</th>
+              <th class="text-left text-[11px] text-gray-400 font-medium px-4 py-3 uppercase tracking-wide">Residente</th>
+              <th class="text-left text-[11px] text-gray-400 font-medium px-4 py-3 uppercase tracking-wide">Fecha · Hora</th>
+              <th class="text-left text-[11px] text-gray-400 font-medium px-4 py-3 uppercase tracking-wide">Estado</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (r of upcoming; track r.id; let last = $last) {
+              <tr [class]="last ? 'hover:bg-gray-50/70 transition-colors' : 'hover:bg-gray-50/70 transition-colors border-b border-[#E2E8F0]'">
+                <td class="px-6 py-3.5 text-sm font-medium text-[#00201B]">{{ r.space }}</td>
+                <td class="px-4 py-3.5 text-sm text-gray-600">{{ r.user }}</td>
+                <td class="px-4 py-3.5 text-sm text-gray-500">{{ r.date }} · {{ r.time }}</td>
+                <td class="px-4 py-3.5"><app-status-badge [status]="r.status" /></td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Columna derecha -->
+      <div class="space-y-5">
+        <!-- Acciones rápidas -->
+        <div class="bg-white border border-[#E2E8F0] rounded-xl p-5">
+          <h3 class="font-serif text-lg text-[#00201B] mb-4">Acciones rápidas</h3>
+          <div class="space-y-2">
+            <button
+              (click)="go('users')"
+              class="w-full flex items-center gap-3 px-4 py-3 bg-teal-50 hover:bg-teal-100 text-[#0D9488] rounded-lg text-sm font-medium transition-colors"
+            >
+              <lucide-icon [img]="icPlus" [size]="16" />
+              Nuevo usuario
+            </button>
+            <button
+              (click)="go('reservas')"
+              class="w-full flex items-center gap-3 px-4 py-3 bg-teal-50 hover:bg-teal-100 text-[#0D9488] rounded-lg text-sm font-medium transition-colors"
+            >
+              <lucide-icon [img]="icPlus" [size]="16" />
+              Nueva reserva
+            </button>
+            <button
+              (click)="go('condominios')"
+              class="w-full flex items-center gap-3 px-4 py-3 border border-[#E2E8F0] hover:bg-gray-50 text-[#00201B] rounded-lg text-sm font-medium transition-colors"
+            >
+              <lucide-icon [img]="icBuilding" [size]="16" />
+              Agregar unidad
+            </button>
+          </div>
+        </div>
+
+        <!-- Estado de unidades -->
+        <div class="bg-white border border-[#E2E8F0] rounded-xl p-5">
+          <h3 class="font-medium text-sm text-[#00201B] mb-4">Estado de unidades</h3>
+          <div class="space-y-2.5">
+            <div class="flex justify-between items-center text-sm">
+              <span class="text-gray-500">Activas</span>
+              <span class="font-semibold text-[#00201B]">13</span>
+            </div>
+            <div class="flex justify-between items-center text-sm">
+              <span class="text-gray-500">Vacías</span>
+              <span class="font-semibold text-gray-500">2</span>
+            </div>
+            <div class="flex justify-between items-center text-sm">
+              <span class="text-gray-500">Morosas</span>
+              <span class="font-semibold text-red-600">2</span>
+            </div>
+            <div class="flex justify-between items-center text-sm">
+              <span class="text-gray-500">Inactivas</span>
+              <span class="font-semibold text-gray-400">1</span>
+            </div>
+          </div>
+          <div class="mt-4 pt-4 border-t border-[#E2E8F0]">
+            <div class="w-full bg-gray-100 rounded-full h-1.5">
+              <div class="bg-[#0D9488] h-1.5 rounded-full" style="width: 81%"></div>
+            </div>
+            <p class="text-xs text-gray-400 mt-1.5">81% ocupación</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
