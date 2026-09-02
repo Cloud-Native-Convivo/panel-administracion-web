@@ -1,11 +1,13 @@
 import { Component, inject } from '@angular/core';
 import { Router, RouterOutlet } from '@angular/router';
+import { MsalService } from '@azure/msal-angular';
 import { LucideAngularModule } from 'lucide-angular';
 import type { LucideIconData } from 'lucide-angular';
 import {
   Home, Users, Building2, Search, Calendar, Settings,
   DollarSign, MessageSquare, Camera, Target, Bell, Lock, LogOut,
 } from 'lucide-angular';
+import { environment } from '../../environments/environment';
 
 interface NavItem {
   id: string;
@@ -46,6 +48,7 @@ const PAGE_TITLES: Record<string, string> = {
 })
 export class Shell {
   private readonly router = inject(Router);
+  private readonly msal = inject(MsalService);
 
   protected readonly navItems = NAV_ITEMS;
   protected readonly soonItems = SOON_ITEMS;
@@ -65,6 +68,15 @@ export class Shell {
     return PAGE_TITLES[this.current] ?? '';
   }
 
+  protected get user(): { name: string; role: string; initials: string } {
+    const account = this.msal.instance.getAllAccounts()[0];
+    if (account?.name) {
+      const initials = account.name.split(/\s+/).map(p => p[0]).join('').toUpperCase();
+      return { name: account.name, role: 'Administrador', initials };
+    }
+    return { name: 'Jorge Morales D.', role: 'Administrador', initials: 'JM' };
+  }
+
   protected isActive(id: string): boolean {
     return this.current === id;
   }
@@ -74,6 +86,10 @@ export class Shell {
   }
 
   protected logout(): void {
-    this.router.navigate(['/login']);
+    this.msal
+      .logoutRedirect({
+        postLogoutRedirectUri: environment.redirectUri,
+      })
+      .subscribe();
   }
 }

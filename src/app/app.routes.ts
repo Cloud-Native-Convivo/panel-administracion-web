@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { Shell } from './layout/shell';
+import { authGuard } from './auth.guard';
 import { Login } from './screens/login';
 import { Dashboard } from './screens/dashboard';
 import { Users } from './screens/users';
@@ -13,6 +14,7 @@ export const routes: Routes = [
   {
     path: '',
     component: Shell,
+    canActivate: [authGuard],
     children: [
       { path: '', pathMatch: 'full', redirectTo: 'dashboard' },
       { path: 'dashboard', component: Dashboard },

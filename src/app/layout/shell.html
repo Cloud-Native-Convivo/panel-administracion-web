@@ -62,11 +62,11 @@
       </div>
       <div class="flex items-center gap-3 pl-3 border-l border-[#E2E8F0]">
         <div class="text-right">
-          <p class="text-sm font-medium text-[#00201B] leading-tight">Jorge Morales D.</p>
-          <p class="text-xs text-gray-400 leading-tight">Administrador</p>
+          <p class="text-sm font-medium text-[#00201B] leading-tight">{{ user.name }}</p>
+          <p class="text-xs text-gray-400 leading-tight">{{ user.role }}</p>
         </div>
         <div class="w-9 h-9 rounded-full bg-[#0D9488] flex items-center justify-center text-white text-xs font-semibold flex-shrink-0">
-          JM
+          {{ user.initials }}
         </div>
         <button
           (click)="logout()"
