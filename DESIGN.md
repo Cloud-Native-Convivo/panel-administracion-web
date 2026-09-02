@@ -65,6 +65,7 @@ Consecuencia práctica: cambiar Primary hoy es un find-and-replace sobre 53 ocur
 | Accent | `#005047` | 0, 80, 71 | 100, 0, 11, 69 | Estados hover/presionado, énfasis secundario |
 | Surface | `#FFFFFF` | 255, 255, 255 | 0, 0, 0, 0 | Tarjetas, paneles, modales |
 | Border | `#E2E8F0` | 226, 232, 240 | 6, 3, 0, 6 | Bordes, separadores, líneas divisorias |
+| Muted | `#64748B` | 100, 116, 139 | 28, 17, 0, 45 | Texto secundario, labels desactivados |
 
 ### 2.2 Tokens de componente (opcional)
 
@@ -137,9 +138,8 @@ Escala en base 4px (coherente con Tailwind defaults) — no usar valores sueltos
 
 | Token | Valor | Uso |
 | --- | --- | --- |
-| `radius-sm` | 4px | inputs, badges |
-| `radius-md` | 8px | cards, botones |
-| `radius-lg` | 12px | modales, paneles |
+| `radius-sm` | 6px | inputs, badges, sidebar buttons |
+| `radius-md` | 8-10px | cards, botones, modales |
 | `shadow-sm` | Tailwind `shadow-sm` | elevación baja (dropdown) |
 | `shadow-md` | Tailwind `shadow` | elevación media (modal) |
 | `motion-fast` | 150ms | hover, toggle |
@@ -200,6 +200,14 @@ Set de iconos: **Lucide Angular**, estilo outline/line.
 | `plus` | Agregar nuevo elemento |
 | `check` | Confirmación |
 | `x` | Cerrar modal / cancelar |
+| `shield` | Visitas (control de acceso) |
+| `alert-triangle` | Incidentes |
+| `phone` | Canales de comunicación, emergencia |
+| `trending-up` | Dashboard admin (métricas) |
+| `download` | Descarga de comprobante o reporte |
+| `eye` | Ver detalle / previsualizar |
+| `mail` | Correo de contacto |
+| `tag` | Categoría de gasto |
 
 ---
 
@@ -308,19 +316,19 @@ Accesibilidad y usabilidad son el atributo "Usabilidad" de ISO/IEC 25010 visto d
 
 ## 11. Normativa y cumplimiento
 
-Normas que aplican realmente a este proyecto: **WCAG 2.2 AA + Decreto N°1/2015 (MINSEGPRES) + Ley 21.719 (datos personales)**. El proyecto es un panel de administración web usado por administradores de condominios en Chile.
+Normas que aplican realmente a este proyecto: WCAG 2.2 AA + Decreto N°1/2015 (MINSEGPRES) + Ley 21.719 (datos personales), Ley 21.180 (transformación digital), Ley 20.422 (discapacidad). ISO/IEC 25010 y 27001 no se declaran formalmente pero sus principios guían las decisiones de diseño.
 
 Acá va únicamente lo que el **diseño** decide o verifica. Los controles de implementación (backend, secretos, dependencias) viven en `AGENTS.md` §17 — si el proyecto tiene ambos archivos, esta sección referencia esa, no la duplica.
 
 ### 11.1 ISO/IEC 25010 — atributos que el diseño determina
 
-| Atributo | Qué decide el diseño | Cómo se verifica |
+| Atributo | Qué exige en este proyecto | Cómo se verifica |
 | --- | --- | --- |
-| Capacidad de interacción | jerarquía visual, accesibilidad, claridad del copy y de los errores | §8 completa + contraste §2.5 medido, no estimado |
+| Capacidad de interacción *(era Usabilidad)* | jerarquía visual, accesibilidad, claridad del copy y de los errores | §8 completa + contraste §2.5 medido, no estimado — desglose por subcaracterística abajo |
 | Compatibilidad | consistencia de la UI entre breakpoints y navegadores | revisión en navegadores objetivo + §5 completa |
-| Fiabilidad | estados de carga, error, vacío diseñados, no improvisados | cada componente de §7 documenta esos estados |
-| Seguridad | la interfaz no expone de más: datos enmascarados, confirmación en acciones destructivas | §11.2 + revisión de pantallas con datos sensibles |
-| Mantenibilidad | tokens en 3 capas (§2), sin hex sueltos en componentes | revisión en PR de diseño — **actualmente en rojo**: ~189 hex literales en `src/app`, ver estado en §2 |
+| Fiabilidad | estados de carga, error, vacío y offline diseñados, no improvisados en implementación | cada componente de §7 documenta esos estados; ninguno queda "por definir" |
+| Seguridad | la interfaz no expone de más: datos enmascarados, sesión y permisos visibles, confirmación en acciones destructivas | §11.2 + revisión de pantallas que muestran datos sensibles |
+| Mantenibilidad | tokens en 3 capas (§2), sin hex sueltos en componentes | `grep -rnE '#[0-9A-Fa-f]{3,8}' src --include='*.ts'` para detectar hex sueltos fuera de `src/styles.css`, más revisión en PR de diseño |
 
 **Capacidad de interacción, subcaracterística por subcaracterística** — es el atributo que el diseño posee por completo, así que acá va desglosado. Las ocho son de ISO/IEC 25010:2023:
 
@@ -337,7 +345,7 @@ Acá va únicamente lo que el **diseño** decide o verifica. Los controles de im
 
 La antigua subcaracterística *accesibilidad* de 2011 se dividió en **inclusividad** y **asistencia al usuario**: la accesibilidad dejó de ser un ítem al final de la lista y pasó a atravesar el atributo entero. **Portabilidad** pasó a **Flexibilidad** (+ escalabilidad) y **Safety** es característica nueva. Usar los nombres 2023 en informes y contratos.
 
-Rendimiento no se decide acá pero el diseño lo condiciona: peso de tipografías, imágenes e ilustraciones, cantidad de animaciones simultáneas.
+Rendimiento no se decide acá pero el diseño lo condiciona: peso de tipografías, imágenes e ilustraciones, cantidad de animaciones simultáneas. Fijar presupuesto: peso máximo de fuentes ~150 KB (Gloock + Inter, ambas variable), LCP objetivo < 2.5s.
 
 ### 11.2 ISO/IEC 27001 — qué le toca al diseño
 
