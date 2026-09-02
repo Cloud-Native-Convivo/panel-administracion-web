@@ -20,7 +20,15 @@ export class App implements OnInit {
   ngOnInit(): void {
     if (!this.msal || !this.broadcast) return;
 
-    this.msal.handleRedirectObservable().subscribe();
+    this.msal
+      .handleRedirectObservable({ navigateToLoginRequestUrl: false })
+      .subscribe({
+        next: (result) => {
+          if (result?.account) {
+            this.msal!.instance.setActiveAccount(result.account);
+          }
+        },
+      });
 
     this.broadcast.inProgress$
       .pipe(
