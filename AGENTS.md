@@ -92,6 +92,20 @@ export class Toggle {
 
 Un snippet real reemplaza tres párrafos de descripción. Si hay código legacy con patrón distinto, señalarlo para que el agente no lo copie: (no aplica: sin código legacy en este repo).
 
+### 5.1 Estrategia Mobile First
+
+Mobile First es una estrategia de diseño y desarrollo de software que prioriza la creación de la interfaz y la experiencia de usuario para dispositivos móviles (pantallas pequeñas) antes de adaptarla progresivamente a pantallas grandes como tablets y ordenadores.
+
+**Reglas de implementación obligatorias en el proyecto:**
+1. **Clases CSS Base para Móvil (Sin prefijo)**: En Tailwind CSS 4.3, todas las utilidades declaradas por defecto (ej. `w-full`, `flex-col`, `grid-cols-1`, `p-4`) aplican a la vista móvil (<640px).
+2. **Mejora Progresiva (Breakpoints)**: Los prefijos de breakpoint (`sm:`, `md:`, `lg:`, `xl:`) se emplean EXCLUSIVAMENTE para escalar la interfaz a resoluciones mayores. Se prohíbe definir estilos de escritorio en las clases base y parchar la vista móvil después.
+3. **Navegación Móvil (Shell)**: En pantallas menores a `lg` (1024px), el sidebar principal se transforma en un drawer deslizante colapsable controlado por un botón hamburguesa. En `lg:` y superior se vuelve un panel lateral fijo e inamovible.
+4. **Touch Targets Mínimos**: Inputs, botones y elementos interactivos deben asegurar un tamaño mínimo de toque de 44x44px en vistas móviles.
+5. **Grillas y Contenedores Responsivos**:
+   - Grillas estructuradas desde `grid-cols-1` en móvil, adaptando a `sm:grid-cols-2`, `lg:grid-cols-3` o `lg:grid-cols-4`.
+   - Tablas envueltas en contenedores con `overflow-x-auto` para permitir desplazamiento horizontal suave en pantallas angostas sin romper el layout.
+6. **Tipografía y Padding Escalables**: Uso de paddings y tamaños de fuente proporcionales (`p-4 sm:p-6 lg:p-8`, `text-lg sm:text-xl lg:text-2xl`).
+
 ## 6. Disciplina anti-sobreingeniería (Ponytail)
 
 (Si el agente ya trae esta disciplina por configuración global del usuario, esta sección es redundante — eliminarla evita que las dos copias diverjan con el tiempo.)
