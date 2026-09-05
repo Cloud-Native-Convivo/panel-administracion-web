@@ -1,10 +1,11 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { Router, RouterOutlet } from '@angular/router';
 import { LucideAngularModule } from 'lucide-angular';
 import type { LucideIconData } from 'lucide-angular';
 import {
   Home, Users, Building2, Search, Calendar, Settings,
   DollarSign, MessageSquare, Camera, Target, Bell, Lock, LogOut,
+  Menu, X,
 } from 'lucide-angular';
 
 interface NavItem {
@@ -47,6 +48,8 @@ const PAGE_TITLES: Record<string, string> = {
 export class Shell {
   private readonly router = inject(Router);
 
+  protected readonly isMobileMenuOpen = signal(false);
+
   protected readonly navItems = NAV_ITEMS;
   protected readonly soonItems = SOON_ITEMS;
 
@@ -55,6 +58,8 @@ export class Shell {
   protected readonly icLock = Lock;
   protected readonly icSearch = Search;
   protected readonly icLogout = LogOut;
+  protected readonly icMenu = Menu;
+  protected readonly icX = X;
 
   // Segmento actual de la ruta ('dashboard', 'users', ...)
   protected get current(): string {
@@ -69,11 +74,21 @@ export class Shell {
     return this.current === id;
   }
 
+  protected toggleMobileMenu(): void {
+    this.isMobileMenuOpen.update(v => !v);
+  }
+
+  protected closeMobileMenu(): void {
+    this.isMobileMenuOpen.set(false);
+  }
+
   protected go(id: string): void {
+    this.closeMobileMenu();
     this.router.navigate(['/', id]);
   }
 
   protected logout(): void {
+    this.closeMobileMenu();
     this.router.navigate(['/login']);
   }
 }
