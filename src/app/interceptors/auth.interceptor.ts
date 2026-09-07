@@ -16,18 +16,20 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
     return next(req);
   }
 
-  const accounts = msal?.instance.getAllAccounts() ?? [];
-  const active = msal?.instance.getActiveAccount() ?? accounts[0];
+  let active: any = null;
+  let roles = 'admin';
 
-  const getRolesHeader = (): string => {
+  try {
+    const accounts = msal?.instance.getAllAccounts() ?? [];
+    active = msal?.instance.getActiveAccount() ?? accounts[0];
     const claims = active?.idTokenClaims as { roles?: string[] } | undefined;
     if (claims?.roles && Array.isArray(claims.roles) && claims.roles.length > 0) {
-      return claims.roles.join(',');
+      roles = claims.roles.join(',');
     }
-    return 'admin';
-  };
-
-  const roles = getRolesHeader();
+  } catch {
+    active = null;
+    roles = 'admin';
+  }
 
   if (!active) {
     return next(

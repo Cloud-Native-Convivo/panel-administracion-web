@@ -32,7 +32,7 @@
           <span class="text-sm font-medium">{{ fb.mensaje }}</span>
         </div>
         <button
-          (click)="mostrarFeedback(fb.tipo, '')"
+          (click)="cerrarFeedback()"
           class="text-gray-400 hover:text-gray-600 transition-colors"
         >
           <lucide-icon [img]="icX" [size]="15" />
@@ -182,11 +182,19 @@
         </div>
 
         <div class="p-5 sm:p-6 overflow-y-auto space-y-4">
+          @if (errorModal(); as errModal) {
+            <div class="p-3 bg-rose-50 border border-rose-200 rounded-lg flex items-center gap-2 text-rose-700 text-xs font-medium">
+              <lucide-icon [img]="icAlert" [size]="16" class="flex-shrink-0" />
+              <span>{{ errModal }}</span>
+            </div>
+          }
+
           <div>
             <label class="block text-xs font-semibold uppercase text-gray-500 mb-1.5">Nombre del espacio *</label>
             <input
               type="text"
               [(ngModel)]="formulario().nombre"
+              maxlength="100"
               placeholder="Ej. Piscina techada, Quincho B"
               class="w-full py-2 px-3 border border-[#E2E8F0] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-100 focus:border-[#0D9488]"
             />
@@ -199,6 +207,7 @@
                 type="number"
                 [(ngModel)]="formulario().capacidad"
                 min="1"
+                max="5000"
                 class="w-full py-2 px-3 border border-[#E2E8F0] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-100 focus:border-[#0D9488]"
               />
             </div>
@@ -209,6 +218,7 @@
                 type="number"
                 [(ngModel)]="formulario().tarifa_hora"
                 min="0"
+                max="10000000"
                 step="500"
                 placeholder="0 = Gratuito"
                 class="w-full py-2 px-3 border border-[#E2E8F0] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-100 focus:border-[#0D9488]"
@@ -216,28 +226,31 @@
             </div>
           </div>
 
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div [class]="modoEdicion() ? 'grid grid-cols-1 sm:grid-cols-2 gap-4' : ''">
             <div>
               <label class="block text-xs font-semibold uppercase text-gray-500 mb-1.5">Ubicación</label>
               <input
                 type="text"
                 [(ngModel)]="formulario().ubicacion"
+                maxlength="255"
                 placeholder="Ej. Piso 1, Terraza Poniente"
                 class="w-full py-2 px-3 border border-[#E2E8F0] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-100 focus:border-[#0D9488]"
               />
             </div>
 
-            <div>
-              <label class="block text-xs font-semibold uppercase text-gray-500 mb-1.5">Estado</label>
-              <select
-                [(ngModel)]="formulario().estado"
-                class="w-full py-2 px-3 border border-[#E2E8F0] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-100 focus:border-[#0D9488] bg-white"
-              >
-                <option value="activo">Activo</option>
-                <option value="inactivo">Inactivo</option>
-                <option value="mantenimiento">Mantenimiento</option>
-              </select>
-            </div>
+            @if (modoEdicion()) {
+              <div>
+                <label class="block text-xs font-semibold uppercase text-gray-500 mb-1.5">Estado</label>
+                <select
+                  [(ngModel)]="formulario().estado"
+                  class="w-full py-2 px-3 border border-[#E2E8F0] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-100 focus:border-[#0D9488] bg-white"
+                >
+                  <option value="activo">Activo</option>
+                  <option value="inactivo">Inactivo</option>
+                  <option value="mantenimiento">Mantenimiento</option>
+                </select>
+              </div>
+            }
           </div>
 
           <div>
@@ -245,6 +258,7 @@
             <textarea
               rows="3"
               [(ngModel)]="formulario().descripcion"
+              maxlength="1000"
               placeholder="Detalles sobre equipamiento, normas de uso o restricciones..."
               class="w-full py-2 px-3 border border-[#E2E8F0] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-100 focus:border-[#0D9488] resize-none"
             ></textarea>

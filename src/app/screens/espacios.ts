@@ -57,6 +57,7 @@ export class Espacios implements OnInit {
     tipo: 'exito' | 'error';
     mensaje: string;
   } | null>(null);
+  protected readonly errorModal = signal<string | null>(null);
 
   // Formulario reactivo
   protected readonly formulario = signal<FormularioEspacio>({
@@ -114,6 +115,7 @@ export class Espacios implements OnInit {
       descripcion: '',
       estado: 'activo',
     });
+    this.errorModal.set(null);
     this.modoEdicion.set(false);
     this.espacioEnEdicion.set(null);
     this.modalFormVisible.set(true);
@@ -128,6 +130,7 @@ export class Espacios implements OnInit {
       descripcion: espacio.descripcion ?? '',
       estado: espacio.estado || 'activo',
     });
+    this.errorModal.set(null);
     this.modoEdicion.set(true);
     this.espacioEnEdicion.set(espacio);
     this.modalFormVisible.set(true);
@@ -137,19 +140,37 @@ export class Espacios implements OnInit {
     this.modalFormVisible.set(false);
     this.modoEdicion.set(false);
     this.espacioEnEdicion.set(null);
+    this.errorModal.set(null);
   }
 
   protected guardarEspacio(): void {
     const f = this.formulario();
-    if (!f.nombre.trim()) {
-      this.mostrarFeedback('error', 'El nombre del espacio es obligatorio.');
+    const nombre = f.nombre.trim();
+    if (!nombre) {
+      this.errorModal.set('El nombre del espacio es obligatorio.');
       return;
     }
-    if (f.capacidad <= 0) {
-      this.mostrarFeedback('error', 'La capacidad debe ser mayor a 0.');
+    if (nombre.length > 100) {
+      this.errorModal.set('El nombre no puede superar 100 caracteres.');
       return;
     }
 
+    const capacidad = Number(f.capacidad);
+    if (!capacidad || isNaN(capacidad) || capacidad <= 0 || capacidad > 5000) {
+      this.errorModal.set('La capacidad debe ser un número entre 1 y 5000 personas.');
+      return;
+    }
+
+    const tarifa_hora =
+      f.tarifa_hora === null || f.tarifa_hora === undefined || isNaN(Number(f.tarifa_hora))
+        ? 0
+        : Number(f.tarifa_hora);
+    if (tarifa_hora < 0 || tarifa_hora > 10000000) {
+      this.errorModal.set('La tarifa por hora debe ser un valor entre $0 y $10.000.000.');
+      return;
+    }
+
+    this.errorModal.set(null);
     this.guardando.set(true);
 
     if (this.modoEdicion()) {
@@ -157,9 +178,9 @@ export class Espacios implements OnInit {
       if (!actual) return;
 
       const dto: ActualizarEspacioDto = {
-        nombre: f.nombre.trim(),
-        capacidad: f.capacidad,
-        tarifa_hora: f.tarifa_hora,
+        nombre,
+        capacidad: Math.floor(capacidad),
+        tarifa_hora,
         ubicacion: f.ubicacion.trim() || null,
         descripcion: f.descripcion.trim() || null,
         estado: f.estado,
@@ -177,14 +198,14 @@ export class Espacios implements OnInit {
         error: (err) => {
           console.error('Error al actualizar espacio:', err);
           this.guardando.set(false);
-          this.mostrarFeedback('error', 'Error al actualizar el espacio común.');
+          this.errorModal.set('Error al actualizar el espacio común. Revisa la conexión.');
         },
       });
     } else {
       const dto: CrearEspacioDto = {
-        nombre: f.nombre.trim(),
-        capacidad: f.capacidad,
-        tarifa_hora: f.tarifa_hora,
+        nombre,
+        capacidad: Math.floor(capacidad),
+        tarifa_hora,
         ubicacion: f.ubicacion.trim() || null,
         descripcion: f.descripcion.trim() || null,
       };
@@ -199,7 +220,7 @@ export class Espacios implements OnInit {
         error: (err) => {
           console.error('Error al crear espacio:', err);
           this.guardando.set(false);
-          this.mostrarFeedback('error', 'Error al registrar el nuevo espacio común.');
+          this.errorModal.set('Error al registrar el nuevo espacio común. Revisa la conexión.');
         },
       });
     }
@@ -243,6 +264,10 @@ export class Espacios implements OnInit {
   protected imagenPrevia(): string {
     const nombre = this.formulario().nombre;
     return this.espaciosService.obtenerImagenTematica(nombre);
+  }
+
+  protected cerrarFeedback(): void {
+    this.feedback.set(null);
   }
 
   protected mostrarFeedback(tipo: 'exito' | 'error', mensaje: string): void {
