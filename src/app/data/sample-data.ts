@@ -22,16 +22,6 @@ export interface ReservationEntry {
   status: ReservationStatus;
 }
 
-export interface EspacioEntry {
-  id: number;
-  name: string;
-  capacity: string;
-  hours: string;
-  status: string;
-  img: string;
-  desc: string;
-}
-
 export interface UnitEntry {
   id: string;
   num: string;
@@ -68,15 +58,6 @@ export const INIT_RESERVATIONS: ReservationEntry[] = [
   { id: 5, space: "Cancha de Pádel",  user: "Martín Fuentes",   unit: "Torre B · 305", date: "Lun, 25 ago",    time: "08:00–09:30", status: "confirmada" },
   { id: 6, space: "Quincho B",        user: "Ana Ramírez",      unit: "Torre B · 201", date: "Mar, 26 ago",    time: "12:00–17:00", status: "cancelada"  },
   { id: 7, space: "Piscina",          user: "Isabel Vargas",    unit: "Torre A · 101", date: "Mié, 27 ago",    time: "15:00–17:00", status: "pendiente"  },
-];
-
-export const ESPACIOS: EspacioEntry[] = [
-  { id: 1, name: "Piscina",          capacity: "40 personas", hours: "Lun–Dom  8:00–20:00",               status: "habilitado",    img: "https://images.unsplash.com/photo-1613152184920-bc1c4ab7fd1d?w=600&h=380&fit=crop&auto=format", desc: "Piscina temperada con zona de descanso y sombrillas." },
-  { id: 2, name: "Quincho A",        capacity: "30 personas", hours: "Lun–Dom  10:00–22:00",              status: "habilitado",    img: "https://images.unsplash.com/photo-1560448204-444f743ef6e7?w=600&h=380&fit=crop&auto=format", desc: "Quincho con parrilla, mesón y terraza techada."       },
-  { id: 3, name: "Gimnasio",         capacity: "15 personas", hours: "L–V  6:00–22:00 · S–D  8:00–20:00", status: "habilitado",    img: "https://images.unsplash.com/photo-1571902943202-507ec2618e8f?w=600&h=380&fit=crop&auto=format", desc: "Equipamiento cardio y musculación completo."          },
-  { id: 4, name: "Salón de Eventos", capacity: "80 personas", hours: "Lun–Dom  10:00–00:00",              status: "en mantención", img: "https://images.unsplash.com/photo-1529290130-4ca3753253ae?w=600&h=380&fit=crop&auto=format", desc: "Salón multiuso con cocina equipada y audio."          },
-  { id: 5, name: "Cancha de Pádel",  capacity: "4 personas",  hours: "Lun–Dom  7:00–21:00",               status: "habilitado",    img: "https://images.unsplash.com/photo-1764254811090-af4a43594a03?w=600&h=380&fit=crop&auto=format", desc: "Cancha techada con iluminación nocturna."             },
-  { id: 6, name: "Quincho B",        capacity: "25 personas", hours: "Lun–Dom  10:00–22:00",              status: "habilitado",    img: "https://images.unsplash.com/photo-1680609989998-6183fcea718b?w=600&h=380&fit=crop&auto=format", desc: "Quincho con vista al jardín y horno de barro."        },
 ];
 
 export const TORRES: TorreEntry[] = [
