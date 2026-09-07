@@ -1,122 +1,317 @@
 <div class="h-full overflow-y-auto">
   <div class="p-4 sm:p-6 lg:p-8">
+    <!-- Header -->
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
-      <p class="text-xs sm:text-sm text-gray-400">{{ espacios.length }} espacios registrados en el condominio</p>
-      <button class="flex items-center justify-center gap-2 bg-[#0D9488] hover:bg-[#005047] text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors w-full sm:w-auto">
+      <div>
+        <h2 class="text-xl font-bold text-[#00201B]">Espacios Comunes</h2>
+        <p class="text-xs sm:text-sm text-gray-400">
+          @if (cargando()) {
+            Cargando espacios registrados...
+          } @else {
+            {{ espacios().length }} espacios registrados en el condominio
+          }
+        </p>
+      </div>
+      <button
+        (click)="abrirModalCrear()"
+        class="flex items-center justify-center gap-2 bg-[#0D9488] hover:bg-[#005047] text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors w-full sm:w-auto shadow-sm"
+      >
         <lucide-icon [img]="icPlus" [size]="16" />
         Agregar espacio
       </button>
     </div>
 
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-      @for (e of espacios; track e.id) {
-        <div
-          (click)="editing.set(e)"
-          class="bg-white border border-[#E2E8F0] rounded-xl overflow-hidden hover:border-[#0D9488]/40 hover:shadow-sm transition-all cursor-pointer group"
+    <!-- Banner Feedback -->
+    @if (feedback(); as fb) {
+      <div
+        class="mb-6 p-4 rounded-xl border flex items-center justify-between gap-3 transition-all"
+        [class]="fb.tipo === 'exito' ? 'bg-emerald-50 border-emerald-200 text-emerald-800' : 'bg-rose-50 border-rose-200 text-rose-800'"
+      >
+        <div class="flex items-center gap-2.5">
+          <lucide-icon [img]="fb.tipo === 'exito' ? icCheck : icAlert" [size]="18" />
+          <span class="text-sm font-medium">{{ fb.mensaje }}</span>
+        </div>
+        <button
+          (click)="mostrarFeedback(fb.tipo, '')"
+          class="text-gray-400 hover:text-gray-600 transition-colors"
         >
-          <div class="relative h-44 bg-teal-50 overflow-hidden">
-            <img [src]="e.img" [alt]="e.name" class="w-full h-full object-cover group-hover:scale-[1.04] transition-transform duration-500" />
-            <div class="absolute top-3 left-3">
-              <app-status-badge [status]="e.status" />
-            </div>
-          </div>
-          <div class="p-4">
-            <h3 class="font-medium text-[#00201B] mb-1">{{ e.name }}</h3>
-            <p class="text-xs text-gray-400 mb-3 leading-relaxed">{{ e.desc }}</p>
-            <div class="space-y-1.5">
-              <div class="flex items-center gap-2 text-xs text-gray-500">
-                <lucide-icon [img]="icUsers" [size]="11" class="text-gray-400 flex-shrink-0" />
-                {{ e.capacity }}
-              </div>
-              <div class="flex items-center gap-2 text-xs text-gray-500">
-                <lucide-icon [img]="icClock" [size]="11" class="text-gray-400 flex-shrink-0" />
-                {{ e.hours }}
-              </div>
-            </div>
-            <div class="mt-3.5 pt-3.5 border-t border-[#E2E8F0] flex gap-1">
-              <button
-                (click)="$event.stopPropagation(); editing.set(e)"
-                class="flex-1 py-1.5 text-xs text-[#0D9488] hover:text-[#005047] font-medium transition-colors"
-              >
-                Editar
-              </button>
-              <div class="w-px bg-[#E2E8F0]"></div>
-              <button
-                (click)="$event.stopPropagation()"
-                class="flex-1 py-1.5 text-xs text-gray-500 hover:text-[#00201B] font-medium transition-colors"
-              >
-                Ver reservas
-              </button>
-            </div>
-          </div>
-        </div>
-      }
-
-      <!-- Tarjeta para agregar -->
-      <div (click)="editing.set(espacios[0])" class="border-2 border-dashed border-[#E2E8F0] rounded-xl flex flex-col items-center justify-center p-8 min-h-[272px] cursor-pointer hover:border-[#0D9488]/50 hover:bg-teal-50/20 transition-colors group">
-        <div class="w-12 h-12 rounded-full bg-teal-50 group-hover:bg-teal-100 flex items-center justify-center mb-3 transition-colors">
-          <lucide-icon [img]="icPlus" [size]="20" class="text-[#0D9488]" />
-        </div>
-        <p class="text-sm font-medium text-[#0D9488]">Agregar espacio</p>
-        <p class="text-xs text-gray-400 mt-0.5">Nuevo espacio común</p>
+          <lucide-icon [img]="icX" [size]="15" />
+        </button>
       </div>
-    </div>
+    }
+
+    <!-- Estado de Error -->
+    @if (error() && !cargando()) {
+      <div class="bg-amber-50 border border-amber-200 rounded-2xl p-6 sm:p-8 text-center max-w-xl mx-auto my-8">
+        <div class="w-12 h-12 rounded-full bg-amber-100 flex items-center justify-center mx-auto mb-3 text-amber-700">
+          <lucide-icon [img]="icAlert" [size]="24" />
+        </div>
+        <h3 class="text-base font-semibold text-amber-900 mb-1">Error de conexión</h3>
+        <p class="text-xs sm:text-sm text-amber-700 mb-4">{{ error() }}</p>
+        <button
+          (click)="cargarEspacios()"
+          class="inline-flex items-center gap-2 bg-[#0D9488] hover:bg-[#005047] text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+        >
+          <lucide-icon [img]="icRefresh" [size]="16" />
+          Reintentar conexión
+        </button>
+      </div>
+    }
+
+    <!-- Estado de Carga (Skeletons) -->
+    @if (cargando()) {
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        @for (i of [1, 2, 3]; track i) {
+          <div class="bg-white border border-[#E2E8F0] rounded-xl overflow-hidden animate-pulse">
+            <div class="h-44 bg-gray-200"></div>
+            <div class="p-4 space-y-3">
+              <div class="h-4 bg-gray-200 rounded w-3/4"></div>
+              <div class="h-3 bg-gray-200 rounded w-full"></div>
+              <div class="h-3 bg-gray-200 rounded w-1/2"></div>
+              <div class="pt-3 border-t border-gray-100 flex gap-2">
+                <div class="h-7 bg-gray-200 rounded flex-1"></div>
+                <div class="h-7 bg-gray-200 rounded flex-1"></div>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    }
+
+    <!-- Grid de Espacios -->
+    @if (!cargando() && !error()) {
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        @for (e of espacios(); track e.id) {
+          <div
+            class="bg-white border border-[#E2E8F0] rounded-xl overflow-hidden hover:border-[#0D9488]/40 hover:shadow-md transition-all group flex flex-col justify-between"
+          >
+            <div>
+              <div class="relative h-44 bg-teal-50 overflow-hidden">
+                <img
+                  [src]="e.img"
+                  [alt]="e.nombre"
+                  class="w-full h-full object-cover group-hover:scale-[1.04] transition-transform duration-500"
+                />
+                <div class="absolute top-3 left-3">
+                  <app-status-badge [status]="e.estado" />
+                </div>
+              </div>
+              <div class="p-4">
+                <h3 class="font-medium text-[#00201B] mb-1 text-base">{{ e.nombre }}</h3>
+                <p class="text-xs text-gray-400 mb-3 leading-relaxed line-clamp-2">
+                  {{ e.descripcion || 'Sin descripción adicional' }}
+                </p>
+                <div class="space-y-1.5 text-xs text-gray-500">
+                  <div class="flex items-center gap-2">
+                    <lucide-icon [img]="icUsers" [size]="12" class="text-gray-400 flex-shrink-0" />
+                    <span>Capacidad: {{ e.capacidad }} personas</span>
+                  </div>
+                  @if (e.ubicacion) {
+                    <div class="flex items-center gap-2">
+                      <lucide-icon [img]="icMapPin" [size]="12" class="text-gray-400 flex-shrink-0" />
+                      <span>{{ e.ubicacion }}</span>
+                    </div>
+                  }
+                  <div class="flex items-center gap-2">
+                    <lucide-icon [img]="icDollar" [size]="12" class="text-gray-400 flex-shrink-0" />
+                    <span>
+                      {{ e.tarifa_hora ? ('Tarifa: $' + e.tarifa_hora + ' / hora') : 'Uso gratuito' }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="p-4 pt-0">
+              <div class="pt-3.5 border-t border-[#E2E8F0] flex gap-2">
+                <button
+                  (click)="abrirModalEditar(e)"
+                  class="flex-1 py-1.5 px-3 rounded-lg text-xs font-medium text-[#0D9488] bg-teal-50/50 hover:bg-teal-50 transition-colors flex items-center justify-center gap-1.5"
+                >
+                  <lucide-icon [img]="icEdit" [size]="12" />
+                  Editar
+                </button>
+                <button
+                  (click)="abrirModalEliminar(e)"
+                  class="flex-1 py-1.5 px-3 rounded-lg text-xs font-medium text-rose-600 bg-rose-50/50 hover:bg-rose-50 transition-colors flex items-center justify-center gap-1.5"
+                >
+                  <lucide-icon [img]="icTrash" [size]="12" />
+                  Eliminar
+                </button>
+              </div>
+            </div>
+          </div>
+        }
+
+        <!-- Tarjeta para agregar -->
+        <div
+          (click)="abrirModalCrear()"
+          class="border-2 border-dashed border-[#E2E8F0] rounded-xl flex flex-col items-center justify-center p-8 min-h-[272px] cursor-pointer hover:border-[#0D9488]/50 hover:bg-teal-50/20 transition-colors group"
+        >
+          <div class="w-12 h-12 rounded-full bg-teal-50 group-hover:bg-teal-100 flex items-center justify-center mb-3 transition-colors">
+            <lucide-icon [img]="icPlus" [size]="20" class="text-[#0D9488]" />
+          </div>
+          <p class="text-sm font-medium text-[#0D9488]">Agregar espacio</p>
+          <p class="text-xs text-gray-400 mt-0.5">Nuevo espacio común</p>
+        </div>
+      </div>
+    }
   </div>
 
-  <!-- Modal de edición -->
-  @if (editing(); as e) {
-    <div class="fixed inset-0 bg-black/25 backdrop-blur-[2px] flex items-center justify-center z-50 p-4">
-      <div class="bg-white rounded-2xl max-w-lg w-full overflow-hidden shadow-xl max-h-[90vh] flex flex-col">
-        <div class="relative h-36 sm:h-44 bg-teal-50 flex-shrink-0">
-          <img [src]="e.img" [alt]="e.name" class="w-full h-full object-cover" />
-          <div class="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent"></div>
+  <!-- Modal Formulario Crear / Editar -->
+  @if (modalFormVisible()) {
+    <div class="fixed inset-0 bg-black/40 backdrop-blur-[2px] flex items-center justify-center z-50 p-4">
+      <div class="bg-white rounded-2xl max-w-lg w-full overflow-hidden shadow-2xl max-h-[90vh] flex flex-col animate-in fade-in duration-200">
+        <div class="relative h-32 sm:h-36 bg-teal-50 flex-shrink-0">
+          <img [src]="imagenPrevia()" alt="Vista previa temática" class="w-full h-full object-cover" />
+          <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"></div>
+          <div class="absolute bottom-3 left-4 text-white">
+            <span class="text-xs uppercase tracking-wider font-semibold opacity-80">
+              {{ modoEdicion() ? 'Edición' : 'Nuevo Registro' }}
+            </span>
+            <h3 class="text-lg font-bold">
+              {{ modoEdicion() ? formulario().nombre : 'Nuevo espacio común' }}
+            </h3>
+          </div>
           <button
-            (click)="editing.set(null)"
-            class="absolute top-3 right-3 w-8 h-8 bg-white rounded-lg flex items-center justify-center shadow-sm hover:bg-gray-50 transition-colors"
+            (click)="cerrarModalForm()"
+            class="absolute top-3 right-3 w-8 h-8 bg-white/90 hover:bg-white rounded-lg flex items-center justify-center shadow-sm transition-colors text-gray-700"
           >
-            <lucide-icon [img]="icX" [size]="15" />
+            <lucide-icon [img]="icX" [size]="16" />
           </button>
         </div>
-        <div class="p-4 sm:p-6 overflow-y-auto">
-          <h3 class="font-serif text-lg sm:text-xl text-[#00201B] mb-4 sm:mb-5">Editar espacio: {{ e.name }}</h3>
-          <div class="space-y-4">
-            <app-field-input label="Nombre del espacio" [defaultValue]="e.name" />
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <app-field-input label="Capacidad" [defaultValue]="e.capacity" />
-              <div>
-                <label class="block text-sm font-medium text-[#00201B] mb-1.5">Estado</label>
-                <select
-                  class="w-full py-2.5 px-3.5 border border-[#E2E8F0] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-100 focus:border-[#0D9488] bg-white"
-                >
-                  <option value="habilitado" [selected]="e.status === 'habilitado'">Habilitado</option>
-                  <option value="en mantención" [selected]="e.status === 'en mantención'">En mantención</option>
-                </select>
-              </div>
-            </div>
-            <app-field-input label="Horario disponible" [defaultValue]="e.hours" />
+
+        <div class="p-5 sm:p-6 overflow-y-auto space-y-4">
+          <div>
+            <label class="block text-xs font-semibold uppercase text-gray-500 mb-1.5">Nombre del espacio *</label>
+            <input
+              type="text"
+              [(ngModel)]="formulario().nombre"
+              placeholder="Ej. Piscina techada, Quincho B"
+              class="w-full py-2 px-3 border border-[#E2E8F0] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-100 focus:border-[#0D9488]"
+            />
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label class="block text-sm font-medium text-[#00201B] mb-1.5">Descripción</label>
-              <textarea
-                rows="2"
-                class="w-full py-2.5 px-3.5 border border-[#E2E8F0] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-100 focus:border-[#0D9488] resize-none"
-              >{{ e.desc }}</textarea>
+              <label class="block text-xs font-semibold uppercase text-gray-500 mb-1.5">Capacidad (personas) *</label>
+              <input
+                type="number"
+                [(ngModel)]="formulario().capacidad"
+                min="1"
+                class="w-full py-2 px-3 border border-[#E2E8F0] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-100 focus:border-[#0D9488]"
+              />
             </div>
+
             <div>
-              <label class="block text-sm font-medium text-[#00201B] mb-1.5">Fotografía</label>
-              <div class="border-2 border-dashed border-[#E2E8F0] rounded-lg px-4 py-3 flex items-center gap-3 hover:border-[#0D9488]/40 transition-colors cursor-pointer">
-                <lucide-icon [img]="icCamera" [size]="16" class="text-gray-400" />
-                <span class="text-sm text-gray-400">Subir nueva foto</span>
-              </div>
+              <label class="block text-xs font-semibold uppercase text-gray-500 mb-1.5">Tarifa por hora ($ CLP)</label>
+              <input
+                type="number"
+                [(ngModel)]="formulario().tarifa_hora"
+                min="0"
+                step="500"
+                placeholder="0 = Gratuito"
+                class="w-full py-2 px-3 border border-[#E2E8F0] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-100 focus:border-[#0D9488]"
+              />
             </div>
           </div>
-          <div class="flex gap-2 mt-6">
-            <button (click)="editing.set(null)" class="flex-1 py-2.5 border border-[#E2E8F0] rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors">
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-semibold uppercase text-gray-500 mb-1.5">Ubicación</label>
+              <input
+                type="text"
+                [(ngModel)]="formulario().ubicacion"
+                placeholder="Ej. Piso 1, Terraza Poniente"
+                class="w-full py-2 px-3 border border-[#E2E8F0] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-100 focus:border-[#0D9488]"
+              />
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold uppercase text-gray-500 mb-1.5">Estado</label>
+              <select
+                [(ngModel)]="formulario().estado"
+                class="w-full py-2 px-3 border border-[#E2E8F0] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-100 focus:border-[#0D9488] bg-white"
+              >
+                <option value="activo">Activo</option>
+                <option value="inactivo">Inactivo</option>
+                <option value="mantenimiento">Mantenimiento</option>
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold uppercase text-gray-500 mb-1.5">Descripción</label>
+            <textarea
+              rows="3"
+              [(ngModel)]="formulario().descripcion"
+              placeholder="Detalles sobre equipamiento, normas de uso o restricciones..."
+              class="w-full py-2 px-3 border border-[#E2E8F0] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-100 focus:border-[#0D9488] resize-none"
+            ></textarea>
+          </div>
+
+          <div class="flex gap-2 pt-3 border-t border-gray-100">
+            <button
+              (click)="cerrarModalForm()"
+              [disabled]="guardando()"
+              class="flex-1 py-2.5 border border-[#E2E8F0] rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors disabled:opacity-50"
+            >
               Cancelar
             </button>
-            <button (click)="editing.set(null)" class="flex-1 py-2.5 bg-[#0D9488] hover:bg-[#005047] text-white rounded-lg text-sm font-medium transition-colors">
-              Guardar cambios
+            <button
+              (click)="guardarEspacio()"
+              [disabled]="guardando()"
+              class="flex-1 py-2.5 bg-[#0D9488] hover:bg-[#005047] text-white rounded-lg text-sm font-medium transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+            >
+              @if (guardando()) {
+                <span class="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                Guardando...
+              } @else {
+                {{ modoEdicion() ? 'Guardar cambios' : 'Crear espacio' }}
+              }
             </button>
           </div>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Modal Confirmación Eliminación -->
+  @if (modalEliminarVisible(); as vis) {
+    <div class="fixed inset-0 bg-black/40 backdrop-blur-[2px] flex items-center justify-center z-50 p-4">
+      <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl animate-in fade-in duration-200">
+        <div class="w-12 h-12 rounded-full bg-rose-100 flex items-center justify-center mx-auto mb-4 text-rose-600">
+          <lucide-icon [img]="icTrash" [size]="24" />
+        </div>
+        <h3 class="text-base sm:text-lg font-bold text-center text-gray-900 mb-2">
+          ¿Eliminar espacio común?
+        </h3>
+        <p class="text-xs sm:text-sm text-gray-500 text-center mb-4 leading-relaxed">
+          ¿Estás seguro de que deseas eliminar
+          <strong class="text-gray-800">"{{ espacioAEliminar()?.nombre }}"</strong>?
+          Si cuenta con reservas registradas, el sistema cambiará su estado a
+          <span class="text-amber-700 font-semibold">inactivo</span> para preservar el historial.
+        </p>
+        <div class="flex gap-2">
+          <button
+            (click)="cerrarModalEliminar()"
+            [disabled]="eliminando()"
+            class="flex-1 py-2.5 border border-[#E2E8F0] rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors disabled:opacity-50"
+          >
+            Cancelar
+          </button>
+          <button
+            (click)="confirmarEliminar()"
+            [disabled]="eliminando()"
+            class="flex-1 py-2.5 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-sm font-medium transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+          >
+            @if (eliminando()) {
+              <span class="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+              Eliminando...
+            } @else {
+              Confirmar eliminación
+            }
+          </button>
         </div>
       </div>
     </div>
