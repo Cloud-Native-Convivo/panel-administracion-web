@@ -10,6 +10,7 @@ const STYLES: Record<string, string> = {
   moroso:          "bg-red-50 text-red-700 border-red-100",
   habilitado:      "bg-teal-50 text-teal-700 border-teal-100",
   "en mantención": "bg-yellow-50 text-yellow-700 border-yellow-200",
+  mantenimiento:   "bg-yellow-50 text-yellow-700 border-yellow-200",
   "vacío":         "bg-gray-100 text-gray-400 border-gray-200",
 };
 
