@@ -31,11 +31,14 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
     roles = 'admin';
   }
 
+  const sub = active?.localAccountId ?? 'admin-sub-local';
+
   if (!active) {
     return next(
       req.clone({
         setHeaders: {
           'X-Usuario-Roles': roles,
+          'X-Usuario-Sub': sub,
         },
       }),
     );
@@ -52,6 +55,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
           setHeaders: {
             Authorization: `Bearer ${result.accessToken}`,
             'X-Usuario-Roles': roles,
+            'X-Usuario-Sub': sub,
           },
         }),
       ),
@@ -61,6 +65,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
         req.clone({
           setHeaders: {
             'X-Usuario-Roles': roles,
+            'X-Usuario-Sub': sub,
           },
         }),
       ),
