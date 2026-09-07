@@ -1,5 +1,67 @@
 <div class="h-full overflow-y-auto">
   <div class="p-4 sm:p-6 lg:p-8">
+    <!-- Encabezado -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
+      <div>
+        <h2 class="text-xl font-bold text-[#00201B]">Reservas de Espacios Comunes</h2>
+        <p class="text-xs sm:text-sm text-gray-400">
+          @if (cargando()) {
+            Cargando reservas desde el servidor...
+          } @else {
+            {{ rsvs().length }} reservas registradas en el condominio
+          }
+        </p>
+      </div>
+      <div class="flex items-center gap-2">
+        <button
+          (click)="cargarDatos()"
+          [disabled]="cargando()"
+          class="flex items-center justify-center gap-2 border border-[#E2E8F0] hover:bg-gray-50 text-gray-700 px-3 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
+          title="Recargar reservas"
+        >
+          <lucide-icon [img]="icRefresh" [size]="16" [class.animate-spin]="cargando()" />
+          <span class="hidden sm:inline">Actualizar</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Banner Feedback -->
+    @if (feedback(); as fb) {
+      <div
+        class="mb-6 p-4 rounded-xl border flex items-center justify-between gap-3 transition-all"
+        [class]="fb.tipo === 'exito' ? 'bg-emerald-50 border-emerald-200 text-emerald-800' : 'bg-rose-50 border-rose-200 text-rose-800'"
+      >
+        <div class="flex items-center gap-2.5">
+          <lucide-icon [img]="fb.tipo === 'exito' ? icCheckCircle : icAlert" [size]="18" />
+          <span class="text-sm font-medium">{{ fb.mensaje }}</span>
+        </div>
+        <button
+          (click)="cerrarFeedback()"
+          class="text-gray-400 hover:text-gray-600 transition-colors"
+        >
+          <lucide-icon [img]="icX" [size]="15" />
+        </button>
+      </div>
+    }
+
+    <!-- Estado de Error -->
+    @if (error() && !cargando()) {
+      <div class="bg-amber-50 border border-amber-200 rounded-2xl p-6 sm:p-8 text-center max-w-xl mx-auto my-8">
+        <div class="w-12 h-12 rounded-full bg-amber-100 flex items-center justify-center mx-auto mb-3 text-amber-700">
+          <lucide-icon [img]="icAlert" [size]="24" />
+        </div>
+        <h3 class="text-base font-semibold text-amber-900 mb-1">Error de conexión</h3>
+        <p class="text-xs sm:text-sm text-amber-700 mb-4">{{ error() }}</p>
+        <button
+          (click)="cargarDatos()"
+          class="inline-flex items-center gap-2 bg-[#0D9488] hover:bg-[#005047] text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+        >
+          <lucide-icon [img]="icRefresh" [size]="16" />
+          Reintentar conexión
+        </button>
+      </div>
+    }
+
     <!-- Barra de herramientas -->
     <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 mb-6">
       <div class="flex bg-gray-100 rounded-lg p-0.5 gap-0.5">
@@ -23,7 +85,7 @@
           (change)="spaceFilter.set($any($event.target).value)"
           class="w-full sm:w-auto py-2 px-3 border border-[#E2E8F0] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-100 bg-white text-[#00201B]"
         >
-          @for (s of spaceOptions; track s) {
+          @for (s of spaceOptions(); track s) {
             <option [value]="s" [selected]="spaceFilter() === s">{{ s === 'Todos' ? 'Todos los espacios' : s }}</option>
           }
         </select>
@@ -38,13 +100,6 @@
           }
         </select>
       </div>
-
-      <div class="hidden sm:block flex-1"></div>
-
-      <button class="flex items-center justify-center gap-2 bg-[#0D9488] hover:bg-[#005047] text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors w-full sm:w-auto">
-        <lucide-icon [img]="icPlus" [size]="16" />
-        Nueva reserva
-      </button>
     </div>
 
     @if (view() === 'lista') {
@@ -64,49 +119,64 @@
               </tr>
             </thead>
             <tbody>
-              @for (r of filtered(); track r.id; let last = $last) {
-                <tr
-                  [class]="
-                    (r.status === 'cancelada' ? 'hover:bg-gray-50/70 transition-colors opacity-50' : 'hover:bg-gray-50/70 transition-colors') +
-                    (last ? '' : ' border-b border-[#E2E8F0]')
-                  "
-                >
-                  <td class="px-6 py-3.5 text-xs sm:text-sm font-medium text-[#00201B] whitespace-nowrap">{{ r.space }}</td>
-                  <td class="px-4 py-3.5 text-xs sm:text-sm text-gray-600 whitespace-nowrap">{{ r.user }}</td>
-                  <td class="px-4 py-3.5 text-xs sm:text-sm text-gray-500 whitespace-nowrap">{{ r.unit }}</td>
-                  <td class="px-4 py-3.5 text-xs sm:text-sm text-gray-600 whitespace-nowrap">{{ r.date }}</td>
-                  <td class="px-4 py-3.5 text-xs sm:text-sm text-gray-500 whitespace-nowrap">{{ r.time }}</td>
-                  <td class="px-4 py-3.5 whitespace-nowrap"><app-status-badge [status]="r.status" /></td>
-                  <td class="px-4 py-3.5 whitespace-nowrap">
-                    @if (r.status !== 'cancelada') {
-                      <div class="flex gap-1">
-                        @if (r.status === 'pendiente') {
+              @if (cargando()) {
+                @for (i of [1, 2, 3]; track i) {
+                  <tr class="border-b border-[#E2E8F0] animate-pulse">
+                    <td class="px-6 py-4"><div class="h-4 bg-gray-200 rounded w-28"></div></td>
+                    <td class="px-4 py-4"><div class="h-4 bg-gray-200 rounded w-24"></div></td>
+                    <td class="px-4 py-4"><div class="h-4 bg-gray-200 rounded w-20"></div></td>
+                    <td class="px-4 py-4"><div class="h-4 bg-gray-200 rounded w-20"></div></td>
+                    <td class="px-4 py-4"><div class="h-4 bg-gray-200 rounded w-24"></div></td>
+                    <td class="px-4 py-4"><div class="h-5 bg-gray-200 rounded-full w-20"></div></td>
+                    <td class="px-4 py-4"></td>
+                  </tr>
+                }
+              } @else {
+                @for (r of filtered(); track r.id; let last = $last) {
+                  <tr
+                    [class]="
+                      (r.status === 'cancelada' ? 'hover:bg-gray-50/70 transition-colors opacity-50' : 'hover:bg-gray-50/70 transition-colors') +
+                      (last ? '' : ' border-b border-[#E2E8F0]')
+                    "
+                  >
+                    <td class="px-6 py-3.5 text-xs sm:text-sm font-medium text-[#00201B] whitespace-nowrap">{{ r.space }}</td>
+                    <td class="px-4 py-3.5 text-xs sm:text-sm text-gray-600 whitespace-nowrap">{{ r.user }}</td>
+                    <td class="px-4 py-3.5 text-xs sm:text-sm text-gray-500 whitespace-nowrap">{{ r.unit }}</td>
+                    <td class="px-4 py-3.5 text-xs sm:text-sm text-gray-600 whitespace-nowrap">{{ r.date }}</td>
+                    <td class="px-4 py-3.5 text-xs sm:text-sm text-gray-500 whitespace-nowrap">{{ r.time }}</td>
+                    <td class="px-4 py-3.5 whitespace-nowrap"><app-status-badge [status]="r.status" /></td>
+                    <td class="px-4 py-3.5 whitespace-nowrap">
+                      @if (r.status !== 'cancelada') {
+                        <div class="flex gap-1">
+                          @if (r.status === 'pendiente') {
+                            <button
+                              (click)="confirm(r.id)"
+                              [disabled]="confirmandoId() === r.id"
+                              class="p-1.5 hover:bg-teal-50 hover:text-teal-600 rounded-lg text-gray-400 transition-colors disabled:opacity-50"
+                              title="Confirmar pago de reserva"
+                            >
+                              <lucide-icon [img]="icCheck" [size]="14" [class.animate-spin]="confirmandoId() === r.id" />
+                            </button>
+                          }
                           <button
-                            (click)="confirm(r.id)"
-                            class="p-1.5 hover:bg-teal-50 hover:text-teal-600 rounded-lg text-gray-400 transition-colors"
-                            title="Confirmar reserva"
+                            (click)="cancel(r.id)"
+                            class="p-1.5 hover:bg-red-50 hover:text-red-500 rounded-lg text-gray-400 transition-colors"
+                            title="Cancelar reserva"
                           >
-                            <lucide-icon [img]="icCheck" [size]="14" />
+                            <lucide-icon [img]="icTrash" [size]="14" />
                           </button>
-                        }
-                        <button
-                          (click)="cancel(r.id)"
-                          class="p-1.5 hover:bg-red-50 hover:text-red-500 rounded-lg text-gray-400 transition-colors"
-                          title="Cancelar reserva"
-                        >
-                          <lucide-icon [img]="icTrash" [size]="14" />
-                        </button>
-                      </div>
-                    }
-                  </td>
-                </tr>
-              }
-              @if (filtered().length === 0) {
-                <tr>
-                  <td colspan="7" class="px-6 py-16 text-center text-gray-400 text-sm">
-                    No hay reservas con ese criterio.
-                  </td>
-                </tr>
+                        </div>
+                      }
+                    </td>
+                  </tr>
+                }
+                @if (filtered().length === 0) {
+                  <tr>
+                    <td colspan="7" class="px-6 py-16 text-center text-gray-400 text-sm">
+                      {{ rsvs().length === 0 ? 'No hay reservas registradas en el sistema.' : 'No hay reservas con ese criterio.' }}
+                    </td>
+                  </tr>
+                }
               }
             </tbody>
           </table>
@@ -116,11 +186,11 @@
       <!-- Vista calendario -->
       <div class="bg-white border border-[#E2E8F0] rounded-xl overflow-hidden">
         <div class="flex items-center justify-between px-4 sm:px-6 py-4 border-b border-[#E2E8F0]">
-          <h3 class="font-serif text-base sm:text-lg text-[#00201B]">Semana del 23 al 29 de agosto 2026</h3>
+          <h3 class="font-serif text-base sm:text-lg text-[#00201B]">{{ weekTitle() }}</h3>
         </div>
         <div class="overflow-x-auto">
           <div class="grid grid-cols-7 min-w-[700px]">
-            @for (d of weekDays; track d; let idx = $index) {
+            @for (d of weekDays(); track d; let idx = $index) {
               <div class="border-r last:border-r-0 border-[#E2E8F0]" [class.first:border-l-0]="idx === 0">
                 <div class="px-2 sm:px-3 py-3 border-b border-[#E2E8F0] text-center">
                   <p class="text-[10px] sm:text-[11px] text-gray-400 font-medium uppercase">{{ d.split(' ')[0] }}</p>
@@ -139,6 +209,11 @@
                     >
                       <p class="font-semibold truncate">{{ r.space }}</p>
                       <p class="opacity-70 truncate">{{ r.time }}</p>
+                    </div>
+                  }
+                  @if (cal()[idx].length === 0) {
+                    <div class="h-full flex items-center justify-center py-6 text-gray-300 text-xs">
+                      Sin reservas
                     </div>
                   }
                 </div>

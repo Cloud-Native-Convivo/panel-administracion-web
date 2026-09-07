@@ -8,8 +8,19 @@
 
     <!-- Tarjetas KPI -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5 mb-6 sm:mb-7">
-      @for (kpi of kpis; track kpi.label) {
-        <div class="bg-white border border-[#E2E8F0] rounded-xl p-4 sm:p-5 hover:border-[#0D9488]/30 transition-colors">
+      @for (kpi of kpis(); track kpi.label) {
+        <div
+          (click)="onKpiClick(kpi)"
+          (keydown.enter)="onKpiClick(kpi)"
+          (keydown.space)="onKpiClick(kpi); $event.preventDefault()"
+          [attr.role]="kpi.route ? 'button' : null"
+          [attr.tabindex]="kpi.route ? 0 : null"
+          [class.cursor-pointer]="!!kpi.route"
+          [class.focus-visible:ring-2]="!!kpi.route"
+          [class.focus-visible:ring-[#0D9488]/40]="!!kpi.route"
+          [class.focus:outline-none]="!!kpi.route"
+          class="bg-white border border-[#E2E8F0] rounded-xl p-4 sm:p-5 hover:border-[#0D9488]/30 transition-colors"
+        >
           <div class="w-10 h-10 rounded-lg flex items-center justify-center mb-3 sm:mb-4" [class]="kpi.color">
             <lucide-icon [img]="kpi.icon" [size]="19" [strokeWidth]="1.75" />
           </div>
