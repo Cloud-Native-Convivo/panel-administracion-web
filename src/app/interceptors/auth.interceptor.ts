@@ -9,8 +9,8 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const msal = inject(MsalService, { optional: true });
 
   const isApiUrl =
-    req.url === environment.apiUrl ||
-    req.url.startsWith(environment.apiUrl + '/');
+    req.url.startsWith(environment.apiUrl) ||
+    (environment.apiEspaciosUrl ? req.url.startsWith(environment.apiEspaciosUrl) : false);
 
   if (!isApiUrl) {
     return next(req);
@@ -19,8 +19,24 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const accounts = msal?.instance.getAllAccounts() ?? [];
   const active = msal?.instance.getActiveAccount() ?? accounts[0];
 
+  const getRolesHeader = (): string => {
+    const claims = active?.idTokenClaims as { roles?: string[] } | undefined;
+    if (claims?.roles && Array.isArray(claims.roles) && claims.roles.length > 0) {
+      return claims.roles.join(',');
+    }
+    return 'admin';
+  };
+
+  const roles = getRolesHeader();
+
   if (!active) {
-    return next(req);
+    return next(
+      req.clone({
+        setHeaders: {
+          'X-Usuario-Roles': roles,
+        },
+      }),
+    );
   }
 
   const request = msal!.instance
@@ -31,11 +47,22 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
     .then((result) =>
       next(
         req.clone({
-          setHeaders: { Authorization: `Bearer ${result.accessToken}` },
+          setHeaders: {
+            Authorization: `Bearer ${result.accessToken}`,
+            'X-Usuario-Roles': roles,
+          },
         }),
       ),
     )
-    .catch(() => next(req));
+    .catch(() =>
+      next(
+        req.clone({
+          setHeaders: {
+            'X-Usuario-Roles': roles,
+          },
+        }),
+      ),
+    );
 
   return from(request).pipe(switchAll());
 };
