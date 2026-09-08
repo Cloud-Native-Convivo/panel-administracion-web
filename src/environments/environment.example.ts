@@ -3,5 +3,5 @@ export const environment = {
   tenantId: 'REEMPLAZAR_CON_DIRECTORY_TENANT_ID',
   redirectUri: 'http://localhost:4200',
   apiUrl: 'REEMPLAZAR_CON_URL_API_GATEWAY',
-  apiEspaciosUrl: 'http://localhost:8082/api/v1',
+  apiEspaciosUrl: 'http://localhost:3000/api/v1/espacios-comunes',
 };

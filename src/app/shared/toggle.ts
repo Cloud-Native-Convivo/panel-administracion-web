@@ -7,6 +7,7 @@ import { Component, computed, input, output } from '@angular/core';
       type="button"
       role="switch"
       [attr.aria-checked]="value()"
+      [attr.aria-label]="label() || 'Alternar opción'"
       (click)="change.emit()"
       [class]="btnCls()"
     >
@@ -16,6 +17,7 @@ import { Component, computed, input, output } from '@angular/core';
 })
 export class Toggle {
   readonly value = input(false);
+  readonly label = input<string>('');
   readonly change = output<void>();
 
   readonly btnCls = computed(() =>
