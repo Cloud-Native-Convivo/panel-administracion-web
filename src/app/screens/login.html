@@ -4,6 +4,9 @@
     <img
       src="https://images.unsplash.com/photo-1613152184920-bc1c4ab7fd1d?w=900&h=1200&fit=crop&auto=format"
       alt="Piscina condominio"
+      width="900"
+      height="1200"
+      fetchpriority="high"
       class="absolute inset-0 w-full h-full object-cover opacity-[0.18]"
     />
     <div class="relative z-10">
@@ -41,7 +44,7 @@
       </div>
 
       <h1 class="font-serif text-2xl sm:text-[2rem] text-[#00201B] mb-1.5 leading-tight">Bienvenido de vuelta</h1>
-      <p class="text-gray-400 text-xs sm:text-sm mb-8">Accede con tu cuenta corporativa de administración.</p>
+      <p class="text-gray-500 text-xs sm:text-sm mb-8">Accede con tu cuenta corporativa de administración.</p>
 
       @if (mode() === 'sso') {
         <div class="space-y-3">
@@ -55,7 +58,7 @@
 
           <div class="flex items-center gap-4 py-2">
             <div class="flex-1 h-px bg-[#E2E8F0]"></div>
-            <span class="text-gray-400 text-xs">o</span>
+            <span class="text-gray-500 text-xs">o</span>
             <div class="flex-1 h-px bg-[#E2E8F0]"></div>
           </div>
 
@@ -69,8 +72,9 @@
       } @else {
         <div class="space-y-4">
           <div>
-            <label class="block text-sm font-medium text-[#00201B] mb-1.5">Correo electrónico</label>
+            <label for="login-email" class="block text-sm font-medium text-[#00201B] mb-1.5">Correo electrónico</label>
             <input
+              id="login-email"
               type="email"
               [value]="email()"
               (input)="email.set($any($event.target).value)"
@@ -79,9 +83,10 @@
             />
           </div>
           <div>
-            <label class="block text-sm font-medium text-[#00201B] mb-1.5">Contraseña</label>
+            <label for="login-password" class="block text-sm font-medium text-[#00201B] mb-1.5">Contraseña</label>
             <div class="relative">
               <input
+                id="login-password"
                 [type]="showPw() ? 'text' : 'password'"
                 [value]="pw()"
                 (input)="pw.set($any($event.target).value)"
@@ -91,7 +96,8 @@
               <button
                 type="button"
                 (click)="showPw.set(!showPw())"
-                class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                [attr.aria-label]="showPw() ? 'Ocultar contraseña' : 'Mostrar contraseña'"
+                class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
               >
                 <lucide-icon [img]="showPw() ? icEyeOff : icEye" [size]="16" />
               </button>
@@ -106,16 +112,16 @@
           <button
             type="button"
             (click)="mode.set('sso')"
-            class="w-full py-2 text-sm text-gray-400 hover:text-[#00201B] transition-colors"
+            class="w-full py-2 text-sm text-gray-500 hover:text-[#00201B] transition-colors"
           >
             ← Volver a inicio de sesión SSO
           </button>
         </div>
       }
 
-      <p class="mt-10 text-[11px] text-center text-gray-400">
+      <p class="mt-10 text-[11px] text-center text-gray-500">
         Convivo Admin · {{ year }} ·
-        <span class="text-[#0D9488] cursor-pointer hover:underline">Política de privacidad</span>
+        <a href="#privacidad" class="text-[#0D9488] hover:underline focus:outline-none focus:ring-1 focus:ring-teal-500 rounded">Política de privacidad</a>
       </p>
     </div>
   </div>
