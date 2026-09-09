@@ -10,7 +10,8 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 
   const isApiUrl =
     req.url.startsWith(environment.apiUrl) ||
-    (environment.apiEspaciosUrl ? req.url.startsWith(environment.apiEspaciosUrl) : false);
+    (environment.apiEspaciosUrl ? req.url.startsWith(environment.apiEspaciosUrl) : false) ||
+    (environment.bffBaseUrl ? req.url.startsWith(environment.bffBaseUrl) : false);
 
   if (!isApiUrl) {
     return next(req);

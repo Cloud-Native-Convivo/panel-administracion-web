@@ -6,13 +6,15 @@ import {
   PublicClientApplication,
 } from '@azure/msal-browser'
 import {
+  MSAL_GUARD_CONFIG,
   MSAL_INSTANCE,
   MsalBroadcastService,
+  MsalGuard,
   MsalService,
 } from '@azure/msal-angular'
 
 import { routes } from './app.routes'
-import { msalConfig } from '../auth/msalConfig'
+import { msalConfig, MSALGuardConfigFactory } from '../auth/msalConfig'
 import { authInterceptor } from './interceptors/auth.interceptor'
 
 export function MSALInstanceFactory(): IPublicClientApplication {
@@ -28,7 +30,12 @@ export const appConfig: ApplicationConfig = {
       provide: MSAL_INSTANCE,
       useFactory: MSALInstanceFactory,
     },
+    {
+      provide: MSAL_GUARD_CONFIG,
+      useFactory: MSALGuardConfigFactory,
+    },
     MsalService,
+    MsalGuard,
     MsalBroadcastService,
   ],
 }
