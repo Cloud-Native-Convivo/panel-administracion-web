@@ -56,7 +56,7 @@ Solo listar directorios cuya función no se infiere del nombre.
 
 ```bash
 # instalar
-npm install
+pnpm install
 # levantar entorno local
 ng serve
 # build producción
@@ -502,7 +502,7 @@ Modelo de calidad del producto, edición 2023: 9 características, cada una con 
 | Fiabilidad | ausencia de fallos *(antes madurez)*, disponibilidad, tolerancia a fallos, recuperabilidad | reintentos, degradación ante fallo parcial de dependencia, recuperación con pérdida acotada | `(no aplica un SLO propio: SPA servida como estático, disponibilidad depende del hosting elegido)`; RTO/RPO en §17.2 + test de camino de error (§7) |
 | Seguridad | confidencialidad, integridad, no repudio, responsabilidad *(accountability)*, autenticidad, resistencia | 25010 la exige como atributo; §10 y §17.2 la implementan | 0 hallazgos de severidad Crítico abiertos (§9); no repudio y responsabilidad exigen log de auditoría atribuible, no solo logging técnico |
 | Mantenibilidad | modularidad, reusabilidad, analizabilidad, modificabilidad, testeabilidad | complejidad, longitud de función y nesting acotados; código analizable sin leerlo entero | umbrales de §8 en verde en CI + cobertura de §7 (ambos objetivo, no medidos: sin CI ni tests configurados) |
-| Flexibilidad *(era Portabilidad)* | adaptabilidad, instalabilidad, reemplazabilidad, escalabilidad | despliegue reproducible en el entorno objetivo y capacidad de crecer sin rediseño | `npm ci` (§4) corriendo en entorno vacío; estrategia de escalado declarada |
+| Flexibilidad *(era Portabilidad)* | adaptabilidad, instalabilidad, reemplazabilidad, escalabilidad | despliegue reproducible en el entorno objetivo y capacidad de crecer sin rediseño | `pnpm install --frozen-lockfile` (§4) corriendo en entorno vacío; estrategia de escalado declarada |
 | Safety *(nueva en 2023)* | restricción operacional, identificación de riesgos, comportamiento a prueba de fallos, advertencia de peligro, integración segura | solo si el software puede causar daño a personas, equipos o entorno (control industrial, salud, vehículos, hardware) | `(no aplica: software administrativo web para gestión de condominios, sin interacción con maquinaria, salud ni hardware crítico)` |
 
 **Qué cambió de 2011 a 2023** (importa si el proyecto arrastra documentación vieja o cita la norma en un contrato):

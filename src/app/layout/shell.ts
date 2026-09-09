@@ -7,6 +7,7 @@ import {
   DollarSign, MessageSquare, Camera, Target, Bell, Lock, LogOut,
   Menu, X,
 } from 'lucide-angular';
+import { MsalService } from '@azure/msal-angular';
 
 interface NavItem {
   id: string;
@@ -20,11 +21,11 @@ const NAV_ITEMS: NavItem[] = [
   { id: 'condominios', label: 'Unidades',        icon: Building2 },
   { id: 'espacios',    label: 'Espacios comunes',icon: Search    },
   { id: 'reservas',    label: 'Reservas',        icon: Calendar  },
+  { id: 'gastos-comunes', label: 'Gastos comunes', icon: DollarSign },
   { id: 'config',      label: 'Configuración',   icon: Settings  },
 ];
 
 const SOON_ITEMS: NavItem[] = [
-  { id: '', label: 'Gastos comunes',   icon: DollarSign    },
   { id: '', label: 'Tablón de avisos', icon: MessageSquare },
   { id: '', label: 'Reg. fotográfico', icon: Camera        },
   { id: '', label: 'Incidentes',       icon: Target        },
@@ -37,6 +38,7 @@ const PAGE_TITLES: Record<string, string> = {
   condominios: 'Condominios y unidades',
   espacios:    'Espacios comunes',
   reservas:    'Reservas',
+  'gastos-comunes': 'Gastos comunes',
   config:      'Configuración de cuenta',
 };
 
@@ -47,11 +49,30 @@ const PAGE_TITLES: Record<string, string> = {
 })
 export class Shell {
   private readonly router = inject(Router);
+  private readonly msalService = inject(MsalService);
 
   protected readonly isMobileMenuOpen = signal(false);
 
   protected readonly navItems = NAV_ITEMS;
   protected readonly soonItems = SOON_ITEMS;
+
+  private get cuenta() {
+    return this.msalService.instance.getActiveAccount();
+  }
+
+  protected get nombreUsuario(): string {
+    return this.cuenta?.name ?? this.cuenta?.username ?? 'Usuario Convivo';
+  }
+
+  protected get correoUsuario(): string {
+    return this.cuenta?.username ?? '';
+  }
+
+  protected get inicialesUsuario(): string {
+    const partes = this.nombreUsuario.trim().split(/\s+/).filter(Boolean);
+    const iniciales = partes.slice(0, 2).map((p) => p[0]?.toUpperCase() ?? '');
+    return iniciales.join('') || 'U';
+  }
 
   // Iconos sueltos usados en el template
   protected readonly icBuilding = Building2;
@@ -89,6 +110,6 @@ export class Shell {
 
   protected logout(): void {
     this.closeMobileMenu();
-    this.router.navigate(['/login']);
+    this.msalService.logoutRedirect();
   }
 }

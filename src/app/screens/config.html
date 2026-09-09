@@ -40,28 +40,28 @@
             <p class="text-sm font-medium text-[#00201B]">Nuevas reservas</p>
             <p class="text-xs text-gray-400 mt-0.5">Aviso cuando se crea o modifica una reserva</p>
           </div>
-          <app-toggle [value]="nRsvs()" (change)="nRsvs.set(!nRsvs())" />
+          <app-toggle label="Notificaciones de nuevas reservas" [value]="nRsvs()" (change)="nRsvs.set(!nRsvs())" />
         </div>
         <div class="flex items-center justify-between gap-3">
           <div>
             <p class="text-sm font-medium text-[#00201B]">Nuevos usuarios</p>
             <p class="text-xs text-gray-400 mt-0.5">Aviso al registrar un nuevo residente o propietario</p>
           </div>
-          <app-toggle [value]="nNuevos()" (change)="nNuevos.set(!nNuevos())" />
+          <app-toggle label="Notificaciones de nuevos usuarios" [value]="nNuevos()" (change)="nNuevos.set(!nNuevos())" />
         </div>
         <div class="flex items-center justify-between gap-3">
           <div>
             <p class="text-sm font-medium text-[#00201B]">Incidentes reportados</p>
             <p class="text-xs text-gray-400 mt-0.5">Aviso cuando un residente reporta un incidente</p>
           </div>
-          <app-toggle [value]="nInc()" (change)="nInc.set(!nInc())" />
+          <app-toggle label="Notificaciones de incidentes reportados" [value]="nInc()" (change)="nInc.set(!nInc())" />
         </div>
         <div class="flex items-center justify-between gap-3">
           <div>
             <p class="text-sm font-medium text-[#00201B]">Gastos comunes</p>
             <p class="text-xs text-gray-400 mt-0.5">Recordatorio mensual de cobro y estado de deudas</p>
           </div>
-          <app-toggle [value]="nGastos()" (change)="nGastos.set(!nGastos())" />
+          <app-toggle label="Notificaciones de gastos comunes" [value]="nGastos()" (change)="nGastos.set(!nGastos())" />
         </div>
       </div>
     </div>

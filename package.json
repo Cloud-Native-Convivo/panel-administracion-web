@@ -1,6 +1,6 @@
 {
   "name": "panel-admin",
-  "version": "0.0.0",
+  "version": "1.2.0",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
@@ -9,7 +9,7 @@
     "test": "ng test"
   },
   "private": true,
-  "packageManager": "npm@11.6.2",
+  "packageManager": "pnpm@12.3.4+sha512.961aa41fb077da3a04a441d9f8e15ebc0c96da8ef710b2eb67bf9ee7cb0610eabd48f1fd85f51cffe73846785fa0f87c56a3a872a1d893f8446741b5cce45457",
   "dependencies": {
     "@angular/common": "^21.2.0",
     "@angular/compiler": "^21.2.0",
@@ -24,13 +24,15 @@
     "tslib": "^2.3.0"
   },
   "devDependencies": {
-    "@angular/build": "^21.2.21",
-    "@angular/cli": "^21.2.21",
+    "@angular/build": "^21.2.23",
+    "@angular/cli": "^21.2.23",
     "@angular/compiler-cli": "^21.2.0",
     "@tailwindcss/postcss": "^4.3.3",
+    "jsdom": "^30.0.1",
     "postcss": "^8.5.26",
     "prettier": "^3.8.1",
     "tailwindcss": "^4.3.3",
-    "typescript": "~5.9.2"
+    "typescript": "~5.9.2",
+    "vitest": "^5.0.0"
   }
 }
