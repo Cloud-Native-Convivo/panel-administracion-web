@@ -109,11 +109,11 @@
         </div>
         <div class="flex items-center gap-2 sm:gap-3 pl-2 sm:pl-3 border-l border-[#E2E8F0]">
           <div class="text-right hidden sm:block">
-            <p class="text-sm font-medium text-[#00201B] leading-tight">Jorge Morales D.</p>
-            <p class="text-xs text-gray-400 leading-tight">Administrador</p>
+            <p class="text-sm font-medium text-[#00201B] leading-tight">{{ nombreUsuario }}</p>
+            <p class="text-xs text-gray-400 leading-tight">{{ correoUsuario }}</p>
           </div>
           <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-[#0D9488] flex items-center justify-center text-white text-xs font-semibold flex-shrink-0">
-            JM
+            {{ inicialesUsuario }}
           </div>
           <button
             (click)="logout()"

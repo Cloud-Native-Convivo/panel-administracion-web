@@ -1,15 +1,24 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { LucideAngularModule } from 'lucide-angular';
 import { Building2, Shield, Eye, EyeOff } from 'lucide-angular';
+import { MsalService } from '@azure/msal-angular';
+import { loginRequest } from '../../auth/loginRequest';
 
 @Component({
   selector: 'app-login',
   imports: [LucideAngularModule],
   templateUrl: './login.html',
 })
-export class Login {
+export class Login implements OnInit {
   private readonly router = inject(Router);
+  private readonly msalService = inject(MsalService);
+
+  ngOnInit(): void {
+    if (this.msalService.instance.getActiveAccount()) {
+      this.router.navigate(['/dashboard']);
+    }
+  }
 
   protected readonly email = signal('');
   protected readonly pw = signal('');
@@ -23,6 +32,12 @@ export class Login {
   protected readonly icEyeOff = EyeOff;
 
   protected readonly year = new Date().getFullYear();
+
+  protected loginSso(): void {
+    this.msalService.instance.initialize().then(() =>
+      this.msalService.loginRedirect(loginRequest)
+    );
+  }
 
   protected login(): void {
     this.router.navigate(['/dashboard']);
