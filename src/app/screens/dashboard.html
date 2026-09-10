@@ -98,6 +98,49 @@
           </div>
         </div>
 
+        <!-- Gastos comunes -->
+        <div class="bg-white border border-[#E2E8F0] rounded-xl p-4 sm:p-5">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="font-serif text-base sm:text-lg text-[#00201B] flex items-center gap-2">
+              <lucide-icon [img]="icWallet" [size]="16" class="text-[#0D9488]" />
+              Gastos comunes
+            </h3>
+            <button
+              (click)="go('gastos-comunes')"
+              class="text-xs sm:text-sm text-[#0D9488] hover:text-[#005047] font-medium transition-colors"
+            >
+              Ver todos →
+            </button>
+          </div>
+
+          @if (resumenGastos().cargando) {
+            <p class="text-sm text-gray-400">Cargando…</p>
+          } @else if (resumenGastos().error) {
+            <p class="text-sm text-red-600">No se pudo conectar con el microservicio de Gastos Comunes.</p>
+          } @else {
+            <div class="mb-4">
+              <p class="text-xs text-gray-400 mb-0.5">Saldo pendiente total</p>
+              <p class="text-2xl font-semibold text-[#00201B] tracking-tight">
+                {{ formatoMonto(resumenGastos().saldoPendienteTotal) }}
+              </p>
+            </div>
+            <div class="space-y-2.5">
+              <div class="flex justify-between items-center text-sm">
+                <span class="text-gray-500">Vencidos</span>
+                <span class="font-semibold text-red-600">{{ resumenGastos().vencidos }}</span>
+              </div>
+              <div class="flex justify-between items-center text-sm">
+                <span class="text-gray-500">Pendientes</span>
+                <span class="font-semibold text-yellow-600">{{ resumenGastos().pendientes }}</span>
+              </div>
+              <div class="flex justify-between items-center text-sm">
+                <span class="text-gray-500">Pagados</span>
+                <span class="font-semibold text-[#0D9488]">{{ resumenGastos().pagados }}</span>
+              </div>
+            </div>
+          }
+        </div>
+
         <!-- Estado de unidades -->
         <div class="bg-white border border-[#E2E8F0] rounded-xl p-4 sm:p-5">
           <h3 class="font-medium text-sm text-[#00201B] mb-4">Estado de unidades</h3>

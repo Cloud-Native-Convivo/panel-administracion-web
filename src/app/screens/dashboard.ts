@@ -3,12 +3,22 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
 import { LucideAngularModule } from 'lucide-angular';
 import type { LucideIconData } from 'lucide-angular';
-import { Building2, Users, Search, Calendar, Plus } from 'lucide-angular';
+import { Building2, Users, Search, Calendar, Plus, Wallet } from 'lucide-angular';
 import { MsalService } from '@azure/msal-angular';
 import { INIT_RESERVATIONS } from '../data/sample-data';
 import { StatusBadge } from '../shared/status-badge';
 import { EspaciosService } from '../services/espacios.service';
+import { GastosComunesService } from '../services/gastos-comunes.service';
 import { saludoSegunHora } from '../shared/saludo';
+
+interface ResumenGastos {
+  cargando: boolean;
+  error: boolean;
+  saldoPendienteTotal: number;
+  vencidos: number;
+  pendientes: number;
+  pagados: number;
+}
 
 interface Kpi {
   label: string;
@@ -27,6 +37,7 @@ interface Kpi {
 export class Dashboard implements OnInit {
   private readonly router = inject(Router);
   private readonly espaciosService = inject(EspaciosService);
+  private readonly gastosComunesService = inject(GastosComunesService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly msalService = inject(MsalService);
 
@@ -38,6 +49,15 @@ export class Dashboard implements OnInit {
   ]);
 
   protected readonly upcoming = INIT_RESERVATIONS.slice(0, 5);
+
+  protected readonly resumenGastos = signal<ResumenGastos>({
+    cargando: true,
+    error: false,
+    saldoPendienteTotal: 0,
+    vencidos: 0,
+    pendientes: 0,
+    pagados: 0,
+  });
 
   protected get saludo(): string {
     return saludoSegunHora();
@@ -59,12 +79,50 @@ export class Dashboard implements OnInit {
     return texto.charAt(0).toUpperCase() + texto.slice(1);
   }
 
+  protected formatoMonto(monto: number): string {
+    return monto.toLocaleString('es-CL', { style: 'currency', currency: 'CLP', maximumFractionDigits: 0 });
+  }
+
   // Iconos sueltos del template
   protected readonly icPlus = Plus;
   protected readonly icBuilding = Building2;
+  protected readonly icWallet = Wallet;
 
   ngOnInit(): void {
     this.cargarEspaciosKpi();
+    this.cargarResumenGastos();
+  }
+
+  /**
+   * ponytail: pide una sola pagina grande (200) en vez de traer un
+   * endpoint de resumen dedicado — alcanza para el volumen de un
+   * condominio. Si el listado crece más, mover este cálculo al backend
+   * (ej. GET /gastos-comunes/resumen).
+   */
+  protected cargarResumenGastos(): void {
+    this.gastosComunesService
+      .listar(0, 200)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (pagina) => {
+          const gastos = pagina.content;
+          const saldoPendienteTotal = gastos
+            .filter((g) => g.estado !== 'PAGADO' && g.estado !== 'ELIMINADO')
+            .reduce((suma, g) => suma + g.saldoPendiente, 0);
+
+          this.resumenGastos.set({
+            cargando: false,
+            error: false,
+            saldoPendienteTotal,
+            vencidos: gastos.filter((g) => g.estado === 'VENCIDO').length,
+            pendientes: gastos.filter((g) => g.estado === 'PENDIENTE' || g.estado === 'PARCIAL').length,
+            pagados: gastos.filter((g) => g.estado === 'PAGADO').length,
+          });
+        },
+        error: () => {
+          this.resumenGastos.update((r) => ({ ...r, cargando: false, error: true }));
+        },
+      });
   }
 
   protected cargarEspaciosKpi(): void {
