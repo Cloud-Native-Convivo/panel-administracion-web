@@ -4,9 +4,11 @@ import { Router } from '@angular/router';
 import { LucideAngularModule } from 'lucide-angular';
 import type { LucideIconData } from 'lucide-angular';
 import { Building2, Users, Search, Calendar, Plus } from 'lucide-angular';
+import { MsalService } from '@azure/msal-angular';
 import { INIT_RESERVATIONS } from '../data/sample-data';
 import { StatusBadge } from '../shared/status-badge';
 import { EspaciosService } from '../services/espacios.service';
+import { saludoSegunHora } from '../shared/saludo';
 
 interface Kpi {
   label: string;
@@ -26,6 +28,7 @@ export class Dashboard implements OnInit {
   private readonly router = inject(Router);
   private readonly espaciosService = inject(EspaciosService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly msalService = inject(MsalService);
 
   protected readonly kpis = signal<Kpi[]>([
     { label: 'Total unidades',       value: '16', sub: '+2 incorporadas este mes',  icon: Building2, color: 'bg-teal-50 text-[#0D9488]' },
@@ -35,6 +38,26 @@ export class Dashboard implements OnInit {
   ]);
 
   protected readonly upcoming = INIT_RESERVATIONS.slice(0, 5);
+
+  protected get saludo(): string {
+    return saludoSegunHora();
+  }
+
+  protected get nombrePila(): string {
+    const cuenta = this.msalService.instance.getActiveAccount();
+    const nombre = cuenta?.name ?? cuenta?.username ?? 'Usuario Convivo';
+    return nombre.trim().split(/\s+/)[0];
+  }
+
+  protected get fechaHoy(): string {
+    const texto = new Intl.DateTimeFormat('es-CL', {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+    }).format(new Date());
+    return texto.charAt(0).toUpperCase() + texto.slice(1);
+  }
 
   // Iconos sueltos del template
   protected readonly icPlus = Plus;
