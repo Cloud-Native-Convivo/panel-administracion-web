@@ -1,11 +1,11 @@
 // Modelos que reflejan uno a uno los DTOs de ms-gastos-comunes, para no
 // perder tipado entre el microservicio y este panel.
 
-export type EstadoGasto = 'PENDIENTE' | 'PARCIAL' | 'PAGADO' | 'VENCIDO' | 'ANULADO';
+export type EstadoGasto = 'PENDIENTE' | 'PARCIAL' | 'PAGADO' | 'VENCIDO' | 'ELIMINADO';
 export type OrigenGasto = 'MANUAL' | 'RESERVA_ESPACIO' | 'OTRO';
 export type MetodoPago = 'TRANSFERENCIA' | 'TARJETA' | 'EFECTIVO' | 'OTRO';
 
-export const ESTADOS_GASTO: EstadoGasto[] = ['PENDIENTE', 'PARCIAL', 'PAGADO', 'VENCIDO', 'ANULADO'];
+export const ESTADOS_GASTO: EstadoGasto[] = ['PENDIENTE', 'PARCIAL', 'PAGADO', 'VENCIDO', 'ELIMINADO'];
 export const METODOS_PAGO: MetodoPago[] = ['TRANSFERENCIA', 'TARJETA', 'EFECTIVO', 'OTRO'];
 
 /** GastoComunResponse del microservicio. */
@@ -36,6 +36,13 @@ export interface Pago {
 /** GastoComunRequest — alta manual (solo administrador/comité). */
 export interface NuevoGastoComunRequest {
   unidadId: string;
+  concepto: string;
+  monto: number;
+  fechaVencimiento?: string | null;
+}
+
+/** GastoComunRequest — edición (solo administrador/comité). La unidad no se reasigna. */
+export interface ActualizarGastoComunRequest {
   concepto: string;
   monto: number;
   fechaVencimiento?: string | null;

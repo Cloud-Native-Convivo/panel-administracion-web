@@ -1,7 +1,7 @@
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { LucideAngularModule } from 'lucide-angular';
-import { Plus, X, Wallet, ChevronLeft, ChevronRight, RefreshCw } from 'lucide-angular';
+import { Plus, X, Wallet, ChevronLeft, ChevronRight, RefreshCw, Pencil, Trash2 } from 'lucide-angular';
 import { MsalService } from '@azure/msal-angular';
 import { finalize } from 'rxjs';
 
@@ -80,6 +80,19 @@ export class GastosComunes implements OnInit {
   protected readonly errorPago = signal<string | null>(null);
   protected readonly metodos = METODOS_PAGO;
 
+  // --- Modal "Editar cobro" ---
+  protected readonly mostrarEditarCobro = signal(false);
+  protected readonly editConcepto = signal('');
+  protected readonly editMonto = signal('');
+  protected readonly editVencimiento = signal('');
+  protected readonly guardandoEdicion = signal(false);
+  protected readonly errorEdicion = signal<string | null>(null);
+
+  // --- Confirmación "Eliminar cobro" ---
+  protected readonly mostrarEliminarCobro = signal(false);
+  protected readonly eliminandoCobro = signal(false);
+  protected readonly errorEliminar = signal<string | null>(null);
+
   // Iconos del template
   protected readonly icPlus = Plus;
   protected readonly icX = X;
@@ -87,6 +100,8 @@ export class GastosComunes implements OnInit {
   protected readonly icLeft = ChevronLeft;
   protected readonly icRight = ChevronRight;
   protected readonly icRefresh = RefreshCw;
+  protected readonly icEdit = Pencil;
+  protected readonly icTrash = Trash2;
 
   ngOnInit(): void {
     this.cargar();
@@ -248,6 +263,88 @@ export class GastosComunes implements OnInit {
           this.seleccionar(gasto);
         },
         error: (err: HttpErrorResponse) => this.errorPago.set(this.mensajeError(err)),
+      });
+  }
+
+  // --- Editar cobro ---
+
+  protected abrirEditarCobro(): void {
+    const gasto = this.seleccionado();
+    if (!gasto) return;
+
+    this.editConcepto.set(gasto.concepto);
+    this.editMonto.set(String(gasto.monto));
+    this.editVencimiento.set(gasto.fechaVencimiento ?? '');
+    this.errorEdicion.set(null);
+    this.mostrarEditarCobro.set(true);
+  }
+
+  protected cerrarEditarCobro(): void {
+    this.mostrarEditarCobro.set(false);
+  }
+
+  protected get edicionValida(): boolean {
+    const monto = Number(this.editMonto());
+    return this.editConcepto().trim().length > 0 && monto > 0;
+  }
+
+  protected guardarEdicion(): void {
+    const gasto = this.seleccionado();
+    if (!gasto || !this.edicionValida) {
+      return;
+    }
+    this.guardandoEdicion.set(true);
+    this.errorEdicion.set(null);
+
+    this.service
+      .actualizar(gasto.id, gasto.unidadId, {
+        concepto: this.editConcepto().trim(),
+        monto: Number(this.editMonto()),
+        fechaVencimiento: this.editVencimiento() || null,
+      })
+      .pipe(finalize(() => this.guardandoEdicion.set(false)))
+      .subscribe({
+        next: (actualizado) => {
+          this.mostrarEditarCobro.set(false);
+          this.seleccionado.set(actualizado);
+          this.gastos.update((lista) => lista.map((g) => (g.id === actualizado.id ? actualizado : g)));
+        },
+        error: (err: HttpErrorResponse) => this.errorEdicion.set(this.mensajeError(err)),
+      });
+  }
+
+  // --- Eliminar cobro ---
+
+  protected abrirEliminarCobro(): void {
+    this.errorEliminar.set(null);
+    this.mostrarEliminarCobro.set(true);
+  }
+
+  protected cerrarEliminarCobro(): void {
+    this.mostrarEliminarCobro.set(false);
+  }
+
+  protected confirmarEliminarCobro(): void {
+    const gasto = this.seleccionado();
+    if (!gasto) return;
+
+    this.eliminandoCobro.set(true);
+    this.errorEliminar.set(null);
+
+    this.service
+      .eliminar(gasto.id)
+      .pipe(finalize(() => this.eliminandoCobro.set(false)))
+      .subscribe({
+        next: () => {
+          this.mostrarEliminarCobro.set(false);
+          // El DELETE es un borrado lógico (204 sin body): queda con
+          // estado ELIMINADO y visible en su filtro, no desaparece.
+          this.gastos.update((lista) =>
+            lista.map((g) => (g.id === gasto.id ? { ...g, estado: 'ELIMINADO' as const } : g)),
+          );
+          this.cerrarDetalle();
+        },
+        error: (err: HttpErrorResponse) => this.errorEliminar.set(this.mensajeError(err)),
       });
   }
 
