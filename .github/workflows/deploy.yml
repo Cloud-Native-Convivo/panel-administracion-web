@@ -1,0 +1,58 @@
+# Deploy — GitHub Pages
+name: Deploy
+
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      - name: Build
+        # --base-href: GitHub Pages sirve este repo bajo /panel-administracion-web/,
+        # no en la raíz (Pages ya está configurado como sitio de proyecto, no custom
+        # domain) -- sin esto todos los assets salen con ruta absoluta rota.
+        run: npm run build -- --base-href /panel-administracion-web/
+
+      - name: SPA fallback (rutas de Angular Router en GitHub Pages)
+        # Pages sirve estáticos: cualquier ruta que no sea la raíz (ej. /users,
+        # /gastos-comunes) da 404 real del hosting al recargar o entrar directo.
+        # 404.html = copia de index.html para que Angular Router la resuelva del
+        # lado del cliente (mismo patrón que Frontend-CloudNative con react-router).
+        run: |
+          cp dist/panel-admin/browser/index.html dist/panel-admin/browser/404.html
+          touch dist/panel-admin/browser/.nojekyll
+
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: dist/panel-admin/browser
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v5
