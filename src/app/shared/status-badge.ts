@@ -16,7 +16,7 @@ const STYLES: Record<string, string> = {
   pagado:          "bg-teal-50 text-teal-700 border-teal-100",
   parcial:         "bg-yellow-50 text-yellow-700 border-yellow-200",
   vencido:         "bg-red-50 text-red-700 border-red-100",
-  anulado:         "bg-gray-100 text-gray-400 border-gray-200",
+  eliminado:       "bg-gray-100 text-gray-400 border-gray-200",
 };
 
 @Component({

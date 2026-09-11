@@ -3,6 +3,7 @@ import { Injectable, inject } from '@angular/core';
 import type { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 import type {
+  ActualizarGastoComunRequest,
   GastoComun,
   NuevoGastoComunRequest,
   NuevoPagoRequest,
@@ -50,6 +51,20 @@ export class GastosComunesService {
   /** Alta manual de un cobro/cuota. Solo administrador/comité (el microservicio lo exige igual con @PreAuthorize). */
   crear(request: NuevoGastoComunRequest): Observable<GastoComun> {
     return this.http.post<GastoComun>(this.base, request);
+  }
+
+  /**
+   * Edita concepto/monto/vencimiento. `unidadId` va en el body porque el
+   * DTO del microservicio lo exige (@NotBlank), pero el backend lo ignora
+   * al actualizar: no permite reasignar la unidad desde acá.
+   */
+  actualizar(id: number, unidadId: string, cambios: ActualizarGastoComunRequest): Observable<GastoComun> {
+    return this.http.put<GastoComun>(`${this.base}/${id}`, { unidadId, ...cambios });
+  }
+
+  /** Borrado lógico (anula el gasto). No permitido si ya está PAGADO. */
+  eliminar(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.base}/${id}`);
   }
 
   /** Registra un abono/pago sobre un gasto común existente. */
