@@ -8,12 +8,19 @@ import { InteractionType } from '@azure/msal-browser'
 import { environment } from '../environments/environment'
 import { API_SCOPES } from './apiScopes'
 
+// document.baseURI resuelve el <base href> del index.html a una URL absoluta:
+// http://localhost:4200/ en dev, https://cloud-native-convivo.github.io/panel-administracion-web/
+// en GitHub Pages -- sin esto, redirectUri quedaba fijo en localhost y rompía
+// el login redirect en cualquier despliegue real (environment.redirectUri
+// nunca se actualiza por entorno, no hay environment.prod.ts).
+const baseUri = document.baseURI;
+
 export const msalConfig: Configuration = {
   auth: {
     clientId: environment.clientId,
     authority: `https://login.microsoftonline.com/${environment.tenantId}`,
-    redirectUri: environment.redirectUri,
-    postLogoutRedirectUri: environment.postLogoutRedirectUri,
+    redirectUri: baseUri,
+    postLogoutRedirectUri: `${baseUri}login`,
   },
   cache: {
     cacheLocation: BrowserCacheLocation.LocalStorage,
