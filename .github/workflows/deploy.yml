@@ -31,10 +31,17 @@ jobs:
       - run: pnpm install --frozen-lockfile
 
       - name: Build
+        # pnpm exec (no "pnpm run build -- ..."): pnpm reenvia el "--" al
+        # script subyacente en vez de consumirlo como npm, así que "ng build
+        # -- --base-href X" le llega a Angular CLI con un "--" de más y lo
+        # interpreta como argumento posicional ("Option '--' has been
+        # specified multiple times", falla con schema validation error).
+        # pnpm exec invoca el binario directo, sin esa capa de reenvío.
+        #
         # --base-href: GitHub Pages sirve este repo bajo /panel-administracion-web/,
         # no en la raíz (Pages ya está configurado como sitio de proyecto, no custom
         # domain) -- sin esto todos los assets salen con ruta absoluta rota.
-        run: pnpm run build -- --base-href /panel-administracion-web/
+        run: pnpm exec ng build --base-href /panel-administracion-web/
 
       - name: SPA fallback (rutas de Angular Router en GitHub Pages)
         # Pages sirve estáticos: cualquier ruta que no sea la raíz (ej. /users,
