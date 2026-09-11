@@ -35,14 +35,8 @@
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
       <!-- Próximas reservas -->
       <div class="col-span-1 lg:col-span-2 bg-white border border-[#E2E8F0] rounded-xl overflow-hidden">
-        <div class="px-4 sm:px-6 py-4 border-b border-[#E2E8F0] flex items-center justify-between">
+        <div class="px-4 sm:px-6 py-4 border-b border-[#E2E8F0]">
           <h3 class="font-serif text-base sm:text-lg text-[#00201B]">Próximas reservas</h3>
-          <button
-            (click)="go('reservas')"
-            class="text-xs sm:text-sm text-[#0D9488] hover:text-[#005047] font-medium transition-colors"
-          >
-            Ver todas →
-          </button>
         </div>
         <div class="overflow-x-auto">
           <table class="w-full min-w-[500px]">
@@ -80,13 +74,6 @@
             >
               <lucide-icon [img]="icPlus" [size]="16" />
               Nuevo usuario
-            </button>
-            <button
-              (click)="go('reservas')"
-              class="w-full flex items-center gap-3 px-4 py-3 bg-teal-50 hover:bg-teal-100 text-[#0D9488] rounded-lg text-sm font-medium transition-colors"
-            >
-              <lucide-icon [img]="icPlus" [size]="16" />
-              Nueva reserva
             </button>
             <button
               (click)="go('condominios')"

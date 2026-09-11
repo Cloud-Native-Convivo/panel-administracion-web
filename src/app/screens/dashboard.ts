@@ -10,6 +10,7 @@ import { StatusBadge } from '../shared/status-badge';
 import { EspaciosService } from '../services/espacios.service';
 import { GastosComunesService } from '../services/gastos-comunes.service';
 import { saludoSegunHora } from '../shared/saludo';
+import { formatoMonto } from '../shared/formato';
 
 interface ResumenGastos {
   cargando: boolean;
@@ -65,8 +66,8 @@ export class Dashboard implements OnInit {
 
   protected get nombrePila(): string {
     const cuenta = this.msalService.instance.getActiveAccount();
-    const nombre = cuenta?.name ?? cuenta?.username ?? 'Usuario Convivo';
-    return nombre.trim().split(/\s+/)[0];
+    const nombre = cuenta?.name?.trim() || cuenta?.username?.trim() || 'Usuario Convivo';
+    return nombre.split(/\s+/)[0];
   }
 
   protected get fechaHoy(): string {
@@ -79,9 +80,7 @@ export class Dashboard implements OnInit {
     return texto.charAt(0).toUpperCase() + texto.slice(1);
   }
 
-  protected formatoMonto(monto: number): string {
-    return monto.toLocaleString('es-CL', { style: 'currency', currency: 'CLP', maximumFractionDigits: 0 });
-  }
+  protected readonly formatoMonto = formatoMonto;
 
   // Iconos sueltos del template
   protected readonly icPlus = Plus;
