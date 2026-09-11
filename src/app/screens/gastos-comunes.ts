@@ -1,7 +1,7 @@
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { LucideAngularModule } from 'lucide-angular';
-import { Plus, X, Wallet, ChevronLeft, ChevronRight, RefreshCw } from 'lucide-angular';
+import { Plus, X, Wallet, ChevronLeft, ChevronRight, RefreshCw, Pencil, Trash2 } from 'lucide-angular';
 import { MsalService } from '@azure/msal-angular';
 import { finalize } from 'rxjs';
 
@@ -16,6 +16,7 @@ import {
   type Pago,
 } from '../models/gasto-comun.model';
 import { StatusBadge } from '../shared/status-badge';
+import { formatoMonto } from '../shared/formato';
 
 const TAMANO_PAGINA = 20;
 
@@ -62,12 +63,23 @@ export class GastosComunes implements OnInit {
   protected readonly pagos = signal<Pago[]>([]);
   protected readonly cargandoPagos = signal(false);
 
-  // --- Modal "Nuevo cobro" ---
-  protected readonly mostrarNuevoCobro = signal(false);
-  protected readonly nuevoUnidadId = signal('');
-  protected readonly nuevoConcepto = signal('');
-  protected readonly nuevoMonto = signal('');
-  protected readonly nuevoVencimiento = signal('');
+  // Backend: eliminar() rechaza PAGADO/ELIMINADO; actualizar() solo rechaza ELIMINADO.
+  protected readonly puedeEditarSeleccionado = computed(() => {
+    const s = this.seleccionado();
+    return !!s && this.puedeCrearCobro() && s.estado !== 'ELIMINADO';
+  });
+  protected readonly puedeEliminarSeleccionado = computed(() => {
+    const s = this.seleccionado();
+    return !!s && this.puedeCrearCobro() && s.estado !== 'PAGADO' && s.estado !== 'ELIMINADO';
+  });
+
+  // --- Modal "Nuevo cobro" / "Editar cobro" (mismo formulario, ver espacios.ts) ---
+  protected readonly mostrarModalCobro = signal(false);
+  protected readonly modoEdicionCobro = signal(false);
+  protected readonly cobroUnidadId = signal('');
+  protected readonly cobroConcepto = signal('');
+  protected readonly cobroMonto = signal('');
+  protected readonly cobroVencimiento = signal('');
   protected readonly guardandoCobro = signal(false);
   protected readonly errorCobro = signal<string | null>(null);
 
@@ -80,6 +92,11 @@ export class GastosComunes implements OnInit {
   protected readonly errorPago = signal<string | null>(null);
   protected readonly metodos = METODOS_PAGO;
 
+  // --- Confirmación "Eliminar cobro" ---
+  protected readonly mostrarEliminarCobro = signal(false);
+  protected readonly eliminandoCobro = signal(false);
+  protected readonly errorEliminar = signal<string | null>(null);
+
   // Iconos del template
   protected readonly icPlus = Plus;
   protected readonly icX = X;
@@ -87,6 +104,8 @@ export class GastosComunes implements OnInit {
   protected readonly icLeft = ChevronLeft;
   protected readonly icRight = ChevronRight;
   protected readonly icRefresh = RefreshCw;
+  protected readonly icEdit = Pencil;
+  protected readonly icTrash = Trash2;
 
   ngOnInit(): void {
     this.cargar();
@@ -159,49 +178,75 @@ export class GastosComunes implements OnInit {
     this.pagos.set([]);
   }
 
-  // --- Nuevo cobro ---
+  // --- Nuevo / Editar cobro (mismo formulario) ---
 
   protected abrirNuevoCobro(): void {
-    this.nuevoUnidadId.set('');
-    this.nuevoConcepto.set('');
-    this.nuevoMonto.set('');
-    this.nuevoVencimiento.set('');
+    this.cobroUnidadId.set('');
+    this.cobroConcepto.set('');
+    this.cobroMonto.set('');
+    this.cobroVencimiento.set('');
     this.errorCobro.set(null);
-    this.mostrarNuevoCobro.set(true);
+    this.modoEdicionCobro.set(false);
+    this.mostrarModalCobro.set(true);
   }
 
-  protected cerrarNuevoCobro(): void {
-    this.mostrarNuevoCobro.set(false);
+  protected abrirEditarCobro(): void {
+    const gasto = this.seleccionado();
+    if (!gasto) return;
+
+    this.cobroUnidadId.set(gasto.unidadId);
+    this.cobroConcepto.set(gasto.concepto);
+    this.cobroMonto.set(String(gasto.monto));
+    this.cobroVencimiento.set(gasto.fechaVencimiento ?? '');
+    this.errorCobro.set(null);
+    this.modoEdicionCobro.set(true);
+    this.mostrarModalCobro.set(true);
   }
 
-  protected get nuevoCobroValido(): boolean {
-    const monto = Number(this.nuevoMonto());
-    return this.nuevoUnidadId().trim().length > 0 && this.nuevoConcepto().trim().length > 0 && monto > 0;
+  protected cerrarModalCobro(): void {
+    this.mostrarModalCobro.set(false);
   }
 
-  protected guardarNuevoCobro(): void {
-    if (!this.nuevoCobroValido) {
+  protected get cobroValido(): boolean {
+    const monto = Number(this.cobroMonto());
+    const unidadValida = this.modoEdicionCobro() || this.cobroUnidadId().trim().length > 0;
+    return unidadValida && this.cobroConcepto().trim().length > 0 && monto > 0;
+  }
+
+  protected guardarCobro(): void {
+    if (!this.cobroValido) {
+      return;
+    }
+    const gastoActual = this.seleccionado();
+    if (this.modoEdicionCobro() && !gastoActual) {
       return;
     }
     this.guardandoCobro.set(true);
     this.errorCobro.set(null);
 
-    this.service
-      .crear({
-        unidadId: this.nuevoUnidadId().trim(),
-        concepto: this.nuevoConcepto().trim(),
-        monto: Number(this.nuevoMonto()),
-        fechaVencimiento: this.nuevoVencimiento() || null,
-      })
-      .pipe(finalize(() => this.guardandoCobro.set(false)))
-      .subscribe({
-        next: () => {
-          this.mostrarNuevoCobro.set(false);
+    const cambios = {
+      concepto: this.cobroConcepto().trim(),
+      monto: Number(this.cobroMonto()),
+      fechaVencimiento: this.cobroVencimiento() || null,
+    };
+
+    const peticion = gastoActual && this.modoEdicionCobro()
+      ? this.service.actualizar(gastoActual.id, this.cobroUnidadId(), cambios)
+      : this.service.crear({ unidadId: this.cobroUnidadId().trim(), ...cambios });
+
+    peticion.pipe(finalize(() => this.guardandoCobro.set(false))).subscribe({
+      next: (resultado) => {
+        this.mostrarModalCobro.set(false);
+        if (this.modoEdicionCobro()) {
+          this.seleccionado.set(resultado);
+          this.gastos.update((lista) => lista.map((g) => (g.id === resultado.id ? resultado : g)));
+        } else {
           this.pagina.set(0);
           this.cargar();
-        },
-        error: (err: HttpErrorResponse) => this.errorCobro.set(this.mensajeError(err)),
-      });
+        }
+      },
+      error: (err: HttpErrorResponse) => this.errorCobro.set(this.mensajeError(err)),
+    });
   }
 
   // --- Registrar pago ---
@@ -251,11 +296,44 @@ export class GastosComunes implements OnInit {
       });
   }
 
+  // --- Eliminar cobro ---
+
+  protected abrirEliminarCobro(): void {
+    this.errorEliminar.set(null);
+    this.mostrarEliminarCobro.set(true);
+  }
+
+  protected cerrarEliminarCobro(): void {
+    this.mostrarEliminarCobro.set(false);
+  }
+
+  protected confirmarEliminarCobro(): void {
+    const gasto = this.seleccionado();
+    if (!gasto) return;
+
+    this.eliminandoCobro.set(true);
+    this.errorEliminar.set(null);
+
+    this.service
+      .eliminar(gasto.id)
+      .pipe(finalize(() => this.eliminandoCobro.set(false)))
+      .subscribe({
+        next: () => {
+          this.mostrarEliminarCobro.set(false);
+          // El DELETE es un borrado lógico (204 sin body): queda con
+          // estado ELIMINADO y visible en su filtro, no desaparece.
+          this.gastos.update((lista) =>
+            lista.map((g) => (g.id === gasto.id ? { ...g, estado: 'ELIMINADO' as const } : g)),
+          );
+          this.cerrarDetalle();
+        },
+        error: (err: HttpErrorResponse) => this.errorEliminar.set(this.mensajeError(err)),
+      });
+  }
+
   // --- Utilidades ---
 
-  protected formatoMonto(monto: number): string {
-    return monto.toLocaleString('es-CL', { style: 'currency', currency: 'CLP', maximumFractionDigits: 0 });
-  }
+  protected readonly formatoMonto = formatoMonto;
 
   protected formatoFecha(iso: string | null): string {
     if (!iso) {

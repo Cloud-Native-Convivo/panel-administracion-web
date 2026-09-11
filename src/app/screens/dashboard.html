@@ -2,8 +2,8 @@
   <div class="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto">
     <!-- Saludo -->
     <div class="mb-5 sm:mb-7">
-      <h2 class="font-serif text-xl sm:text-2xl text-[#00201B] mb-0.5">Buenos días, Jorge.</h2>
-      <p class="text-xs sm:text-sm text-gray-400">Condominio Los Álamos · Sábado, 22 de agosto de 2026</p>
+      <h2 class="font-serif text-xl sm:text-2xl text-[#00201B] mb-0.5">{{ saludo }}, {{ nombrePila }}.</h2>
+      <p class="text-xs sm:text-sm text-gray-400">Condominio Los Álamos · {{ fechaHoy }}</p>
     </div>
 
     <!-- Tarjetas KPI -->
@@ -35,14 +35,8 @@
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
       <!-- Próximas reservas -->
       <div class="col-span-1 lg:col-span-2 bg-white border border-[#E2E8F0] rounded-xl overflow-hidden">
-        <div class="px-4 sm:px-6 py-4 border-b border-[#E2E8F0] flex items-center justify-between">
+        <div class="px-4 sm:px-6 py-4 border-b border-[#E2E8F0]">
           <h3 class="font-serif text-base sm:text-lg text-[#00201B]">Próximas reservas</h3>
-          <button
-            (click)="go('reservas')"
-            class="text-xs sm:text-sm text-[#0D9488] hover:text-[#005047] font-medium transition-colors"
-          >
-            Ver todas →
-          </button>
         </div>
         <div class="overflow-x-auto">
           <table class="w-full min-w-[500px]">
@@ -82,13 +76,6 @@
               Nuevo usuario
             </button>
             <button
-              (click)="go('reservas')"
-              class="w-full flex items-center gap-3 px-4 py-3 bg-teal-50 hover:bg-teal-100 text-[#0D9488] rounded-lg text-sm font-medium transition-colors"
-            >
-              <lucide-icon [img]="icPlus" [size]="16" />
-              Nueva reserva
-            </button>
-            <button
               (click)="go('condominios')"
               class="w-full flex items-center gap-3 px-4 py-3 border border-[#E2E8F0] hover:bg-gray-50 text-[#00201B] rounded-lg text-sm font-medium transition-colors"
             >
@@ -96,6 +83,49 @@
               Agregar unidad
             </button>
           </div>
+        </div>
+
+        <!-- Gastos comunes -->
+        <div class="bg-white border border-[#E2E8F0] rounded-xl p-4 sm:p-5">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="font-serif text-base sm:text-lg text-[#00201B] flex items-center gap-2">
+              <lucide-icon [img]="icWallet" [size]="16" class="text-[#0D9488]" />
+              Gastos comunes
+            </h3>
+            <button
+              (click)="go('gastos-comunes')"
+              class="text-xs sm:text-sm text-[#0D9488] hover:text-[#005047] font-medium transition-colors"
+            >
+              Ver todos →
+            </button>
+          </div>
+
+          @if (resumenGastos().cargando) {
+            <p class="text-sm text-gray-400">Cargando…</p>
+          } @else if (resumenGastos().error) {
+            <p class="text-sm text-red-600">No se pudo conectar con el microservicio de Gastos Comunes.</p>
+          } @else {
+            <div class="mb-4">
+              <p class="text-xs text-gray-400 mb-0.5">Saldo pendiente total</p>
+              <p class="text-2xl font-semibold text-[#00201B] tracking-tight">
+                {{ formatoMonto(resumenGastos().saldoPendienteTotal) }}
+              </p>
+            </div>
+            <div class="space-y-2.5">
+              <div class="flex justify-between items-center text-sm">
+                <span class="text-gray-500">Vencidos</span>
+                <span class="font-semibold text-red-600">{{ resumenGastos().vencidos }}</span>
+              </div>
+              <div class="flex justify-between items-center text-sm">
+                <span class="text-gray-500">Pendientes</span>
+                <span class="font-semibold text-yellow-600">{{ resumenGastos().pendientes }}</span>
+              </div>
+              <div class="flex justify-between items-center text-sm">
+                <span class="text-gray-500">Pagados</span>
+                <span class="font-semibold text-[#0D9488]">{{ resumenGastos().pagados }}</span>
+              </div>
+            </div>
+          }
         </div>
 
         <!-- Estado de unidades -->
