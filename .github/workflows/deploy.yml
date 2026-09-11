@@ -21,18 +21,20 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
+      - uses: pnpm/action-setup@v4
+
       - uses: actions/setup-node@v7
         with:
           node-version: 24
-          cache: npm
+          cache: pnpm
 
-      - run: npm ci
+      - run: pnpm install --frozen-lockfile
 
       - name: Build
         # --base-href: GitHub Pages sirve este repo bajo /panel-administracion-web/,
         # no en la raíz (Pages ya está configurado como sitio de proyecto, no custom
         # domain) -- sin esto todos los assets salen con ruta absoluta rota.
-        run: npm run build -- --base-href /panel-administracion-web/
+        run: pnpm run build -- --base-href /panel-administracion-web/
 
       - name: SPA fallback (rutas de Angular Router en GitHub Pages)
         # Pages sirve estáticos: cualquier ruta que no sea la raíz (ej. /users,
