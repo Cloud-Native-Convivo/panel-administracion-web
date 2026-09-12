@@ -1,6 +1,11 @@
 import { ApplicationConfig, inject, provideAppInitializer, provideBrowserGlobalErrorListeners } from '@angular/core'
 import { provideRouter } from '@angular/router'
-import { provideHttpClient, withInterceptors } from '@angular/common/http'
+import {
+  HTTP_INTERCEPTORS,
+  provideHttpClient,
+  withInterceptors,
+  withInterceptorsFromDi,
+} from '@angular/common/http'
 import {
   type IPublicClientApplication,
   PublicClientApplication,
@@ -8,13 +13,15 @@ import {
 import {
   MSAL_GUARD_CONFIG,
   MSAL_INSTANCE,
+  MSAL_INTERCEPTOR_CONFIG,
   MsalBroadcastService,
   MsalGuard,
+  MsalInterceptor,
   MsalService,
 } from '@azure/msal-angular'
 
 import { routes } from './app.routes'
-import { msalConfig, MSALGuardConfigFactory } from '../auth/msalConfig'
+import { msalConfig, MSALGuardConfigFactory, MSALInterceptorConfigFactory } from '../auth/msalConfig'
 import { authInterceptor } from './interceptors/auth.interceptor'
 
 export function MSALInstanceFactory(): IPublicClientApplication {
@@ -25,7 +32,15 @@ export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
     provideRouter(routes),
-    provideHttpClient(withInterceptors([authInterceptor])),
+    // authInterceptor agrega identidad (X-Usuario-Roles/X-Usuario-Sub);
+    // MsalInterceptor (withInterceptorsFromDi) adjunta el Bearer token según
+    // protectedResourceMap (ver msalConfig.ts).
+    provideHttpClient(withInterceptors([authInterceptor]), withInterceptorsFromDi()),
+    {
+      provide: HTTP_INTERCEPTORS,
+      useClass: MsalInterceptor,
+      multi: true,
+    },
     {
       provide: MSAL_INSTANCE,
       useFactory: MSALInstanceFactory,
@@ -33,6 +48,10 @@ export const appConfig: ApplicationConfig = {
     {
       provide: MSAL_GUARD_CONFIG,
       useFactory: MSALGuardConfigFactory,
+    },
+    {
+      provide: MSAL_INTERCEPTOR_CONFIG,
+      useFactory: MSALInterceptorConfigFactory,
     },
     // msal-browser v3+ exige initialize() antes de cualquier otro metodo de
     // PublicClientApplication. Sin esto, App.ngOnInit() llama a
