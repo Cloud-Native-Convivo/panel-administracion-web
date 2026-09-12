@@ -30,6 +30,48 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
+      - name: Generate environment files
+        # Sobreescribe environment.ts y environment.prod.ts (usado por fileReplacements en build)
+        # con valores reales de despliegue tomados de secrets/vars, con fallbacks seguros.
+        env:
+          ENTRA_CLIENT_ID: ${{ secrets.ENTRA_CLIENT_ID || vars.ENTRA_CLIENT_ID }}
+          ENTRA_TENANT_ID: ${{ secrets.ENTRA_TENANT_ID || vars.ENTRA_TENANT_ID }}
+          API_URL: ${{ secrets.API_URL || vars.API_URL }}
+          REDIRECT_URI: ${{ secrets.REDIRECT_URI || vars.REDIRECT_URI || 'https://Cloud-Native-Convivo.github.io/panel-administracion-web' }}
+        run: |
+          if [ -z "${{ secrets.API_URL || vars.API_URL }}" ]; then
+            echo "::warning::API_URL no configurada en GitHub Secrets/Vars. Se utilizara endpoint de respaldo demo."
+          fi
+          if [ -z "${{ secrets.ENTRA_TENANT_ID || vars.ENTRA_TENANT_ID }}" ]; then
+            echo "::warning::ENTRA_TENANT_ID no configurada en GitHub Secrets/Vars. Se utilizara Tenant ID por defecto."
+          fi
+
+          API_URL="${API_URL:-https://3d2ods6had.execute-api.us-east-1.amazonaws.com}"
+          ENTRA_CLIENT_ID="${ENTRA_CLIENT_ID:-8c375036-6298-414a-bc3f-eb0f8fbdf26c}"
+          ENTRA_TENANT_ID="${ENTRA_TENANT_ID:-936612c7-66b8-41ba-a9dd-83f50365f818}"
+          REDIRECT_URI="${REDIRECT_URI:-https://Cloud-Native-Convivo.github.io/panel-administracion-web}"
+
+          # Normalizar eliminando slash final si existe
+          API_URL="${API_URL%/}"
+          REDIRECT_URI="${REDIRECT_URI%/}"
+
+          generate_env() {
+            cat <<EOF
+          export const environment = {
+            clientId: '${ENTRA_CLIENT_ID}',
+            tenantId: '${ENTRA_TENANT_ID}',
+            redirectUri: '${REDIRECT_URI}/',
+            postLogoutRedirectUri: '${REDIRECT_URI}/login',
+            apiUrl: '${API_URL}',
+            apiEspaciosUrl: '${API_URL}/api/v1/espacios-comunes',
+            bffBaseUrl: '${API_URL}/api',
+          };
+          EOF
+          }
+
+          generate_env > src/environments/environment.ts
+          generate_env > src/environments/environment.prod.ts
+
       - name: Build
         # pnpm exec (no "pnpm run build -- ..."): pnpm reenvia el "--" al
         # script subyacente en vez de consumirlo como npm, así que "ng build

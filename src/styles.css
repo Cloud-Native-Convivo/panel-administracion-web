@@ -1,9 +1,20 @@
 /* Tailwind */
 @import 'tailwindcss';
 
-@theme {
+@theme inline {
+  --color-primary: #0d9488;
+  --color-accent: #005047;
+  --color-surface: #ffffff;
+  --color-border: #e2e8f0;
+  --color-text: #00201b;
+  --color-muted: #64748b;
+  --color-alert-red: #e11d48;
+  --color-alert-yellow: #eab308;
+
   --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --font-body: 'Inter', ui-sans-serif, system-ui, sans-serif;
   --font-serif: 'Gloock', Georgia, 'Times New Roman', serif;
+  --font-display: 'Gloock', Georgia, 'Times New Roman', serif;
 }
 
 body {

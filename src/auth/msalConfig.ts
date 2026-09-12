@@ -3,7 +3,7 @@ import {
   LogLevel,
   type Configuration,
 } from '@azure/msal-browser'
-import type { MsalGuardConfiguration } from '@azure/msal-angular'
+import type { MsalGuardConfiguration, MsalInterceptorConfiguration } from '@azure/msal-angular'
 import { InteractionType } from '@azure/msal-browser'
 import { environment } from '../environments/environment'
 import { API_SCOPES } from './apiScopes'
@@ -50,5 +50,20 @@ export function MSALGuardConfigFactory(): MsalGuardConfiguration {
   return {
     interactionType: InteractionType.Redirect,
     authRequest: { scopes: API_SCOPES },
+  }
+}
+
+// Mapea qué llamadas HTTP llevan Bearer token y con qué scope. MsalInterceptor
+// no adjunta nada (ni falla) si no hay cuenta activa -- ese es el fallback
+// seguro para desarrollo local sin login real.
+export function MSALInterceptorConfigFactory(): MsalInterceptorConfiguration {
+  const protectedResourceMap = new Map<string, Array<string> | null>([
+    [`${environment.apiUrl}/*`, API_SCOPES],
+    ['http://localhost:3000/*', API_SCOPES],
+  ])
+
+  return {
+    interactionType: InteractionType.Redirect,
+    protectedResourceMap,
   }
 }
