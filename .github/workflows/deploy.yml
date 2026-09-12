@@ -30,6 +30,27 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
+      - name: Generate environment.ts
+        # Sobreescribe el environment.ts commiteado (queda para dev local con
+        # `ng serve`) con los valores reales de despliegue, tomados de secrets
+        # -- mismo patrón que Frontend-CloudNative inyecta sus VITE_* en Build.
+        env:
+          ENTRA_CLIENT_ID: ${{ secrets.ENTRA_CLIENT_ID }}
+          ENTRA_TENANT_ID: ${{ secrets.ENTRA_TENANT_ID }}
+          API_URL: ${{ secrets.API_URL }}
+        run: |
+          cat > src/environments/environment.ts <<EOF
+          export const environment = {
+            clientId: '${ENTRA_CLIENT_ID}',
+            tenantId: '${ENTRA_TENANT_ID}',
+            redirectUri: 'http://localhost:4200',
+            postLogoutRedirectUri: 'http://localhost:4200/login',
+            apiUrl: '${API_URL}',
+            apiEspaciosUrl: '${API_URL}/api/v1/espacios-comunes',
+            bffBaseUrl: '${API_URL}/api',
+          };
+          EOF
+
       - name: Build
         # pnpm exec (no "pnpm run build -- ..."): pnpm reenvia el "--" al
         # script subyacente en vez de consumirlo como npm, así que "ng build
