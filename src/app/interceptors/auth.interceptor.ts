@@ -1,10 +1,11 @@
 import { HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { MsalService } from '@azure/msal-angular';
-import { from, switchAll } from 'rxjs';
 import { environment } from '../../environments/environment';
-import { API_SCOPES } from '../../auth/apiScopes';
 
+// El Bearer token lo adjunta MsalInterceptor (protectedResourceMap en
+// msalConfig.ts, registrado en app.config.ts). Este interceptor solo agrega
+// la identidad del usuario para que el bff la propague al microservicio.
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const msal = inject(MsalService, { optional: true });
 
@@ -34,43 +35,12 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 
   const sub = active?.localAccountId ?? 'admin-sub-local';
 
-  if (!active) {
-    return next(
-      req.clone({
-        setHeaders: {
-          'X-Usuario-Roles': roles,
-          'X-Usuario-Sub': sub,
-        },
-      }),
-    );
-  }
-
-  const request = msal!.instance
-    .acquireTokenSilent({
-      scopes: API_SCOPES,
-      account: active,
-    })
-    .then((result) =>
-      next(
-        req.clone({
-          setHeaders: {
-            Authorization: `Bearer ${result.accessToken}`,
-            'X-Usuario-Roles': roles,
-            'X-Usuario-Sub': sub,
-          },
-        }),
-      ),
-    )
-    .catch(() =>
-      next(
-        req.clone({
-          setHeaders: {
-            'X-Usuario-Roles': roles,
-            'X-Usuario-Sub': sub,
-          },
-        }),
-      ),
-    );
-
-  return from(request).pipe(switchAll());
+  return next(
+    req.clone({
+      setHeaders: {
+        'X-Usuario-Roles': roles,
+        'X-Usuario-Sub': sub,
+      },
+    }),
+  );
 };
