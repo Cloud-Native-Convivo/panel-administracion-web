@@ -9,10 +9,30 @@ import { environment } from '../../environments/environment';
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const msal = inject(MsalService, { optional: true });
 
+  const matchesApiBase = (reqUrl: string, baseUrl?: string): boolean => {
+    if (!baseUrl || baseUrl.trim().length === 0) return false;
+    try {
+      const origin = typeof window !== 'undefined' ? window.location.origin : 'http://localhost';
+      const parsedBase = new URL(baseUrl, origin);
+      const parsedReq = new URL(reqUrl, origin);
+
+      if (parsedBase.origin !== parsedReq.origin) {
+        return false;
+      }
+
+      const basePath = parsedBase.pathname.replace(/\/+$/, '');
+      const reqPath = parsedReq.pathname.replace(/\/+$/, '');
+
+      return reqPath === basePath || parsedReq.pathname.startsWith(`${basePath}/`);
+    } catch {
+      return false;
+    }
+  };
+
   const isApiUrl =
-    req.url.startsWith(environment.apiUrl) ||
-    (environment.apiEspaciosUrl ? req.url.startsWith(environment.apiEspaciosUrl) : false) ||
-    (environment.bffBaseUrl ? req.url.startsWith(environment.bffBaseUrl) : false);
+    matchesApiBase(req.url, environment.apiUrl) ||
+    matchesApiBase(req.url, environment.apiEspaciosUrl) ||
+    matchesApiBase(req.url, environment.bffBaseUrl);
 
   if (!isApiUrl) {
     return next(req);
