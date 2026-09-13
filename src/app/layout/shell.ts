@@ -17,13 +17,16 @@ interface NavItem {
 
 const NAV_ITEMS: NavItem[] = [
   { id: 'dashboard',   label: 'Inicio',          icon: Home      },
-  { id: 'users',       label: 'Usuarios',        icon: Users     },
-  { id: 'condominios', label: 'Unidades',        icon: Building2 },
   { id: 'espacios',    label: 'Espacios comunes',icon: Search    },
   { id: 'gastos-comunes', label: 'Gastos comunes', icon: DollarSign },
 ];
 
+// Usuarios y Unidades no tienen microservicio propio todavía (no hay
+// ms-usuarios ni ms-condominios) -- quedan bloqueadas junto al resto de
+// "Próximamente" en vez de mostrar datos de ejemplo como si fueran reales.
 const SOON_ITEMS: NavItem[] = [
+  { id: '', label: 'Usuarios',         icon: Users          },
+  { id: '', label: 'Unidades',         icon: Building2      },
   { id: '', label: 'Reservas',         icon: Calendar       },
   { id: '', label: 'Configuración',    icon: Settings       },
   { id: '', label: 'Tablón de avisos', icon: MessageSquare },
