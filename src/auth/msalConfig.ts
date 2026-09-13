@@ -53,14 +53,18 @@ export function MSALGuardConfigFactory(): MsalGuardConfiguration {
   }
 }
 
-// Mapea qué llamadas HTTP llevan Bearer token y con qué scope. MsalInterceptor
-// no adjunta nada (ni falla) si no hay cuenta activa -- ese es el fallback
-// seguro para desarrollo local sin login real.
+// Mapea qué llamadas HTTP llevan Bearer token y con qué scope. OJO: para una
+// URL que SÍ está en este mapa, MsalInterceptor no se queda callado si falla
+// acquireTokenSilent (sin cuenta, sesión expirada, lo que sea) -- dispara
+// acquireTokenRedirect siempre (interactionType Redirect/Popup es
+// obligatorio para esta librería, no existe modo "solo silencioso"; ver
+// @azure/msal-angular, MsalInterceptor.acquireToken). Por eso localhost:3000
+// (bff local) NO está mapeado acá: así el interceptor ni lo mira, y correr
+// `ng serve` sin login real no dispara un redirect a Azure AD.
 export function MSALInterceptorConfigFactory(): MsalInterceptorConfiguration {
   const cleanApiUrl = (environment.apiUrl || '').replace(/\/+$/, '')
   const protectedResourceMap = new Map<string, Array<string> | null>([
     [cleanApiUrl, API_SCOPES],
-    ['http://localhost:3000', API_SCOPES],
   ])
 
   return {

@@ -21,9 +21,10 @@ import type {
  * Por eso la URL de acá abajo repite `api` dos veces; no es un error de
  * tipeo, es cómo queda armado el proxy.
  *
- * `authInterceptor` adjunta el Bearer token automáticamente porque
- * `bffBaseUrl` está incluido en su chequeo `isApiUrl` (ver
- * app/interceptors/auth.interceptor.ts).
+ * El Bearer token lo adjunta `MsalInterceptor` (protectedResourceMap en
+ * auth/msalConfig.ts, sobre `environment.apiUrl`); `authInterceptor` (ver
+ * app/interceptors/auth.interceptor.ts) solo agrega identidad
+ * (X-Usuario-Roles/X-Usuario-Sub).
  */
 @Injectable({ providedIn: 'root' })
 export class GastosComunesService {
