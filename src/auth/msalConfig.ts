@@ -53,13 +53,19 @@ export function MSALGuardConfigFactory(): MsalGuardConfiguration {
   }
 }
 
-// Mapea qué llamadas HTTP llevan Bearer token y con qué scope. MsalInterceptor
-// no adjunta nada (ni falla) si no hay cuenta activa -- ese es el fallback
-// seguro para desarrollo local sin login real.
+// Mapea qué llamadas HTTP llevan Bearer token y con qué scope. OJO: para una
+// URL que SÍ está en este mapa, MsalInterceptor no se queda callado si falla
+// acquireTokenSilent (sin cuenta, sesión expirada, lo que sea) -- dispara
+// acquireTokenRedirect (interactionType: Redirect es obligatorio para esta
+// librería, no admite "solo silencioso"). Por eso localhost:3000 (bff local)
+// NO está mapeado acá: así el interceptor no lo toca en absoluto y el
+// desarrollo local sin login real sigue andando sin redirects inesperados.
+// En producción, si se dispara una llamada protegida antes de loguearse
+// (no debería pasar con MsalGuard en las rutas), redirige a login -- ese sí
+// es el comportamiento esperado del interceptor oficial.
 export function MSALInterceptorConfigFactory(): MsalInterceptorConfiguration {
   const protectedResourceMap = new Map<string, Array<string> | null>([
     [`${environment.apiUrl}/*`, API_SCOPES],
-    ['http://localhost:3000/*', API_SCOPES],
   ])
 
   return {
