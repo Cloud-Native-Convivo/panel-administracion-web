@@ -60,10 +60,7 @@ export function MSALInterceptorConfigFactory(): MsalInterceptorConfiguration {
   const cleanApiUrl = (environment.apiUrl || '').replace(/\/+$/, '')
   const protectedResourceMap = new Map<string, Array<string> | null>([
     [cleanApiUrl, API_SCOPES],
-    [`${cleanApiUrl}/*`, API_SCOPES],
-    [`${cleanApiUrl}/api/*`, API_SCOPES],
     ['http://localhost:3000', API_SCOPES],
-    ['http://localhost:3000/*', API_SCOPES],
   ])
 
   return {
