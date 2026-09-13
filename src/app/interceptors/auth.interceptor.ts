@@ -59,11 +59,6 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
     'X-Usuario-Sub': sub,
   };
 
-  const idToken = (active as any)?.idToken;
-  if (!req.headers.has('Authorization') && idToken) {
-    headersToAdd['Authorization'] = `Bearer ${idToken}`;
-  }
-
   return next(
     req.clone({
       setHeaders: headersToAdd,
