@@ -46,7 +46,7 @@ jobs:
             echo "::warning::ENTRA_TENANT_ID no configurada en GitHub Secrets/Vars. Se utilizara Tenant ID por defecto."
           fi
 
-          API_URL="${API_URL:-https://3d2ods6had.execute-api.us-east-1.amazonaws.com}"
+          API_URL="${API_URL:-https://x4p5y5i900.execute-api.us-east-1.amazonaws.com}"
           ENTRA_CLIENT_ID="${ENTRA_CLIENT_ID:-8c375036-6298-414a-bc3f-eb0f8fbdf26c}"
           ENTRA_TENANT_ID="${ENTRA_TENANT_ID:-936612c7-66b8-41ba-a9dd-83f50365f818}"
           REDIRECT_URI="${REDIRECT_URI:-https://Cloud-Native-Convivo.github.io/panel-administracion-web}"
