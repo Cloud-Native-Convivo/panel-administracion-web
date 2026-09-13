@@ -50,12 +50,11 @@ export class GastosComunes implements OnInit {
 
   // --- Rol de la cuenta activa (best-effort, ver ../../auth/roles.ts) ---
   protected readonly roles = computed(() => rolesDeCuenta(this.msalService.instance.getActiveAccount()));
-  // Optimista: si todavía no sabemos el rol (roles() vacío porque el App
-  // Role de Entra no está configurado), igual mostramos la acción — el
-  // backend la va a rechazar con 403 si de verdad no corresponde.
+  // Control de acceso por mínimo privilegio (PoLP):
+  // Solo se habilitan acciones administrativas si la cuenta tiene el rol asignado.
   protected readonly puedeCrearCobro = computed(() => {
     const r = this.roles();
-    return r.length === 0 || r.includes('administrador') || r.includes('comite');
+    return r.includes('administrador') || r.includes('comite');
   });
 
   // --- Detalle (drawer) ---
