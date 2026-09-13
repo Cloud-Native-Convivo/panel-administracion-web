@@ -1,16 +1,20 @@
 import { Component, OnInit, inject, signal, DestroyRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
+import { forkJoin, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { LucideAngularModule } from 'lucide-angular';
 import type { LucideIconData } from 'lucide-angular';
-import { Building2, Users, Search, Calendar, Plus, Wallet } from 'lucide-angular';
+import { Building2, Users, Search, Calendar, Wallet } from 'lucide-angular';
 import { MsalService } from '@azure/msal-angular';
-import { INIT_RESERVATIONS } from '../data/sample-data';
 import { StatusBadge } from '../shared/status-badge';
 import { EspaciosService } from '../services/espacios.service';
 import { GastosComunesService } from '../services/gastos-comunes.service';
+import { ReservasService } from '../services/reservas.service';
 import { saludoSegunHora } from '../shared/saludo';
 import { formatoMonto } from '../shared/formato';
+import { mapearReservaUi, type UiReservationEntry } from '../shared/reserva-mapper';
+import type { Espacio } from '../models/espacio.model';
 
 interface ResumenGastos {
   cargando: boolean;
@@ -39,17 +43,21 @@ export class Dashboard implements OnInit {
   private readonly router = inject(Router);
   private readonly espaciosService = inject(EspaciosService);
   private readonly gastosComunesService = inject(GastosComunesService);
+  private readonly reservasService = inject(ReservasService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly msalService = inject(MsalService);
 
+  // "Total unidades" y "Usuarios activos" no tienen microservicio propio
+  // todavía (no hay ms-condominios ni ms-usuarios) -- quedan como
+  // "Próximamente" en vez de mostrar cifras inventadas en un despliegue real.
   protected readonly kpis = signal<Kpi[]>([
-    { label: 'Total unidades',       value: '16', sub: '+2 incorporadas este mes',  icon: Building2, color: 'bg-teal-50 text-[#0D9488]' },
-    { label: 'Usuarios activos',     value: '8',  sub: 'de 10 registrados',         icon: Users,     color: 'bg-blue-50 text-blue-600' },
-    { label: 'Espacios habilitados', value: '5',  sub: '1 en mantención',           icon: Search,    color: 'bg-violet-50 text-violet-600', route: 'espacios' },
-    { label: 'Reservas hoy',         value: '3',  sub: '2 confirmadas, 1 pendiente',icon: Calendar,  color: 'bg-orange-50 text-orange-600' },
+    { label: 'Total unidades',       value: '—',  sub: 'Próximamente',              icon: Building2, color: 'bg-teal-50 text-[#0D9488]' },
+    { label: 'Usuarios activos',     value: '—',  sub: 'Próximamente',              icon: Users,     color: 'bg-blue-50 text-blue-600' },
+    { label: 'Espacios habilitados', value: '—',  sub: 'Cargando…',                 icon: Search,    color: 'bg-violet-50 text-violet-600', route: 'espacios' },
+    { label: 'Reservas hoy',         value: '—',  sub: 'Cargando…',                 icon: Calendar,  color: 'bg-orange-50 text-orange-600' },
   ]);
 
-  protected readonly upcoming = INIT_RESERVATIONS.slice(0, 5);
+  protected readonly upcoming = signal<UiReservationEntry[]>([]);
 
   protected readonly resumenGastos = signal<ResumenGastos>({
     cargando: true,
@@ -83,13 +91,12 @@ export class Dashboard implements OnInit {
   protected readonly formatoMonto = formatoMonto;
 
   // Iconos sueltos del template
-  protected readonly icPlus = Plus;
-  protected readonly icBuilding = Building2;
   protected readonly icWallet = Wallet;
 
   ngOnInit(): void {
     this.cargarEspaciosKpi();
     this.cargarResumenGastos();
+    this.cargarReservas();
   }
 
   /**
@@ -163,6 +170,62 @@ export class Dashboard implements OnInit {
         error: (err) => {
           console.warn('No se pudieron sincronizar los espacios comunes con la BD:', err);
         },
+      });
+  }
+
+  /**
+   * Reservas de hoy (para el KPI) y las próximas 5 (para la tabla), a partir
+   * del backend real de espacios comunes -- reemplaza el mock que traía el
+   * dashboard antes de tener este microservicio conectado.
+   */
+  protected cargarReservas(): void {
+    forkJoin({
+      espacios: this.espaciosService.listar().pipe(
+        catchError(() => of([] as Espacio[])),
+      ),
+      reservas: this.reservasService.listar().pipe(
+        catchError(() => of([])),
+      ),
+    })
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(({ espacios, reservas }) => {
+        const mapaEspacios = new Map<number, string>();
+        for (const e of espacios) {
+          mapaEspacios.set(e.id, e.nombre);
+        }
+
+        const mapeadas = reservas
+          .map((r) => mapearReservaUi(r, mapaEspacios))
+          .filter((r) => r.status !== 'cancelada')
+          .sort((a, b) => a.fechaInicioIso.localeCompare(b.fechaInicioIso));
+
+        this.upcoming.set(mapeadas.slice(0, 5));
+
+        const hoy = new Date();
+        const reservasHoy = mapeadas.filter((r) => {
+          const d = new Date(r.fechaInicioIso);
+          return (
+            !isNaN(d.getTime()) &&
+            d.getFullYear() === hoy.getFullYear() &&
+            d.getMonth() === hoy.getMonth() &&
+            d.getDate() === hoy.getDate()
+          );
+        });
+
+        this.kpis.update((items) =>
+          items.map((kpi) =>
+            kpi.label === 'Reservas hoy'
+              ? {
+                  ...kpi,
+                  value: reservasHoy.length.toString(),
+                  sub:
+                    reservasHoy.length === 0
+                      ? 'Sin reservas para hoy'
+                      : `${reservasHoy.filter((r) => r.status === 'confirmada').length} confirmadas, ${reservasHoy.filter((r) => r.status === 'pendiente').length} pendientes`,
+                }
+              : kpi,
+          ),
+        );
       });
   }
 
