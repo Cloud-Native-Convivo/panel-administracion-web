@@ -3,7 +3,7 @@
     <!-- Saludo -->
     <div class="mb-5 sm:mb-7">
       <h2 class="font-serif text-xl sm:text-2xl text-[#00201B] mb-0.5">{{ saludo }}, {{ nombrePila }}.</h2>
-      <p class="text-xs sm:text-sm text-gray-400">Condominio Los Álamos · {{ fechaHoy }}</p>
+      <p class="text-xs sm:text-sm text-gray-400">{{ fechaHoy }}</p>
     </div>
 
     <!-- Tarjetas KPI -->
@@ -49,12 +49,18 @@
               </tr>
             </thead>
             <tbody>
-              @for (r of upcoming; track r.id; let last = $last) {
+              @for (r of upcoming(); track r.id; let last = $last) {
                 <tr [class]="last ? 'hover:bg-gray-50/70 transition-colors' : 'hover:bg-gray-50/70 transition-colors border-b border-[#E2E8F0]'">
                   <td class="px-4 sm:px-6 py-3.5 text-xs sm:text-sm font-medium text-[#00201B]">{{ r.space }}</td>
                   <td class="px-4 py-3.5 text-xs sm:text-sm text-gray-600">{{ r.user }}</td>
                   <td class="px-4 py-3.5 text-xs sm:text-sm text-gray-500 whitespace-nowrap">{{ r.date }} · {{ r.time }}</td>
                   <td class="px-4 py-3.5"><app-status-badge [status]="r.status" /></td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td colspan="4" class="px-4 sm:px-6 py-6 text-sm text-gray-400 text-center">
+                    No hay reservas próximas.
+                  </td>
                 </tr>
               }
             </tbody>
@@ -64,27 +70,6 @@
 
       <!-- Columna derecha -->
       <div class="space-y-5">
-        <!-- Acciones rápidas -->
-        <div class="bg-white border border-[#E2E8F0] rounded-xl p-4 sm:p-5">
-          <h3 class="font-serif text-base sm:text-lg text-[#00201B] mb-4">Acciones rápidas</h3>
-          <div class="space-y-2">
-            <button
-              (click)="go('users')"
-              class="w-full flex items-center gap-3 px-4 py-3 bg-teal-50 hover:bg-teal-100 text-[#0D9488] rounded-lg text-sm font-medium transition-colors"
-            >
-              <lucide-icon [img]="icPlus" [size]="16" />
-              Nuevo usuario
-            </button>
-            <button
-              (click)="go('condominios')"
-              class="w-full flex items-center gap-3 px-4 py-3 border border-[#E2E8F0] hover:bg-gray-50 text-[#00201B] rounded-lg text-sm font-medium transition-colors"
-            >
-              <lucide-icon [img]="icBuilding" [size]="16" />
-              Agregar unidad
-            </button>
-          </div>
-        </div>
-
         <!-- Gastos comunes -->
         <div class="bg-white border border-[#E2E8F0] rounded-xl p-4 sm:p-5">
           <div class="flex items-center justify-between mb-4">
@@ -128,33 +113,10 @@
           }
         </div>
 
-        <!-- Estado de unidades -->
+        <!-- Estado de unidades: sin microservicio de condominios/unidades todavía -->
         <div class="bg-white border border-[#E2E8F0] rounded-xl p-4 sm:p-5">
           <h3 class="font-medium text-sm text-[#00201B] mb-4">Estado de unidades</h3>
-          <div class="space-y-2.5">
-            <div class="flex justify-between items-center text-sm">
-              <span class="text-gray-500">Activas</span>
-              <span class="font-semibold text-[#00201B]">13</span>
-            </div>
-            <div class="flex justify-between items-center text-sm">
-              <span class="text-gray-500">Vacías</span>
-              <span class="font-semibold text-gray-500">2</span>
-            </div>
-            <div class="flex justify-between items-center text-sm">
-              <span class="text-gray-500">Morosas</span>
-              <span class="font-semibold text-red-600">2</span>
-            </div>
-            <div class="flex justify-between items-center text-sm">
-              <span class="text-gray-500">Inactivas</span>
-              <span class="font-semibold text-gray-400">1</span>
-            </div>
-          </div>
-          <div class="mt-4 pt-4 border-t border-[#E2E8F0]">
-            <div class="w-full bg-gray-100 rounded-full h-1.5">
-              <div class="bg-[#0D9488] h-1.5 rounded-full" style="width: 81%"></div>
-            </div>
-            <p class="text-xs text-gray-400 mt-1.5">81% ocupación</p>
-          </div>
+          <p class="text-sm text-gray-400">Próximamente.</p>
         </div>
       </div>
     </div>
