@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <title>Convivo — Panel Admin</title>
+    <script>
+      // GitHub Pages sirve este archivo para cualquier ruta que no sea un
+      // archivo físico (ej. /login?state=..., /dashboard, /espacios) —
+      // reescribe la URL en un query param y redirige a la raíz, donde
+      // index.html la decodifica y restaura antes de que Angular Router monte.
+      // Técnica estándar: https://github.com/rafgraph/spa-github-pages
+      var pathSegmentsToKeep = 1; // "/panel-administracion-web"
+      var l = window.location;
+      l.replace(
+        l.protocol +
+          "//" +
+          l.hostname +
+          (l.port ? ":" + l.port : "") +
+          l.pathname.split("/").slice(0, 1 + pathSegmentsToKeep).join("/") +
+          "/?/" +
+          l.pathname
+            .slice(1)
+            .split("/")
+            .slice(pathSegmentsToKeep)
+            .join("/")
+            .replace(/&/g, "~and~") +
+          (l.search ? "&" + l.search.slice(1).replace(/&/g, "~and~") : "") +
+          l.hash,
+      );
+    </script>
+  </head>
+  <body>
+    <style>
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: system-ui, -apple-system, sans-serif;
+        background: #0f172a;
+        color: #94a3b8;
+      }
+    </style>
+    <p>Redirigiendo a Convivo Admin...</p>
+  </body>
+</html>
