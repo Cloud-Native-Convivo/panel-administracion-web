@@ -54,13 +54,19 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   }
 
   const sub = active?.localAccountId ?? 'admin-sub-local';
+  const headersToAdd: Record<string, string> = {
+    'X-Usuario-Roles': roles,
+    'X-Usuario-Sub': sub,
+  };
+
+  const idToken = (active as any)?.idToken;
+  if (!req.headers.has('Authorization') && idToken) {
+    headersToAdd['Authorization'] = `Bearer ${idToken}`;
+  }
 
   return next(
     req.clone({
-      setHeaders: {
-        'X-Usuario-Roles': roles,
-        'X-Usuario-Sub': sub,
-      },
+      setHeaders: headersToAdd,
     }),
   );
 };
