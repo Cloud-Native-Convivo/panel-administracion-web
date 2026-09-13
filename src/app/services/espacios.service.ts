@@ -51,7 +51,7 @@ export class EspaciosService {
 
   listar(): Observable<Espacio[]> {
     return this.http
-      .get<Espacio[]>(`${this.baseUrl}/`)
+      .get<Espacio[]>(`${this.baseUrl}`)
       .pipe(map((espacios) => espacios.map((e) => this.enriquecerConImagen(e))));
   }
 
@@ -63,7 +63,7 @@ export class EspaciosService {
 
   crear(dto: CrearEspacioDto): Observable<Espacio> {
     return this.http
-      .post<Espacio>(`${this.baseUrl}/`, dto)
+      .post<Espacio>(`${this.baseUrl}`, dto)
       .pipe(map((espacio) => this.enriquecerConImagen(espacio)));
   }
 

@@ -57,13 +57,18 @@ export function MSALGuardConfigFactory(): MsalGuardConfiguration {
 // no adjunta nada (ni falla) si no hay cuenta activa -- ese es el fallback
 // seguro para desarrollo local sin login real.
 export function MSALInterceptorConfigFactory(): MsalInterceptorConfiguration {
+  const cleanApiUrl = (environment.apiUrl || '').replace(/\/+$/, '')
   const protectedResourceMap = new Map<string, Array<string> | null>([
-    [`${environment.apiUrl}/*`, API_SCOPES],
+    [cleanApiUrl, API_SCOPES],
+    [`${cleanApiUrl}/*`, API_SCOPES],
+    [`${cleanApiUrl}/api/*`, API_SCOPES],
+    ['http://localhost:3000', API_SCOPES],
     ['http://localhost:3000/*', API_SCOPES],
   ])
 
   return {
     interactionType: InteractionType.Redirect,
     protectedResourceMap,
+    strictMatching: false,
   }
 }
