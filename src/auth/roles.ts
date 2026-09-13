@@ -4,9 +4,9 @@ import type { AccountInfo } from '@azure/msal-browser';
  * Roles de negocio Convivo, en el mismo formato que usan el BFF y
  * ms-gastos-comunes.
  */
-export type RolConvivo = 'administrador' | 'conserje' | 'comite' | 'propietario' | 'residente';
+export type RolConvivo = 'administrador' | 'admin' | 'conserje' | 'comite' | 'propietario' | 'residente';
 
-const ROLES_VALIDOS: readonly RolConvivo[] = ['administrador', 'conserje', 'comite', 'propietario', 'residente'];
+const ROLES_VALIDOS: readonly RolConvivo[] = ['administrador', 'admin', 'conserje', 'comite', 'propietario', 'residente'];
 
 /**
  * Lee, de forma best-effort, los roles de negocio del ID token de la
@@ -28,5 +28,6 @@ export function rolesDeCuenta(cuenta: AccountInfo | null, claim = 'roles'): RolC
 
   return valores
     .map((v) => v.trim().toLowerCase())
+    .map((v) => (v === 'admin' ? 'administrador' : v))
     .filter((v): v is RolConvivo => (ROLES_VALIDOS as string[]).includes(v));
 }

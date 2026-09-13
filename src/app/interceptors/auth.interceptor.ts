@@ -39,25 +39,28 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   }
 
   let active: any = null;
-  let roles = 'admin';
+  let roles = '';
 
   try {
     const accounts = msal?.instance.getAllAccounts() ?? [];
     active = msal?.instance.getActiveAccount() ?? accounts[0];
     const claims = active?.idTokenClaims as { roles?: string[] } | undefined;
     if (claims?.roles && Array.isArray(claims.roles) && claims.roles.length > 0) {
-      roles = claims.roles.join(',');
+      roles = claims.roles.map((r) => (r === 'admin' ? 'administrador' : r)).join(',');
     }
   } catch {
     active = null;
-    roles = 'admin';
+    roles = '';
   }
 
-  const sub = active?.localAccountId ?? 'admin-sub-local';
-  const headersToAdd: Record<string, string> = {
-    'X-Usuario-Roles': roles,
-    'X-Usuario-Sub': sub,
-  };
+  const sub = active?.localAccountId ?? '';
+  const headersToAdd: Record<string, string> = {};
+  if (roles) {
+    headersToAdd['X-Usuario-Roles'] = roles;
+  }
+  if (sub) {
+    headersToAdd['X-Usuario-Sub'] = sub;
+  }
 
   return next(
     req.clone({
