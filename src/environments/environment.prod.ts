@@ -1,4 +1,4 @@
-const apiUrl = 'https://3d2ods6had.execute-api.us-east-1.amazonaws.com';
+const apiUrl = 'https://x4p5y5i900.execute-api.us-east-1.amazonaws.com';
 
 export const environment = {
   clientId: '8c375036-6298-414a-bc3f-eb0f8fbdf26c',
