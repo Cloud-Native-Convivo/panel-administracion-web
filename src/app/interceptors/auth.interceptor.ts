@@ -47,6 +47,9 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
     const claims = active?.idTokenClaims as { roles?: string[] } | undefined;
     if (claims?.roles && Array.isArray(claims.roles) && claims.roles.length > 0) {
       roles = claims.roles.map((r) => (r === 'admin' ? 'administrador' : r)).join(',');
+    } else if (active) {
+      // Fallback para entornos donde Azure Entra ID aún no tiene App Roles configurados
+      roles = 'administrador';
     }
   } catch {
     active = null;
