@@ -30,6 +30,8 @@ RUN corepack enable && corepack prepare pnpm@12.3.4 --activate && \
 # ============================================
 FROM nginx:1.27-alpine AS runtime
 
+RUN apk upgrade --no-cache libcrypto3 libssl3
+
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 COPY --from=build /app/dist/panel-admin/browser /usr/share/nginx/html
 
