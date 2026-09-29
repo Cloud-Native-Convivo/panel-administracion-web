@@ -1,0 +1,42 @@
+version: 2
+
+# Prefijos con gitmoji para pasar el chequeo de titulo de pr-quality.yml.
+updates:
+  - package-ecosystem: npm # soporta pnpm-lock.yaml
+    directory: /
+    target-branch: develop
+    schedule:
+      interval: weekly
+    labels: ["dependencies"]
+    commit-message:
+      prefix: ":arrow_up: chore(deps)"
+    groups:
+      angular:
+        patterns: ["@angular/*", "@angular-devkit/*", "@schematics/*", "typescript", "tslib", "rxjs"]
+      testing:
+        patterns: ["vitest", "@vitest/*", "jsdom"]
+      lint-format:
+        patterns: ["prettier", "eslint*", "@typescript-eslint/*"]
+      others:
+        patterns: ["*"]
+
+  - package-ecosystem: github-actions
+    directory: /
+    target-branch: develop
+    schedule:
+      interval: weekly
+    labels: ["dependencies"]
+    commit-message:
+      prefix: ":construction_worker: ci(deps)"
+    groups:
+      actions:
+        patterns: ["*"]
+
+  - package-ecosystem: docker
+    directory: /
+    target-branch: develop
+    schedule:
+      interval: weekly
+    labels: ["dependencies"]
+    commit-message:
+      prefix: ":whale: build(deps)"
