@@ -30,6 +30,9 @@ RUN corepack enable && corepack prepare pnpm@12.3.4 --activate && \
 # ============================================
 FROM nginx:1.30-alpine@sha256:0985e772fb9f729e6fa0980da05fca5d9c468e870eed43071545afa9d2e27d94 AS runtime
 
+# Aplica parches de Alpine publicados despues de la imagen base (p. ej. libexpat)
+RUN apk upgrade --no-cache
+
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 COPY --from=build /app/dist/panel-admin/browser /usr/share/nginx/html
 
