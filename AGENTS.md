@@ -34,7 +34,7 @@ Panel de administración web para gestión de condominios en Chile (Convivo). Us
 - Framework: Angular 21.2 (standalone components, signals)
 - CSS: Tailwind CSS 4.3
 - Iconos: Lucide Angular 1.0
-- Gestor de paquetes: npm 11.6.2
+- Gestor de paquetes: pnpm (fijado en `packageManager` de `package.json`)
 
 ## 3. Estructura del proyecto (opcional — útil si el layout no es obvio)
 
