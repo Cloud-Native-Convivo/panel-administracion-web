@@ -136,6 +136,8 @@ jobs:
       - name: Trivy report
         uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         with:
+          # trivy-action v0.36.0 trae Trivy 0.70.0 por defecto; Dependabot no actualiza este valor
+          version: v0.74.0
           image-ref: panel-administracion-web:pr
           format: table
           output: trivy-report.txt
@@ -156,6 +158,8 @@ jobs:
       - name: Trivy gate
         uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         with:
+          # trivy-action v0.36.0 trae Trivy 0.70.0 por defecto; Dependabot no actualiza este valor
+          version: v0.74.0
           image-ref: panel-administracion-web:pr
           format: table
           severity: CRITICAL
