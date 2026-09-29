@@ -5,6 +5,19 @@ Todas las modificaciones notables de este proyecto se documentan en este archivo
 El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/),
 y este proyecto sigue [Versionado Semántico](https://semver.org/lang/es/).
 
+## [1.5.0] - 2026-09-29
+
+### Added
+
+- Configuración de proxy (`proxy.conf.json`) y entorno local (`environment.local.ts`, `ng serve --configuration local`) para desarrollo.
+- CI con señales en cada PR: cobertura, tamaño de bundle, Lighthouse, escaneo Trivy de la imagen, CodeQL, dependency review y OpenSSF Scorecard.
+- `SECURITY.md` con enlace al reporte privado de vulnerabilidades.
+
+### Security
+
+- `libcrypto3` y `libssl3` actualizados en la imagen (CVE-2026-31789).
+- Imágenes base del Dockerfile fijadas por digest.
+
 ## [1.2.0] - 2026-09-09
 
 ### Added
