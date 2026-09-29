@@ -114,7 +114,8 @@
         "test": {
           "builder": "@angular/build:unit-test",
           "options": {
-            "tsConfig": "tsconfig.spec.json"
+            "tsConfig": "tsconfig.spec.json",
+            "coverageReporters": ["json", "json-summary", "lcov", "text-summary"]
           }
         }
       }

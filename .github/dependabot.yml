@@ -1,0 +1,57 @@
+version: 2
+
+# Prefijos con gitmoji para pasar el chequeo de titulo de pr-quality.yml.
+updates:
+  - package-ecosystem: npm # soporta pnpm-lock.yaml
+    # Espera 7 dias antes de proponer una version nueva (mitiga paquetes comprometidos recien publicados)
+    cooldown:
+      default-days: 7
+    directory: /
+    target-branch: develop
+    schedule:
+      interval: weekly
+    labels: ["dependencies"]
+    commit-message:
+      prefix: ":arrow_up: chore(deps)"
+    groups:
+      angular:
+        patterns: ["@angular/*", "@angular-devkit/*", "@schematics/*", "typescript", "tslib", "rxjs"]
+      testing:
+        patterns: ["vitest", "@vitest/*", "jsdom"]
+      lint-format:
+        patterns: ["prettier", "eslint*", "@typescript-eslint/*"]
+      others:
+        patterns: ["*"]
+
+  - package-ecosystem: github-actions
+
+    # Espera 7 dias antes de proponer una version nueva (mitiga paquetes comprometidos recien publicados)
+
+    cooldown:
+
+      default-days: 7
+    directory: /
+    target-branch: develop
+    schedule:
+      interval: weekly
+    labels: ["dependencies"]
+    commit-message:
+      prefix: ":construction_worker: ci(deps)"
+    groups:
+      actions:
+        patterns: ["*"]
+
+  - package-ecosystem: docker
+
+    # Espera 7 dias antes de proponer una version nueva (mitiga paquetes comprometidos recien publicados)
+
+    cooldown:
+
+      default-days: 7
+    directory: /
+    target-branch: develop
+    schedule:
+      interval: weekly
+    labels: ["dependencies"]
+    commit-message:
+      prefix: ":whale: build(deps)"
