@@ -1,9 +1,10 @@
 {
   "name": "panel-admin",
-  "version": "1.4.2",
+  "version": "1.5.0",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
+    "start:local": "ng serve --configuration local",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test"
@@ -28,6 +29,7 @@
     "@angular/cli": "^21.2.23",
     "@angular/compiler-cli": "^21.2.0",
     "@tailwindcss/postcss": "^4.3.3",
+    "@vitest/coverage-v8": "^5.0.2",
     "jsdom": "^30.0.1",
     "postcss": "^8.5.26",
     "prettier": "^3.8.1",
