@@ -73,6 +73,10 @@ jobs:
         with:
           sarif_file: trivy-results.sarif
           category: trivy-image
+          # Corre en tags: sin ref/sha el analisis queda en refs/tags/* y no aparece
+          # en Security de la rama por defecto. El commit tagueado esta en main.
+          ref: refs/heads/main
+          sha: ${{ github.sha }}
 
       - name: Trivy gate
         uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
