@@ -1,6 +1,6 @@
 <div class="min-h-screen flex">
   <!-- Panel de marca (izquierda) -->
-  <div class="hidden lg:flex w-1/2 relative bg-[#00201B] flex-col justify-between p-12 overflow-hidden">
+  <div class="hidden lg:flex w-1/2 relative bg-text flex-col justify-between p-12 overflow-hidden">
     <img
       src="https://images.unsplash.com/photo-1613152184920-bc1c4ab7fd1d?w=900&h=1200&fit=crop&auto=format"
       alt="Piscina condominio"
@@ -11,7 +11,7 @@
     />
     <div class="relative z-10">
       <div class="flex items-center gap-2.5">
-        <div class="w-8 h-8 bg-[#0D9488] rounded-md flex items-center justify-center">
+        <div class="w-8 h-8 bg-primary rounded-md flex items-center justify-center">
           <lucide-icon [img]="icBuilding" [size]="16" class="text-white" />
         </div>
         <span class="font-serif text-2xl text-white tracking-tight">Convivo</span>
@@ -19,7 +19,7 @@
     </div>
 
     <div class="relative z-10 space-y-4">
-      <p class="text-[#0D9488] text-xs font-medium uppercase tracking-[0.18em]">Panel de administración</p>
+      <p class="text-primary text-xs font-medium uppercase tracking-[0.18em]">Panel de administración</p>
       <h2 class="font-serif text-4xl text-white leading-[1.15]">
         Gestión de condominios,<br />simplificada.
       </h2>
@@ -29,7 +29,7 @@
     </div>
 
     <div class="relative z-10 pt-6 border-t border-white/10">
-      <p class="text-white/30 text-xs">Condominio Los Álamos · Vitacura, Santiago de Chile</p>
+      <p class="text-white/60 text-xs">Condominio Los Álamos · Vitacura, Santiago de Chile</p>
     </div>
   </div>
 
@@ -37,18 +37,18 @@
   <div class="flex-1 flex items-center justify-center px-4 sm:px-8 py-8 bg-white">
     <div class="w-full max-w-sm">
       <div class="lg:hidden mb-8 flex items-center gap-2">
-        <div class="w-7 h-7 bg-[#0D9488] rounded-md flex items-center justify-center">
+        <div class="w-7 h-7 bg-primary rounded-md flex items-center justify-center">
           <lucide-icon [img]="icBuilding" [size]="14" class="text-white" />
         </div>
-        <span class="font-serif text-xl text-[#00201B]">Convivo</span>
+        <span class="font-serif text-xl text-text">Convivo</span>
       </div>
 
-      <h1 class="font-serif text-2xl sm:text-[2rem] text-[#00201B] mb-1.5 leading-tight">Bienvenido de vuelta</h1>
+      <h1 class="font-serif text-2xl sm:text-[2rem] text-text mb-1.5 leading-tight">Bienvenido de vuelta</h1>
       <p class="text-gray-500 text-xs sm:text-sm mb-8">Accede con tu cuenta corporativa de administración.</p>
 
       <button
         (click)="loginSso()"
-        class="w-full flex items-center justify-center gap-2.5 bg-[#0D9488] hover:bg-[#005047] text-white py-3 px-4 rounded-lg text-sm font-medium transition-colors"
+        class="w-full flex items-center justify-center gap-2.5 bg-accent hover:bg-text text-white py-3 px-4 rounded-lg text-sm font-medium transition-colors"
       >
         <lucide-icon [img]="icShield" [size]="16" />
         Iniciar sesión con SSO corporativo
@@ -56,7 +56,7 @@
 
       <p class="mt-10 text-[11px] text-center text-gray-500">
         Convivo Admin · {{ year }} ·
-        <a href="#privacidad" class="text-[#0D9488] hover:underline focus:outline-none focus:ring-1 focus:ring-teal-500 rounded">Política de privacidad</a>
+        <a href="#privacidad" class="text-accent hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded">Política de privacidad</a>
       </p>
     </div>
   </div>
