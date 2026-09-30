@@ -2,6 +2,9 @@
 @import 'tailwindcss';
 
 @theme inline {
+  /* Paleta idéntica a Frontend-CloudNative. primary da 3.74:1 sobre blanco:
+     solo no-texto (íconos, foco, bordes: WCAG pide 3:1). Texto de color y
+     fondos de botón con texto van en accent (9.38:1). */
   --color-primary: #0d9488;
   --color-accent: #005047;
   --color-surface: #ffffff;

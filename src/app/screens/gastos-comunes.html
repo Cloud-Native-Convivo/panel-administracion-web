@@ -8,13 +8,14 @@
           [value]="filtroUnidad()"
           (input)="filtroUnidad.set($any($event.target).value)"
           (keyup.enter)="buscarPorUnidad()"
-          class="w-full pl-3 pr-8 py-2 text-sm border border-[#E2E8F0] rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-100 focus:border-[#0D9488] transition-colors"
+          aria-label="Filtrar por unidad"
+          class="w-full min-h-11 pl-3 pr-11 py-2 text-sm border border-muted rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-colors"
           placeholder="Filtrar por unidad…"
         />
         @if (filtroUnidad()) {
           <button
             (click)="limpiarFiltroUnidad()"
-            class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+            class="absolute right-0 top-0 h-full w-11 flex items-center justify-center text-muted hover:text-gray-600"
             aria-label="Limpiar filtro de unidad"
           >
             <lucide-icon [img]="icX" [size]="14" />
@@ -24,7 +25,7 @@
 
       <button
         (click)="buscarPorUnidad()"
-        class="px-3.5 py-2 text-sm border border-[#E2E8F0] rounded-lg text-gray-600 hover:bg-gray-50 transition-colors flex-shrink-0"
+        class="min-h-11 px-3.5 py-2 text-sm border border-border rounded-lg text-gray-600 hover:bg-gray-50 transition-colors flex-shrink-0"
       >
         Buscar
       </button>
@@ -33,10 +34,11 @@
         @for (e of estados; track e) {
           <button
             (click)="filtroEstado.set(e)"
+            [attr.aria-pressed]="filtroEstado() === e"
             [class]="
               (filtroEstado() === e
-                ? 'px-3 py-1.5 rounded-lg text-xs font-medium transition-colors bg-[#0D9488] text-white whitespace-nowrap'
-                : 'px-3 py-1.5 rounded-lg text-xs font-medium transition-colors bg-white border border-[#E2E8F0] text-gray-600 hover:bg-gray-50 whitespace-nowrap')
+                ? 'min-h-11 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors bg-accent text-white whitespace-nowrap'
+                : 'min-h-11 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors bg-white border border-border text-gray-600 hover:bg-gray-50 whitespace-nowrap')
             "
           >
             {{ e }}
@@ -47,7 +49,7 @@
       <button
         (click)="cargar()"
         [disabled]="cargando()"
-        class="p-2 border border-[#E2E8F0] rounded-lg text-gray-500 hover:bg-gray-50 transition-colors flex-shrink-0 disabled:opacity-50"
+        class="min-w-11 min-h-11 flex items-center justify-center border border-border rounded-lg text-gray-500 hover:bg-gray-50 transition-colors flex-shrink-0 disabled:opacity-50"
         aria-label="Refrescar"
         title="Refrescar"
       >
@@ -57,7 +59,7 @@
       @if (puedeCrearCobro()) {
         <button
           (click)="abrirNuevoCobro()"
-          class="sm:ml-auto flex items-center justify-center gap-2 bg-[#0D9488] hover:bg-[#005047] text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex-shrink-0"
+          class="sm:ml-auto flex items-center justify-center gap-2 bg-accent hover:bg-text text-white min-h-11 px-4 py-2 rounded-lg text-sm font-medium transition-colors flex-shrink-0"
         >
           <lucide-icon [img]="icPlus" [size]="16" />
           Nuevo cobro
@@ -66,29 +68,29 @@
     </div>
 
     @if (error()) {
-      <div class="mb-4 px-4 py-3 rounded-lg border border-red-100 bg-red-50 text-sm text-red-700">
+      <div role="alert" class="mb-4 px-4 py-3 rounded-lg border border-red-100 bg-red-50 text-sm text-red-700">
         {{ error() }}
       </div>
     }
 
     <!-- Tabla -->
-    <div class="bg-white border border-[#E2E8F0] rounded-xl overflow-hidden">
+    <div class="bg-white border border-border rounded-xl overflow-hidden">
       <div class="overflow-x-auto">
         <table class="w-full min-w-[720px]">
           <thead>
-            <tr class="border-b border-[#E2E8F0] bg-gray-50/60">
-              <th class="text-left text-[11px] text-gray-400 font-medium py-3 px-6 uppercase tracking-wide">Unidad</th>
-              <th class="text-left text-[11px] text-gray-400 font-medium py-3 px-4 uppercase tracking-wide">Concepto</th>
-              <th class="text-left text-[11px] text-gray-400 font-medium py-3 px-4 uppercase tracking-wide">Monto</th>
-              <th class="text-left text-[11px] text-gray-400 font-medium py-3 px-4 uppercase tracking-wide">Saldo pendiente</th>
-              <th class="text-left text-[11px] text-gray-400 font-medium py-3 px-4 uppercase tracking-wide">Estado</th>
-              <th class="text-left text-[11px] text-gray-400 font-medium py-3 px-4 uppercase tracking-wide">Vencimiento</th>
+            <tr class="border-b border-border bg-gray-50/60">
+              <th class="text-left text-[11px] text-muted font-medium py-3 px-6 uppercase tracking-wide">Unidad</th>
+              <th class="text-left text-[11px] text-muted font-medium py-3 px-4 uppercase tracking-wide">Concepto</th>
+              <th class="text-left text-[11px] text-muted font-medium py-3 px-4 uppercase tracking-wide">Monto</th>
+              <th class="text-left text-[11px] text-muted font-medium py-3 px-4 uppercase tracking-wide">Saldo pendiente</th>
+              <th class="text-left text-[11px] text-muted font-medium py-3 px-4 uppercase tracking-wide">Estado</th>
+              <th class="text-left text-[11px] text-muted font-medium py-3 px-4 uppercase tracking-wide">Vencimiento</th>
             </tr>
           </thead>
           <tbody>
             @if (cargando()) {
               <tr>
-                <td colspan="6" class="px-6 py-16 text-center text-gray-400 text-sm">Cargando…</td>
+                <td colspan="6" class="px-6 py-16 text-center text-muted text-sm">Cargando…</td>
               </tr>
             } @else {
               @for (g of filtrados(); track g.id; let last = $last) {
@@ -96,20 +98,30 @@
                   (click)="seleccionar(g)"
                   [class]="
                     (seleccionado()?.id === g.id ? 'cursor-pointer hover:bg-gray-50/70 transition-colors bg-teal-50/40' : 'cursor-pointer hover:bg-gray-50/70 transition-colors') +
-                    (last ? '' : ' border-b border-[#E2E8F0]')
+                    (last ? '' : ' border-b border-border')
                   "
                 >
-                  <td class="px-6 py-3.5 text-sm font-medium text-[#00201B] whitespace-nowrap">{{ g.unidadId }}</td>
+                  <td class="px-6 py-3.5 text-sm font-medium text-text whitespace-nowrap">
+                    <!-- Sin (click) propio: Enter/Espacio disparan click y burbujea al (click) del tr -->
+                    <button
+                      type="button"
+                      [attr.aria-label]="'Ver detalle de unidad ' + g.unidadId + ', ' + g.concepto"
+                      [attr.aria-expanded]="seleccionado()?.id === g.id"
+                      class="min-h-11 -my-3 text-left rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-primary hover:underline"
+                    >
+                      {{ g.unidadId }}
+                    </button>
+                  </td>
                   <td class="px-4 py-3.5 text-sm text-gray-600">{{ g.concepto }}</td>
-                  <td class="px-4 py-3.5 text-sm text-[#00201B] whitespace-nowrap">{{ formatoMonto(g.monto) }}</td>
-                  <td class="px-4 py-3.5 text-sm text-[#00201B] whitespace-nowrap">{{ formatoMonto(g.saldoPendiente) }}</td>
+                  <td class="px-4 py-3.5 text-sm text-text whitespace-nowrap">{{ formatoMonto(g.monto) }}</td>
+                  <td class="px-4 py-3.5 text-sm text-text whitespace-nowrap">{{ formatoMonto(g.saldoPendiente) }}</td>
                   <td class="px-4 py-3.5 whitespace-nowrap"><app-status-badge [status]="g.estado.toLowerCase()" /></td>
                   <td class="px-4 py-3.5 text-sm text-gray-500 whitespace-nowrap">{{ formatoFecha(g.fechaVencimiento) }}</td>
                 </tr>
               }
               @if (filtrados().length === 0) {
                 <tr>
-                  <td colspan="6" class="px-6 py-16 text-center text-gray-400 text-sm">
+                  <td colspan="6" class="px-6 py-16 text-center text-muted text-sm">
                     No hay gastos comunes para mostrar con ese filtro.
                   </td>
                 </tr>
@@ -128,14 +140,16 @@
           <button
             (click)="paginaAnterior()"
             [disabled]="pagina() === 0"
-            class="p-1.5 border border-[#E2E8F0] rounded-lg text-gray-500 hover:bg-gray-50 transition-colors disabled:opacity-40 disabled:hover:bg-white"
+            aria-label="Página anterior"
+            class="min-w-11 min-h-11 flex items-center justify-center border border-border rounded-lg text-gray-500 hover:bg-gray-50 transition-colors disabled:opacity-40 disabled:hover:bg-white"
           >
             <lucide-icon [img]="icLeft" [size]="15" />
           </button>
           <button
             (click)="paginaSiguiente()"
             [disabled]="pagina() + 1 >= totalPaginas()"
-            class="p-1.5 border border-[#E2E8F0] rounded-lg text-gray-500 hover:bg-gray-50 transition-colors disabled:opacity-40 disabled:hover:bg-white"
+            aria-label="Página siguiente"
+            class="min-w-11 min-h-11 flex items-center justify-center border border-border rounded-lg text-gray-500 hover:bg-gray-50 transition-colors disabled:opacity-40 disabled:hover:bg-white"
           >
             <lucide-icon [img]="icRight" [size]="15" />
           </button>
@@ -148,57 +162,57 @@
   @if (seleccionado(); as s) {
     <div (click)="cerrarDetalle()" class="fixed inset-0 bg-black/30 z-40 lg:hidden"></div>
 
-    <div class="fixed inset-y-0 right-0 z-50 w-full sm:w-96 border-l border-[#E2E8F0] bg-white overflow-y-auto shadow-2xl lg:shadow-none lg:static lg:z-auto lg:w-96 flex-shrink-0">
-      <div class="px-6 py-4 border-b border-[#E2E8F0] flex items-center justify-between">
-        <h3 class="font-serif text-lg text-[#00201B]">Detalle del gasto</h3>
-        <button (click)="cerrarDetalle()" class="p-1.5 hover:bg-gray-100 rounded-lg text-gray-400 transition-colors">
+    <div class="fixed inset-y-0 right-0 z-50 w-full sm:w-96 border-l border-border bg-white overflow-y-auto shadow-2xl lg:shadow-none lg:static lg:z-auto lg:w-96 flex-shrink-0">
+      <div class="px-6 py-4 border-b border-border flex items-center justify-between">
+        <h3 class="font-serif text-lg text-text">Detalle del gasto</h3>
+        <button (click)="cerrarDetalle()" aria-label="Cerrar detalle" class="min-w-11 min-h-11 -mr-2 flex items-center justify-center hover:bg-gray-100 rounded-lg text-muted transition-colors">
           <lucide-icon [img]="icX" [size]="17" />
         </button>
       </div>
 
       <div class="p-6 space-y-5">
         <div class="flex items-center justify-between">
-          <div class="w-10 h-10 rounded-lg bg-[#0D9488]/10 flex items-center justify-center text-[#0D9488]">
+          <div class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
             <lucide-icon [img]="icWallet" [size]="18" [strokeWidth]="1.75" />
           </div>
           <app-status-badge [status]="s.estado.toLowerCase()" />
         </div>
 
         <div>
-          <p class="text-xs text-gray-400 mb-0.5">Unidad</p>
-          <p class="text-sm text-[#00201B]">{{ s.unidadId }}</p>
+          <p class="text-xs text-muted mb-0.5">Unidad</p>
+          <p class="text-sm text-text">{{ s.unidadId }}</p>
         </div>
         <div>
-          <p class="text-xs text-gray-400 mb-0.5">Concepto</p>
-          <p class="text-sm text-[#00201B]">{{ s.concepto }}</p>
+          <p class="text-xs text-muted mb-0.5">Concepto</p>
+          <p class="text-sm text-text">{{ s.concepto }}</p>
         </div>
 
         <div class="grid grid-cols-2 gap-4">
           <div>
-            <p class="text-xs text-gray-400 mb-0.5">Monto</p>
-            <p class="text-sm text-[#00201B] font-medium">{{ formatoMonto(s.monto) }}</p>
+            <p class="text-xs text-muted mb-0.5">Monto</p>
+            <p class="text-sm text-text font-medium">{{ formatoMonto(s.monto) }}</p>
           </div>
           <div>
-            <p class="text-xs text-gray-400 mb-0.5">Saldo pendiente</p>
-            <p class="text-sm text-[#00201B] font-medium">{{ formatoMonto(s.saldoPendiente) }}</p>
+            <p class="text-xs text-muted mb-0.5">Saldo pendiente</p>
+            <p class="text-sm text-text font-medium">{{ formatoMonto(s.saldoPendiente) }}</p>
           </div>
         </div>
 
         <div class="grid grid-cols-2 gap-4">
           <div>
-            <p class="text-xs text-gray-400 mb-0.5">Vencimiento</p>
-            <p class="text-sm text-[#00201B]">{{ formatoFecha(s.fechaVencimiento) }}</p>
+            <p class="text-xs text-muted mb-0.5">Vencimiento</p>
+            <p class="text-sm text-text">{{ formatoFecha(s.fechaVencimiento) }}</p>
           </div>
           <div>
-            <p class="text-xs text-gray-400 mb-0.5">Origen</p>
-            <p class="text-sm text-[#00201B]">{{ s.origen === 'RESERVA_ESPACIO' ? 'Reserva de espacio' : (s.origen === 'MANUAL' ? 'Manual' : 'Otro') }}</p>
+            <p class="text-xs text-muted mb-0.5">Origen</p>
+            <p class="text-sm text-text">{{ s.origen === 'RESERVA_ESPACIO' ? 'Reserva de espacio' : (s.origen === 'MANUAL' ? 'Manual' : 'Otro') }}</p>
           </div>
         </div>
 
-        <div class="pt-2 border-t border-[#E2E8F0] space-y-2">
+        <div class="pt-2 border-t border-border space-y-2">
           <button
             (click)="abrirRegistrarPago()"
-            class="w-full flex items-center justify-center gap-2 py-2.5 px-4 bg-[#0D9488] hover:bg-[#005047] text-white rounded-lg text-sm font-medium transition-colors mt-4"
+            class="w-full flex items-center justify-center gap-2 min-h-11 py-2.5 px-4 bg-accent hover:bg-text text-white rounded-lg text-sm font-medium transition-colors mt-4"
           >
             Registrar pago
           </button>
@@ -208,7 +222,7 @@
               @if (puedeEditarSeleccionado()) {
                 <button
                   (click)="abrirEditarCobro()"
-                  class="flex-1 flex items-center justify-center gap-2 py-2.5 px-4 border border-[#E2E8F0] hover:bg-gray-50 text-[#00201B] rounded-lg text-sm font-medium transition-colors"
+                  class="flex-1 flex items-center justify-center gap-2 min-h-11 py-2.5 px-4 border border-border hover:bg-gray-50 text-text rounded-lg text-sm font-medium transition-colors"
                 >
                   <lucide-icon [img]="icEdit" [size]="14" />
                   Editar
@@ -217,7 +231,7 @@
               @if (puedeEliminarSeleccionado()) {
                 <button
                   (click)="abrirEliminarCobro()"
-                  class="flex-1 flex items-center justify-center gap-2 py-2.5 px-4 border border-red-100 hover:bg-red-50 text-red-600 rounded-lg text-sm font-medium transition-colors"
+                  class="flex-1 flex items-center justify-center gap-2 min-h-11 py-2.5 px-4 border border-red-100 hover:bg-red-50 text-red-600 rounded-lg text-sm font-medium transition-colors"
                 >
                   <lucide-icon [img]="icTrash" [size]="14" />
                   Eliminar
@@ -228,18 +242,18 @@
         </div>
 
         <div>
-          <p class="text-[11px] text-gray-400 uppercase tracking-widest font-medium mb-2">Historial de pagos</p>
+          <p class="text-[11px] text-muted uppercase tracking-widest font-medium mb-2">Historial de pagos</p>
           @if (cargandoPagos()) {
-            <p class="text-sm text-gray-400">Cargando…</p>
+            <p class="text-sm text-muted">Cargando…</p>
           } @else if (pagos().length === 0) {
-            <p class="text-sm text-gray-400">Sin pagos registrados todavía.</p>
+            <p class="text-sm text-muted">Sin pagos registrados todavía.</p>
           } @else {
             <div class="space-y-2">
               @for (p of pagos(); track p.id) {
-                <div class="flex items-center justify-between text-sm border border-[#E2E8F0] rounded-lg px-3 py-2.5">
+                <div class="flex items-center justify-between text-sm border border-border rounded-lg px-3 py-2.5">
                   <div class="min-w-0">
-                    <p class="text-[#00201B] font-medium">{{ formatoMonto(p.monto) }}</p>
-                    <p class="text-xs text-gray-400">{{ p.metodo.toLowerCase() }} · {{ formatoFecha(p.fechaPago) }}</p>
+                    <p class="text-text font-medium">{{ formatoMonto(p.monto) }}</p>
+                    <p class="text-xs text-muted">{{ p.metodo.toLowerCase() }} · {{ formatoFecha(p.fechaPago) }}</p>
                   </div>
                 </div>
               }
@@ -252,116 +266,122 @@
 
   <!-- Modal: Nuevo cobro / Editar cobro (mismo formulario) -->
   @if (mostrarModalCobro()) {
-    <div class="fixed inset-0 bg-black/40 z-[60] flex items-center justify-center p-4">
-      <div class="bg-white rounded-xl w-full max-w-md p-6 max-h-[90vh] overflow-y-auto">
+    <dialog appModal (cerrar)="cerrarModalCobro()" aria-labelledby="titulo-cobro" class="m-auto w-[calc(100%-2rem)] max-h-[90vh] overflow-y-auto rounded-xl bg-white p-6 text-text backdrop:bg-black/40 max-w-md">
         <div class="flex items-center justify-between mb-1">
-          <h3 class="font-serif text-lg text-[#00201B]">{{ modoEdicionCobro() ? 'Editar cobro' : 'Nuevo cobro' }}</h3>
-          <button (click)="cerrarModalCobro()" class="p-1.5 hover:bg-gray-100 rounded-lg text-gray-400 transition-colors">
+          <h3 id="titulo-cobro" class="font-serif text-lg text-text">{{ modoEdicionCobro() ? 'Editar cobro' : 'Nuevo cobro' }}</h3>
+          <button (click)="cerrarModalCobro()" aria-label="Cerrar" class="min-w-11 min-h-11 -mr-2 flex items-center justify-center hover:bg-gray-100 rounded-lg text-muted transition-colors">
             <lucide-icon [img]="icX" [size]="17" />
           </button>
         </div>
-        <p class="text-xs text-gray-400 mb-4">
+        <p class="text-xs text-muted mb-4">
           {{ modoEdicionCobro() ? 'Unidad ' + cobroUnidadId() : 'Alta manual de un cobro/cuota' }}
         </p>
 
         <div class="space-y-4">
           @if (!modoEdicionCobro()) {
             <div>
-              <label class="block text-sm font-medium text-[#00201B] mb-1.5">Unidad</label>
+              <label for="cobro-unidad" class="block text-sm font-medium text-text mb-1.5">Unidad</label>
               <input
+                id="cobro-unidad"
+                autofocus
                 [value]="cobroUnidadId()"
                 (input)="cobroUnidadId.set($any($event.target).value)"
-                class="w-full py-2.5 px-3.5 border border-[#E2E8F0] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-100 focus:border-[#0D9488] transition-colors"
+                class="w-full min-h-11 py-2.5 px-3.5 border border-muted rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-colors"
                 placeholder="Ej: 402"
               />
             </div>
           }
           <div>
-            <label class="block text-sm font-medium text-[#00201B] mb-1.5">Concepto</label>
+            <label for="cobro-concepto" class="block text-sm font-medium text-text mb-1.5">Concepto</label>
             <input
+              id="cobro-concepto"
+              autofocus
               [value]="cobroConcepto()"
               (input)="cobroConcepto.set($any($event.target).value)"
-              class="w-full py-2.5 px-3.5 border border-[#E2E8F0] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-100 focus:border-[#0D9488] transition-colors"
+              class="w-full min-h-11 py-2.5 px-3.5 border border-muted rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-colors"
               placeholder="Ej: Cuota ordinaria septiembre"
             />
           </div>
           <div class="grid grid-cols-2 gap-3">
             <div>
-              <label class="block text-sm font-medium text-[#00201B] mb-1.5">Monto (CLP)</label>
+              <label for="cobro-monto" class="block text-sm font-medium text-text mb-1.5">Monto (CLP)</label>
               <input
+                id="cobro-monto"
                 type="number"
                 min="0"
                 [value]="cobroMonto()"
                 (input)="cobroMonto.set($any($event.target).value)"
-                class="w-full py-2.5 px-3.5 border border-[#E2E8F0] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-100 focus:border-[#0D9488] transition-colors"
+                class="w-full min-h-11 py-2.5 px-3.5 border border-muted rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-colors"
                 placeholder="50000"
               />
             </div>
             <div>
-              <label class="block text-sm font-medium text-[#00201B] mb-1.5">Vencimiento</label>
+              <label for="cobro-vencimiento" class="block text-sm font-medium text-text mb-1.5">Vencimiento</label>
               <input
+                id="cobro-vencimiento"
                 type="date"
                 [value]="cobroVencimiento()"
                 (input)="cobroVencimiento.set($any($event.target).value)"
-                class="w-full py-2.5 px-3.5 border border-[#E2E8F0] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-100 focus:border-[#0D9488] transition-colors"
+                class="w-full min-h-11 py-2.5 px-3.5 border border-muted rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-colors"
               />
             </div>
           </div>
 
           @if (errorCobro()) {
-            <p class="text-sm text-red-600">{{ errorCobro() }}</p>
+            <p role="alert" class="text-sm text-red-600">{{ errorCobro() }}</p>
           }
         </div>
 
         <div class="mt-6 flex gap-2">
           <button
             (click)="cerrarModalCobro()"
-            class="flex-1 py-2.5 px-4 border border-[#E2E8F0] text-gray-600 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors"
+            class="flex-1 min-h-11 py-2.5 px-4 border border-border text-gray-600 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors"
           >
             Cancelar
           </button>
           <button
             (click)="guardarCobro()"
             [disabled]="!cobroValido || guardandoCobro()"
-            class="flex-1 py-2.5 px-4 bg-[#0D9488] hover:bg-[#005047] text-white rounded-lg text-sm font-medium transition-colors disabled:opacity-50 disabled:hover:bg-[#0D9488]"
+            class="flex-1 min-h-11 py-2.5 px-4 bg-accent hover:bg-text text-white rounded-lg text-sm font-medium transition-colors disabled:opacity-50 disabled:hover:bg-accent"
           >
             {{ guardandoCobro() ? 'Guardando…' : (modoEdicionCobro() ? 'Guardar cambios' : 'Crear cobro') }}
           </button>
         </div>
-      </div>
-    </div>
+    </dialog>
   }
 
   <!-- Modal: Registrar pago -->
   @if (mostrarRegistrarPago() && seleccionado(); as s) {
-    <div class="fixed inset-0 bg-black/40 z-[60] flex items-center justify-center p-4">
-      <div class="bg-white rounded-xl w-full max-w-md p-6 max-h-[90vh] overflow-y-auto">
+    <dialog appModal (cerrar)="cerrarRegistrarPago()" aria-labelledby="titulo-pago" class="m-auto w-[calc(100%-2rem)] max-h-[90vh] overflow-y-auto rounded-xl bg-white p-6 text-text backdrop:bg-black/40 max-w-md">
         <div class="flex items-center justify-between mb-1">
-          <h3 class="font-serif text-lg text-[#00201B]">Registrar pago</h3>
-          <button (click)="cerrarRegistrarPago()" class="p-1.5 hover:bg-gray-100 rounded-lg text-gray-400 transition-colors">
+          <h3 id="titulo-pago" class="font-serif text-lg text-text">Registrar pago</h3>
+          <button (click)="cerrarRegistrarPago()" aria-label="Cerrar" class="min-w-11 min-h-11 -mr-2 flex items-center justify-center hover:bg-gray-100 rounded-lg text-muted transition-colors">
             <lucide-icon [img]="icX" [size]="17" />
           </button>
         </div>
-        <p class="text-xs text-gray-400 mb-5">{{ s.concepto }} · unidad {{ s.unidadId }} · saldo {{ formatoMonto(s.saldoPendiente) }}</p>
+        <p class="text-xs text-muted mb-5">{{ s.concepto }} · unidad {{ s.unidadId }} · saldo {{ formatoMonto(s.saldoPendiente) }}</p>
 
         <div class="space-y-4">
           <div>
-            <label class="block text-sm font-medium text-[#00201B] mb-1.5">Monto (CLP)</label>
+            <label for="pago-monto" class="block text-sm font-medium text-text mb-1.5">Monto (CLP)</label>
             <input
+              id="pago-monto"
+              autofocus
               type="number"
               min="0"
               [value]="pagoMonto()"
               (input)="pagoMonto.set($any($event.target).value)"
-              class="w-full py-2.5 px-3.5 border border-[#E2E8F0] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-100 focus:border-[#0D9488] transition-colors"
+              class="w-full min-h-11 py-2.5 px-3.5 border border-muted rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-colors"
               placeholder="0"
             />
           </div>
           <div>
-            <label class="block text-sm font-medium text-[#00201B] mb-1.5">Método</label>
+            <label for="pago-metodo" class="block text-sm font-medium text-text mb-1.5">Método</label>
             <select
+              id="pago-metodo"
               [value]="pagoMetodo()"
               (change)="pagoMetodo.set($any($event.target).value)"
-              class="w-full py-2.5 px-3.5 border border-[#E2E8F0] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-100 focus:border-[#0D9488] transition-colors bg-white"
+              class="w-full min-h-11 py-2.5 px-3.5 border border-muted rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-colors bg-white"
             >
               @for (m of metodos; track m) {
                 <option [value]="m">{{ m.toLowerCase() }}</option>
@@ -369,68 +389,66 @@
             </select>
           </div>
           <div>
-            <label class="block text-sm font-medium text-[#00201B] mb-1.5">Comprobante (opcional)</label>
+            <label for="pago-comprobante" class="block text-sm font-medium text-text mb-1.5">Comprobante (opcional)</label>
             <input
+              id="pago-comprobante"
               [value]="pagoComprobante()"
               (input)="pagoComprobante.set($any($event.target).value)"
-              class="w-full py-2.5 px-3.5 border border-[#E2E8F0] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-100 focus:border-[#0D9488] transition-colors"
+              class="w-full min-h-11 py-2.5 px-3.5 border border-muted rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-colors"
               placeholder="N° de comprobante o referencia"
             />
           </div>
 
           @if (errorPago()) {
-            <p class="text-sm text-red-600">{{ errorPago() }}</p>
+            <p role="alert" class="text-sm text-red-600">{{ errorPago() }}</p>
           }
         </div>
 
         <div class="mt-6 flex gap-2">
           <button
             (click)="cerrarRegistrarPago()"
-            class="flex-1 py-2.5 px-4 border border-[#E2E8F0] text-gray-600 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors"
+            class="flex-1 min-h-11 py-2.5 px-4 border border-border text-gray-600 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors"
           >
             Cancelar
           </button>
           <button
             (click)="guardarPago()"
             [disabled]="!pagoValido || guardandoPago()"
-            class="flex-1 py-2.5 px-4 bg-[#0D9488] hover:bg-[#005047] text-white rounded-lg text-sm font-medium transition-colors disabled:opacity-50 disabled:hover:bg-[#0D9488]"
+            class="flex-1 min-h-11 py-2.5 px-4 bg-accent hover:bg-text text-white rounded-lg text-sm font-medium transition-colors disabled:opacity-50 disabled:hover:bg-accent"
           >
             {{ guardandoPago() ? 'Guardando…' : 'Registrar pago' }}
           </button>
         </div>
-      </div>
-    </div>
+    </dialog>
   }
 
   <!-- Modal: Confirmar eliminación -->
   @if (mostrarEliminarCobro() && seleccionado(); as s) {
-    <div class="fixed inset-0 bg-black/40 z-[60] flex items-center justify-center p-4">
-      <div class="bg-white rounded-xl w-full max-w-sm p-6">
-        <h3 class="font-serif text-lg text-[#00201B] mb-2">Eliminar cobro</h3>
+    <dialog appModal (cerrar)="cerrarEliminarCobro()" aria-labelledby="titulo-eliminar" class="m-auto w-[calc(100%-2rem)] max-h-[90vh] overflow-y-auto rounded-xl bg-white p-6 text-text backdrop:bg-black/40 max-w-sm">
+        <h3 id="titulo-eliminar" class="font-serif text-lg text-text mb-2">Eliminar cobro</h3>
         <p class="text-sm text-gray-500 mb-5">
           ¿Estás seguro que quieres eliminar "{{ s.concepto }}" de la unidad {{ s.unidadId }}?
         </p>
 
         @if (errorEliminar()) {
-          <p class="text-sm text-red-600 mb-4">{{ errorEliminar() }}</p>
+          <p role="alert" class="text-sm text-red-600 mb-4">{{ errorEliminar() }}</p>
         }
 
         <div class="flex gap-2">
           <button
             (click)="cerrarEliminarCobro()"
-            class="flex-1 py-2.5 px-4 border border-[#E2E8F0] text-gray-600 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors"
+            class="flex-1 min-h-11 py-2.5 px-4 border border-border text-gray-600 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors"
           >
             Cancelar
           </button>
           <button
             (click)="confirmarEliminarCobro()"
             [disabled]="eliminandoCobro()"
-            class="flex-1 py-2.5 px-4 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
+            class="flex-1 min-h-11 py-2.5 px-4 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
           >
             {{ eliminandoCobro() ? 'Eliminando…' : 'Eliminar' }}
           </button>
         </div>
-      </div>
-    </div>
+    </dialog>
   }
 </div>

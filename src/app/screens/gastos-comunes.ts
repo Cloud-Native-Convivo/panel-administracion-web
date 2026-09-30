@@ -17,12 +17,13 @@ import {
 } from '../models/gasto-comun.model';
 import { StatusBadge } from '../shared/status-badge';
 import { formatoMonto } from '../shared/formato';
+import { ModalDialog } from '../shared/modal-dialog';
 
 const TAMANO_PAGINA = 20;
 
 @Component({
   selector: 'app-gastos-comunes',
-  imports: [LucideAngularModule, StatusBadge],
+  imports: [LucideAngularModule, StatusBadge, ModalDialog],
   templateUrl: './gastos-comunes.html',
 })
 export class GastosComunes implements OnInit {

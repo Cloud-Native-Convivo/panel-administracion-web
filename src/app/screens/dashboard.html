@@ -2,8 +2,8 @@
   <div class="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto">
     <!-- Saludo -->
     <div class="mb-5 sm:mb-7">
-      <h2 class="font-serif text-xl sm:text-2xl text-[#00201B] mb-0.5">{{ saludo }}, {{ nombrePila }}.</h2>
-      <p class="text-xs sm:text-sm text-gray-400">{{ fechaHoy }}</p>
+      <h2 class="font-serif text-xl sm:text-2xl text-text mb-0.5">{{ saludo }}, {{ nombrePila }}.</h2>
+      <p class="text-xs sm:text-sm text-muted">{{ fechaHoy }}</p>
     </div>
 
     <!-- Tarjetas KPI -->
@@ -17,16 +17,16 @@
           [attr.tabindex]="kpi.route ? 0 : null"
           [class.cursor-pointer]="!!kpi.route"
           [class.focus-visible:ring-2]="!!kpi.route"
-          [class.focus-visible:ring-[#0D9488]/40]="!!kpi.route"
+          [class.focus-visible:ring-primary]="!!kpi.route"
           [class.focus:outline-none]="!!kpi.route"
-          class="bg-white border border-[#E2E8F0] rounded-xl p-4 sm:p-5 hover:border-[#0D9488]/30 transition-colors"
+          class="bg-white border border-border rounded-xl p-4 sm:p-5 hover:border-primary/30 transition-colors"
         >
           <div class="w-10 h-10 rounded-lg flex items-center justify-center mb-3 sm:mb-4" [class]="kpi.color">
             <lucide-icon [img]="kpi.icon" [size]="19" [strokeWidth]="1.75" />
           </div>
-          <p class="text-2xl sm:text-3xl font-semibold text-[#00201B] tracking-tight mb-0.5">{{ kpi.value }}</p>
-          <p class="text-sm font-medium text-[#00201B] mb-0.5">{{ kpi.label }}</p>
-          <p class="text-xs text-gray-400">{{ kpi.sub }}</p>
+          <p class="text-2xl sm:text-3xl font-semibold text-text tracking-tight mb-0.5">{{ kpi.value }}</p>
+          <p class="text-sm font-medium text-text mb-0.5">{{ kpi.label }}</p>
+          <p class="text-xs text-muted">{{ kpi.sub }}</p>
         </div>
       }
     </div>
@@ -34,31 +34,31 @@
     <!-- Grilla principal -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
       <!-- Próximas reservas -->
-      <div class="col-span-1 lg:col-span-2 bg-white border border-[#E2E8F0] rounded-xl overflow-hidden">
-        <div class="px-4 sm:px-6 py-4 border-b border-[#E2E8F0]">
-          <h3 class="font-serif text-base sm:text-lg text-[#00201B]">Próximas reservas</h3>
+      <div class="col-span-1 lg:col-span-2 bg-white border border-border rounded-xl overflow-hidden">
+        <div class="px-4 sm:px-6 py-4 border-b border-border">
+          <h3 class="font-serif text-base sm:text-lg text-text">Próximas reservas</h3>
         </div>
         <div class="overflow-x-auto">
           <table class="w-full min-w-[500px]">
             <thead>
-              <tr class="border-b border-[#E2E8F0] bg-gray-50/50">
-                <th class="text-left text-[11px] text-gray-400 font-medium px-4 sm:px-6 py-3 uppercase tracking-wide">Espacio</th>
-                <th class="text-left text-[11px] text-gray-400 font-medium px-4 py-3 uppercase tracking-wide">Residente</th>
-                <th class="text-left text-[11px] text-gray-400 font-medium px-4 py-3 uppercase tracking-wide">Fecha · Hora</th>
-                <th class="text-left text-[11px] text-gray-400 font-medium px-4 py-3 uppercase tracking-wide">Estado</th>
+              <tr class="border-b border-border bg-gray-50/50">
+                <th class="text-left text-[11px] text-muted font-medium px-4 sm:px-6 py-3 uppercase tracking-wide">Espacio</th>
+                <th class="text-left text-[11px] text-muted font-medium px-4 py-3 uppercase tracking-wide">Residente</th>
+                <th class="text-left text-[11px] text-muted font-medium px-4 py-3 uppercase tracking-wide">Fecha · Hora</th>
+                <th class="text-left text-[11px] text-muted font-medium px-4 py-3 uppercase tracking-wide">Estado</th>
               </tr>
             </thead>
             <tbody>
               @for (r of upcoming(); track r.id; let last = $last) {
-                <tr [class]="last ? 'hover:bg-gray-50/70 transition-colors' : 'hover:bg-gray-50/70 transition-colors border-b border-[#E2E8F0]'">
-                  <td class="px-4 sm:px-6 py-3.5 text-xs sm:text-sm font-medium text-[#00201B]">{{ r.space }}</td>
+                <tr [class]="last ? 'hover:bg-gray-50/70 transition-colors' : 'hover:bg-gray-50/70 transition-colors border-b border-border'">
+                  <td class="px-4 sm:px-6 py-3.5 text-xs sm:text-sm font-medium text-text">{{ r.space }}</td>
                   <td class="px-4 py-3.5 text-xs sm:text-sm text-gray-600">{{ r.user }}</td>
                   <td class="px-4 py-3.5 text-xs sm:text-sm text-gray-500 whitespace-nowrap">{{ r.date }} · {{ r.time }}</td>
                   <td class="px-4 py-3.5"><app-status-badge [status]="r.status" /></td>
                 </tr>
               } @empty {
                 <tr>
-                  <td colspan="4" class="px-4 sm:px-6 py-6 text-sm text-gray-400 text-center">
+                  <td colspan="4" class="px-4 sm:px-6 py-6 text-sm text-muted text-center">
                     No hay reservas próximas.
                   </td>
                 </tr>
@@ -71,28 +71,28 @@
       <!-- Columna derecha -->
       <div class="space-y-5">
         <!-- Gastos comunes -->
-        <div class="bg-white border border-[#E2E8F0] rounded-xl p-4 sm:p-5">
+        <div class="bg-white border border-border rounded-xl p-4 sm:p-5">
           <div class="flex items-center justify-between mb-4">
-            <h3 class="font-serif text-base sm:text-lg text-[#00201B] flex items-center gap-2">
-              <lucide-icon [img]="icWallet" [size]="16" class="text-[#0D9488]" />
+            <h3 class="font-serif text-base sm:text-lg text-text flex items-center gap-2">
+              <lucide-icon [img]="icWallet" [size]="16" class="text-primary" />
               Gastos comunes
             </h3>
             <button
               (click)="go('gastos-comunes')"
-              class="text-xs sm:text-sm text-[#0D9488] hover:text-[#005047] font-medium transition-colors"
+              class="min-h-11 -my-3 text-xs sm:text-sm text-accent hover:text-text font-medium transition-colors"
             >
               Ver todos →
             </button>
           </div>
 
           @if (resumenGastos().cargando) {
-            <p class="text-sm text-gray-400">Cargando…</p>
+            <p class="text-sm text-muted">Cargando…</p>
           } @else if (resumenGastos().error) {
             <p class="text-sm text-red-600">No se pudo conectar con el microservicio de Gastos Comunes.</p>
           } @else {
             <div class="mb-4">
-              <p class="text-xs text-gray-400 mb-0.5">Saldo pendiente total</p>
-              <p class="text-2xl font-semibold text-[#00201B] tracking-tight">
+              <p class="text-xs text-muted mb-0.5">Saldo pendiente total</p>
+              <p class="text-2xl font-semibold text-text tracking-tight">
                 {{ formatoMonto(resumenGastos().saldoPendienteTotal) }}
               </p>
             </div>
@@ -103,20 +103,20 @@
               </div>
               <div class="flex justify-between items-center text-sm">
                 <span class="text-gray-500">Pendientes</span>
-                <span class="font-semibold text-yellow-600">{{ resumenGastos().pendientes }}</span>
+                <span class="font-semibold text-yellow-700">{{ resumenGastos().pendientes }}</span>
               </div>
               <div class="flex justify-between items-center text-sm">
                 <span class="text-gray-500">Pagados</span>
-                <span class="font-semibold text-[#0D9488]">{{ resumenGastos().pagados }}</span>
+                <span class="font-semibold text-accent">{{ resumenGastos().pagados }}</span>
               </div>
             </div>
           }
         </div>
 
         <!-- Estado de unidades: sin microservicio de condominios/unidades todavía -->
-        <div class="bg-white border border-[#E2E8F0] rounded-xl p-4 sm:p-5">
-          <h3 class="font-medium text-sm text-[#00201B] mb-4">Estado de unidades</h3>
-          <p class="text-sm text-gray-400">Próximamente.</p>
+        <div class="bg-white border border-border rounded-xl p-4 sm:p-5">
+          <h3 class="font-medium text-sm text-text mb-4">Estado de unidades</h3>
+          <p class="text-sm text-muted">Próximamente.</p>
         </div>
       </div>
     </div>

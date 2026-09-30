@@ -51,7 +51,7 @@ export class Dashboard implements OnInit {
   // todavía (no hay ms-condominios ni ms-usuarios) -- quedan como
   // "Próximamente" en vez de mostrar cifras inventadas en un despliegue real.
   protected readonly kpis = signal<Kpi[]>([
-    { label: 'Total unidades',       value: '—',  sub: 'Próximamente',              icon: Building2, color: 'bg-teal-50 text-[#0D9488]' },
+    { label: 'Total unidades',       value: '—',  sub: 'Próximamente',              icon: Building2, color: 'bg-teal-50 text-primary' },
     { label: 'Usuarios activos',     value: '—',  sub: 'Próximamente',              icon: Users,     color: 'bg-blue-50 text-blue-600' },
     { label: 'Espacios habilitados', value: '—',  sub: 'Cargando…',                 icon: Search,    color: 'bg-violet-50 text-violet-600', route: 'espacios' },
     { label: 'Reservas hoy',         value: '—',  sub: 'Cargando…',                 icon: Calendar,  color: 'bg-orange-50 text-orange-600' },

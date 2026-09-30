@@ -49,9 +49,7 @@ Modelo de 3 capas — evita hardcodear hex en componentes:
 2. **Alias/semántico**: nombre por significado, no apariencia (`Primary`, no `teal-600`) — sección 2.1.
 3. **Componente**: token scoped que referencia un alias (`button-bg` → `Primary`) — sección 2.2, opcional, agregar si el equipo ya tiene suficientes componentes para justificarlo.
 
-**Estado actual del código — el modelo de arriba es el objetivo, no lo implementado.** `src/styles.css` define solo tokens de tipografía (`--font-sans`, `--font-serif`) dentro de `@theme`; **no hay ningún token de color**. Los cuatro colores de §2.1 viven como hex literales en clases arbitrarias de Tailwind (`bg-[#0D9488]`, `text-[#00201B]`…): ~189 ocurrencias repartidas en 11 archivos de `src/app` — `#00201B` ×61, `#E2E8F0` ×60, `#0D9488` ×53, `#005047` ×14, `#E11D48` ×1. Los de §2.3 (Advertencia, Éxito) no aparecen en el código en absoluto.
-
-Consecuencia práctica: cambiar Primary hoy es un find-and-replace sobre 53 ocurrencias, no la edición de una línea, y la regla "sin hex sueltos en componentes" de §11.1 está declarada pero incumplida. Migración pendiente: mover los alias de §2.1 a variables `@theme` en `styles.css` (`--color-primary`, `--color-text`, `--color-border`, `--color-accent`) y reemplazar las clases arbitrarias por las utilidades que Tailwind genera de esas variables.
+**Estado actual del código — capas 1 y 2 implementadas.** Los alias de §2.1 viven como variables `@theme` en `src/styles.css` (`--color-primary`, `--color-accent`, `--color-text`, `--color-border`, `--color-muted`, `--color-alert-red`…) y los componentes usan las utilidades que Tailwind genera de ellas (`bg-primary`, `text-text`, `border-border`, `text-muted`). Cero hex literales en clases arbitrarias de `src/app`: cambiar Primary es editar una línea. Los de §2.3 (Advertencia, Éxito) todavía no tienen token; el código usa `yellow-*`/`teal-*` de Tailwind directo.
 
 **Formato de intercambio**: si los tokens viven en un archivo y no solo en la cabeza del equipo, usar el formato del **Design Tokens Community Group (DTCG)** del W3C — primera versión estable (2025.10) publicada en octubre de 2025, respaldada por Adobe, Figma, Google, Microsoft, Shopify y Salesforce. Lo leen o escriben Figma, Penpot, Sketch, Tokens Studio, Style Dictionary y Terrazzo, así que un token definido una vez viaja entre diseño y código sin script de exportación a medida. Elegir ese JSON antes que inventar un formato propio: la diferencia aparece el día que se cambia de herramienta. (no aplica: tokens solo en código, sin archivo DTCG).
 
@@ -61,11 +59,11 @@ Consecuencia práctica: cambiar Primary hoy es un find-and-replace sobre 53 ocur
 | --- | --- | --- | --- | --- |
 | Background | `#FFFFFF` | 255, 255, 255 | 0, 0, 0, 0 | Fondo general de la aplicación |
 | Text | `#00201B` | 0, 32, 27 | 100, 0, 16, 87 | Texto principal sobre fondos claros |
-| Primary | `#0D9488` | 13, 148, 136 | 91, 0, 8, 42 | Acciones principales, botones, enlaces activos |
-| Accent | `#005047` | 0, 80, 71 | 100, 0, 11, 69 | Estados hover/presionado, énfasis secundario |
+| Primary | `#0D9488` | 13, 148, 136 | 91, 0, 8, 42 | Color de marca, igual a Frontend-CloudNative. Solo no-texto: íconos, foco, bordes activos, toggle (3.74:1 sobre blanco, WCAG pide 3:1). Nunca texto ni fondo de botón con texto (falla 4.5:1) |
+| Accent | `#005047` | 0, 80, 71 | 100, 0, 11, 69 | Fondo de botones principales (texto blanco 9.38:1), enlaces y texto de color; hover de botón pasa a Text |
 | Surface | `#FFFFFF` | 255, 255, 255 | 0, 0, 0, 0 | Tarjetas, paneles, modales |
-| Border | `#E2E8F0` | 226, 232, 240 | 6, 3, 0, 6 | Bordes, separadores, líneas divisorias |
-| Muted | `#64748B` | 100, 116, 139 | 28, 17, 0, 45 | Texto secundario, labels desactivados |
+| Border | `#E2E8F0` | 226, 232, 240 | 6, 3, 0, 6 | Bordes, separadores, líneas divisorias (decorativos: 1.23:1, no usar en controles; inputs usan Muted) |
+| Muted | `#64748B` | 100, 116, 139 | 28, 17, 0, 45 | Texto secundario, labels desactivados, borde de inputs/selects (4.76:1, cumple WCAG 1.4.11) |
 
 ### 2.2 Tokens de componente (opcional)
 
