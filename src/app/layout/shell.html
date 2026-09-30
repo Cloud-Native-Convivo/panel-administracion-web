@@ -32,7 +32,7 @@
       <!-- Botón cerrar para móvil -->
       <button
         (click)="closeMobileMenu()"
-        class="p-1 text-gray-500 hover:text-gray-700 lg:hidden"
+        class="min-w-11 min-h-11 -mr-3 flex items-center justify-center text-gray-500 hover:text-gray-700 lg:hidden"
         aria-label="Cerrar menú"
       >
         <lucide-icon [img]="icX" [size]="20" />
@@ -45,10 +45,11 @@
           @if (item.id !== 'users' && item.id !== 'condominios') {
             <button
               (click)="go(item.id)"
+              [attr.aria-current]="isActive(item.id) ? 'page' : null"
               [class]="
                 isActive(item.id)
-                  ? 'w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors bg-teal-50 text-accent font-medium'
-                  : 'w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors text-text hover:bg-gray-50 font-normal'
+                  ? 'w-full flex items-center gap-3 px-3 py-3 rounded-lg text-sm transition-colors bg-teal-50 text-accent font-medium'
+                  : 'w-full flex items-center gap-3 px-3 py-3 rounded-lg text-sm transition-colors text-text hover:bg-gray-50 font-normal'
               "
             >
               <lucide-icon
@@ -86,7 +87,7 @@
       <div class="flex items-center gap-2 min-w-0 flex-1 sm:flex-initial">
         <button
           (click)="toggleMobileMenu()"
-          class="p-1.5 text-gray-600 hover:text-text hover:bg-gray-100 rounded-lg lg:hidden transition-colors flex-shrink-0"
+          class="min-w-11 min-h-11 -ml-2 flex items-center justify-center text-gray-600 hover:text-text hover:bg-gray-100 rounded-lg lg:hidden transition-colors flex-shrink-0"
           aria-label="Abrir menú"
         >
           <lucide-icon [img]="icMenu" [size]="20" />
@@ -117,7 +118,7 @@
           </div>
           <button
             (click)="logout()"
-            class="p-1.5 text-muted hover:text-text hover:bg-gray-100 rounded-lg transition-colors flex-shrink-0"
+            class="min-w-11 min-h-11 flex items-center justify-center text-muted hover:text-text hover:bg-gray-100 rounded-lg transition-colors flex-shrink-0"
             title="Cerrar sesión"
             aria-label="Cerrar sesión"
           >
@@ -128,7 +129,7 @@
     </header>
 
     <!-- Pantalla activa -->
-    <main id="main-content" class="flex-1 overflow-hidden bg-white">
+    <main id="main-content" tabindex="-1" class="flex-1 overflow-hidden bg-white focus:outline-none">
       <router-outlet />
     </main>
   </div>
