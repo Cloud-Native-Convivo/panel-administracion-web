@@ -21,8 +21,8 @@ export class Toggle {
   readonly change = output<void>();
 
   readonly btnCls = computed(() =>
-    `relative w-10 h-6 rounded-full transition-colors duration-200 flex-shrink-0 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-[#0D9488] ${
-      this.value() ? "bg-[#0D9488]" : "bg-gray-200"
+    `relative w-10 h-6 rounded-full transition-colors duration-200 flex-shrink-0 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-primary ${
+      this.value() ? "bg-primary" : "bg-gray-200"
     }`,
   );
 

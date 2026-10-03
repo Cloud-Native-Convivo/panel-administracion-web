@@ -1,0 +1,7 @@
+# /robots.txt
+User-agent: *
+Disallow: /
+
+# Este es un panel de administración privado (Convivo). 
+# Ningún bot de indexación pública ni IA (Googlebot, Bingbot, GPTBot, ClaudeBot, PerplexityBot)
+# debe rastrear ni indexar el contenido de esta aplicación.

@@ -57,6 +57,8 @@ jobs:
       - name: Trivy SARIF
         uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         with:
+          # trivy-action v0.36.0 trae Trivy 0.70.0 por defecto; Dependabot no actualiza este valor
+          version: v0.74.0
           image-ref: panel-administracion-web:scan
           format: sarif
           output: trivy-results.sarif
@@ -71,10 +73,16 @@ jobs:
         with:
           sarif_file: trivy-results.sarif
           category: trivy-image
+          # Corre en tags: sin ref/sha el analisis queda en refs/tags/* y no aparece
+          # en Security de la rama por defecto. El commit tagueado esta en main.
+          ref: refs/heads/main
+          sha: ${{ github.sha }}
 
       - name: Trivy gate
         uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         with:
+          # trivy-action v0.36.0 trae Trivy 0.70.0 por defecto; Dependabot no actualiza este valor
+          version: v0.74.0
           image-ref: panel-administracion-web:scan
           format: table
           severity: CRITICAL

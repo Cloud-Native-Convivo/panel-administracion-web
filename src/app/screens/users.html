@@ -4,11 +4,11 @@
     <!-- Barra de herramientas -->
     <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 mb-6">
       <div class="relative w-full sm:w-64">
-        <lucide-icon [img]="icSearch" [size]="14" class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+        <lucide-icon [img]="icSearch" [size]="14" class="absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
         <input
           [value]="search()"
           (input)="search.set($any($event.target).value)"
-          class="w-full pl-9 pr-4 py-2 text-sm border border-[#E2E8F0] rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-100 focus:border-[#0D9488] transition-colors"
+          class="w-full pl-9 pr-4 py-2 text-sm border border-muted rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-colors"
           placeholder="Buscar por nombre, correo o unidad…"
         />
       </div>
@@ -18,31 +18,31 @@
             (click)="role.set(r)"
             [class]="
               (role() === r
-                ? 'px-3 py-1.5 rounded-lg text-xs font-medium transition-colors bg-[#0D9488] text-white whitespace-nowrap'
-                : 'px-3 py-1.5 rounded-lg text-xs font-medium transition-colors bg-white border border-[#E2E8F0] text-gray-600 hover:bg-gray-50 whitespace-nowrap')
+                ? 'px-3 py-1.5 rounded-lg text-xs font-medium transition-colors bg-accent text-white whitespace-nowrap'
+                : 'px-3 py-1.5 rounded-lg text-xs font-medium transition-colors bg-white border border-border text-gray-600 hover:bg-gray-50 whitespace-nowrap')
             "
           >
             {{ r }}
           </button>
         }
       </div>
-      <button class="sm:ml-auto flex items-center justify-center gap-2 bg-[#0D9488] hover:bg-[#005047] text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex-shrink-0">
+      <button class="sm:ml-auto flex items-center justify-center gap-2 bg-accent hover:bg-text text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex-shrink-0">
         <lucide-icon name="plus" [size]="16" />
         Nuevo usuario
       </button>
     </div>
 
     <!-- Tabla de usuarios -->
-    <div class="bg-white border border-[#E2E8F0] rounded-xl overflow-hidden">
+    <div class="bg-white border border-border rounded-xl overflow-hidden">
       <div class="overflow-x-auto">
         <table class="w-full min-w-[600px]">
           <thead>
-            <tr class="border-b border-[#E2E8F0] bg-gray-50/60">
-              <th class="text-left text-[11px] text-gray-400 font-medium py-3 px-6 uppercase tracking-wide">Nombre</th>
-              <th class="text-left text-[11px] text-gray-400 font-medium py-3 px-4 uppercase tracking-wide">Rol</th>
-              <th class="text-left text-[11px] text-gray-400 font-medium py-3 px-4 uppercase tracking-wide">Unidad</th>
-              <th class="text-left text-[11px] text-gray-400 font-medium py-3 px-4 uppercase tracking-wide">Estado</th>
-              <th class="text-left text-[11px] text-gray-400 font-medium py-3 px-3 w-12 uppercase tracking-wide"></th>
+            <tr class="border-b border-border bg-gray-50/60">
+              <th class="text-left text-[11px] text-muted font-medium py-3 px-6 uppercase tracking-wide">Nombre</th>
+              <th class="text-left text-[11px] text-muted font-medium py-3 px-4 uppercase tracking-wide">Rol</th>
+              <th class="text-left text-[11px] text-muted font-medium py-3 px-4 uppercase tracking-wide">Unidad</th>
+              <th class="text-left text-[11px] text-muted font-medium py-3 px-4 uppercase tracking-wide">Estado</th>
+              <th class="text-left text-[11px] text-muted font-medium py-3 px-3 w-12 uppercase tracking-wide"></th>
             </tr>
           </thead>
           <tbody>
@@ -51,17 +51,17 @@
                 (click)="selected.set(u)"
                 [class]="
                   (selected()?.id === u.id ? 'cursor-pointer hover:bg-gray-50/70 transition-colors bg-teal-50/40' : 'cursor-pointer hover:bg-gray-50/70 transition-colors') +
-                  (last ? '' : ' border-b border-[#E2E8F0]')
+                  (last ? '' : ' border-b border-border')
                 "
               >
                 <td class="px-6 py-3.5">
                   <div class="flex items-center gap-3">
-                    <div class="w-8 h-8 rounded-full bg-[#0D9488]/10 flex items-center justify-center text-[#0D9488] text-xs font-semibold flex-shrink-0">
+                    <div class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-accent text-xs font-semibold flex-shrink-0">
                       {{ initials(u.name) }}
                     </div>
                     <div class="min-w-0">
-                      <p class="text-sm font-medium text-[#00201B] truncate">{{ u.name }}</p>
-                      <p class="text-xs text-gray-400 truncate">{{ u.email }}</p>
+                      <p class="text-sm font-medium text-text truncate">{{ u.name }}</p>
+                      <p class="text-xs text-muted truncate">{{ u.email }}</p>
                     </div>
                   </div>
                 </td>
@@ -69,7 +69,7 @@
                 <td class="px-4 py-3.5 text-sm text-gray-600 whitespace-nowrap">{{ u.unit }}</td>
                 <td class="px-4 py-3.5 whitespace-nowrap"><app-status-badge [status]="u.status" /></td>
                 <td class="px-3 py-3.5">
-                  <button class="p-1.5 hover:bg-gray-100 rounded-lg text-gray-400 transition-colors" (click)="$event.stopPropagation()">
+                  <button class="p-1.5 hover:bg-gray-100 rounded-lg text-muted transition-colors" (click)="$event.stopPropagation()">
                     <lucide-icon [img]="icMore" [size]="15" />
                   </button>
                 </td>
@@ -77,7 +77,7 @@
             }
             @if (filtered().length === 0) {
               <tr>
-                <td colspan="5" class="px-6 py-16 text-center text-gray-400 text-sm">
+                <td colspan="5" class="px-6 py-16 text-center text-muted text-sm">
                   No se encontraron usuarios con ese criterio.
                 </td>
               </tr>
@@ -96,47 +96,47 @@
       class="fixed inset-0 bg-black/30 z-40 lg:hidden"
     ></div>
 
-    <div class="fixed inset-y-0 right-0 z-50 w-full sm:w-80 border-l border-[#E2E8F0] bg-white overflow-y-auto shadow-2xl lg:shadow-none lg:static lg:z-auto lg:w-80 flex-shrink-0">
-      <div class="px-6 py-4 border-b border-[#E2E8F0] flex items-center justify-between">
-        <h3 class="font-serif text-lg text-[#00201B]">Detalle de usuario</h3>
-        <button (click)="selected.set(null)" class="p-1.5 hover:bg-gray-100 rounded-lg text-gray-400 transition-colors">
+    <div class="fixed inset-y-0 right-0 z-50 w-full sm:w-80 border-l border-border bg-white overflow-y-auto shadow-2xl lg:shadow-none lg:static lg:z-auto lg:w-80 flex-shrink-0">
+      <div class="px-6 py-4 border-b border-border flex items-center justify-between">
+        <h3 class="font-serif text-lg text-text">Detalle de usuario</h3>
+        <button (click)="selected.set(null)" class="p-1.5 hover:bg-gray-100 rounded-lg text-muted transition-colors">
           <lucide-icon [img]="icX" [size]="17" />
         </button>
       </div>
       <div class="p-6">
         <div class="flex flex-col items-center mb-6">
-          <div class="w-16 h-16 rounded-full bg-[#0D9488]/10 flex items-center justify-center text-[#0D9488] text-xl font-semibold mb-3">
+          <div class="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center text-accent text-xl font-semibold mb-3">
             {{ initials(s.name) }}
           </div>
-          <p class="font-medium text-[#00201B] text-center text-sm mb-1.5">{{ s.name }}</p>
+          <p class="font-medium text-text text-center text-sm mb-1.5">{{ s.name }}</p>
           <app-role-badge [role]="s.role" />
         </div>
 
         <div class="space-y-4">
           <div>
-            <p class="text-xs text-gray-400 mb-0.5">Correo</p>
-            <p class="text-sm text-[#00201B] break-all">{{ s.email }}</p>
+            <p class="text-xs text-muted mb-0.5">Correo</p>
+            <p class="text-sm text-text break-all">{{ s.email }}</p>
           </div>
           <div>
-            <p class="text-xs text-gray-400 mb-0.5">Teléfono</p>
-            <p class="text-sm text-[#00201B]">{{ s.phone }}</p>
+            <p class="text-xs text-muted mb-0.5">Teléfono</p>
+            <p class="text-sm text-text">{{ s.phone }}</p>
           </div>
           <div>
-            <p class="text-xs text-gray-400 mb-0.5">Unidad</p>
-            <p class="text-sm text-[#00201B]">{{ s.unit }}</p>
+            <p class="text-xs text-muted mb-0.5">Unidad</p>
+            <p class="text-sm text-text">{{ s.unit }}</p>
           </div>
           <div>
-            <p class="text-xs text-gray-400 mb-1">Estado</p>
+            <p class="text-xs text-muted mb-1">Estado</p>
             <app-status-badge [status]="s.status" />
           </div>
         </div>
 
-        <div class="mt-6 pt-6 border-t border-[#E2E8F0] space-y-2">
-          <button class="w-full flex items-center justify-center gap-2 py-2.5 px-4 bg-[#0D9488] hover:bg-[#005047] text-white rounded-lg text-sm font-medium transition-colors">
+        <div class="mt-6 pt-6 border-t border-border space-y-2">
+          <button class="w-full flex items-center justify-center gap-2 py-2.5 px-4 bg-accent hover:bg-text text-white rounded-lg text-sm font-medium transition-colors">
             <lucide-icon [img]="icEdit" [size]="14" />
             Editar usuario
           </button>
-          <button class="w-full flex items-center justify-center gap-2 py-2.5 px-4 border border-[#E2E8F0] text-gray-600 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors">
+          <button class="w-full flex items-center justify-center gap-2 py-2.5 px-4 border border-border text-gray-600 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors">
             {{ s.status === 'activo' ? 'Desactivar cuenta' : 'Reactivar cuenta' }}
           </button>
         </div>
