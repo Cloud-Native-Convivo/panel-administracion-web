@@ -4,6 +4,16 @@
   <meta charset="utf-8">
   <title>Convivo · Panel de Administración</title>
   <base href="/">
+  <!-- Content Security Policy & Trusted Types -->
+  <meta http-equiv="Content-Security-Policy" content="
+    default-src 'self';
+    script-src 'self' 'unsafe-inline' 'unsafe-eval' https://login.microsoftonline.com;
+    style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+    font-src 'self' https://fonts.gstatic.com;
+    img-src 'self' data: https:;
+    connect-src 'self' ws://localhost:* http://localhost:* https://login.microsoftonline.com;
+    require-trusted-types-for 'script';
+  ">
   <script>
     // Contraparte de public/404.html — decodifica la ruta real antes de
     // que Angular Router monte. https://github.com/rafgraph/spa-github-pages
@@ -27,6 +37,31 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="Panel de administración de Convivo para la gestión de condominios, espacios comunes, reservas y comunidad en Chile." />
   <meta name="robots" content="noindex, nofollow" />
+  
+  <!-- Open Graph / Meta tags adicionales -->
+  <meta property="og:title" content="Convivo · Panel de Administración" />
+  <meta property="og:description" content="Panel de administración privado para la gestión de condominios en Chile." />
+  <meta property="og:type" content="website" />
+  <meta property="og:locale" content="es_CL" />
+  <link rel="canonical" href="https://app.convivo.cl/" />
+
+  <!-- Structured Data (JSON-LD) para visibilidad de marca y AI crawlers (aunque sea privado) -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "Convivo Admin",
+    "applicationCategory": "BusinessApplication",
+    "operatingSystem": "Web",
+    "description": "Plataforma de administración web para gestión de condominios y espacios comunes en Chile.",
+    "publisher": {
+      "@type": "Organization",
+      "name": "Convivo",
+      "url": "https://convivo.cl"
+    }
+  }
+  </script>
+
   <link rel="icon" type="image/x-icon" href="favicon.ico">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -35,6 +70,14 @@
     html, body { height: 100%; margin: 0; }
     app-root { display: block; height: 100%; }
   </style>
+  <script type="speculationrules">
+  {
+    "prerender": [{
+      "where": { "href_matches": "/*" },
+      "eagerness": "moderate"
+    }]
+  }
+  </script>
 </head>
 <body>
   <app-root></app-root>

@@ -25,7 +25,7 @@
     <div class="h-16 flex items-center justify-between px-5 border-b border-border flex-shrink-0">
       <div class="flex items-center gap-2.5">
         <div class="w-7 h-7 bg-primary rounded-md flex items-center justify-center flex-shrink-0">
-          <lucide-icon [img]="icBuilding" [size]="14" class="text-white" />
+          <lucide-icon aria-hidden="true" [img]="icBuilding" [size]="14" class="text-white" />
         </div>
         <span class="font-serif text-xl text-text tracking-tight">Convivo</span>
       </div>
@@ -35,7 +35,7 @@
         class="min-w-11 min-h-11 -mr-3 flex items-center justify-center text-gray-500 hover:text-gray-700 lg:hidden"
         aria-label="Cerrar menú"
       >
-        <lucide-icon [img]="icX" [size]="20" />
+        <lucide-icon aria-hidden="true" [img]="icX" [size]="20" />
       </button>
     </div>
 
@@ -52,7 +52,7 @@
                   : 'w-full flex items-center gap-3 px-3 py-3 rounded-lg text-sm transition-colors text-text hover:bg-gray-50 font-normal'
               "
             >
-              <lucide-icon
+              <lucide-icon aria-hidden="true"
                 [img]="item.icon"
                 [size]="17"
                 [strokeWidth]="isActive(item.id) ? 2 : 1.75"
@@ -69,9 +69,9 @@
         <div class="space-y-0.5">
           @for (item of soonItems; track item.label) {
             <div class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-muted cursor-not-allowed select-none opacity-50">
-              <lucide-icon [img]="item.icon" [size]="17" [strokeWidth]="1.75" />
+              <lucide-icon aria-hidden="true" [img]="item.icon" [size]="17" [strokeWidth]="1.75" />
               <span class="flex-1 text-left">{{ item.label }}</span>
-              <lucide-icon [img]="icLock" [size]="11" />
+              <lucide-icon aria-hidden="true" [img]="icLock" [size]="11" />
             </div>
           }
         </div>
@@ -87,10 +87,11 @@
       <div class="flex items-center gap-2 min-w-0 flex-1 sm:flex-initial">
         <button
           (click)="toggleMobileMenu()"
-          class="min-w-11 min-h-11 -ml-2 flex items-center justify-center text-gray-600 hover:text-text hover:bg-gray-100 rounded-lg lg:hidden transition-colors flex-shrink-0"
+          class="min-h-11 -ml-2 flex items-center justify-center gap-2 px-3 text-gray-600 hover:text-text hover:bg-gray-100 rounded-lg lg:hidden transition-colors flex-shrink-0"
           aria-label="Abrir menú"
         >
-          <lucide-icon [img]="icMenu" [size]="20" />
+          <lucide-icon aria-hidden="true" [img]="icMenu" [size]="20" />
+          <span class="text-sm font-medium">Menú</span>
         </button>
 
         <h1 class="font-serif text-base sm:text-xl text-text leading-none truncate min-w-0">
@@ -100,20 +101,13 @@
 
       <!-- Sección derecha: Buscador + Usuario -->
       <div class="flex items-center gap-2 sm:gap-3 flex-shrink-0">
-        <div class="relative">
-          <lucide-icon [img]="icSearch" [size]="14" class="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted pointer-events-none" />
-          <input
-            class="pl-8 pr-2.5 py-1.5 text-xs sm:text-sm bg-gray-50 border border-muted rounded-lg w-20 focus:w-36 sm:w-48 lg:w-64 focus:sm:w-48 focus:lg:w-64 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200 placeholder:text-muted"
-            placeholder="Buscar..."
-            aria-label="Buscar en el panel"
-          />
-        </div>
+
         <div class="flex items-center gap-2 sm:gap-3 pl-2 sm:pl-3 border-l border-border">
           <div class="text-right hidden sm:block">
             <p class="text-sm font-medium text-text leading-tight">{{ nombreUsuario }}</p>
             <p class="text-xs text-muted leading-tight">{{ correoUsuario }}</p>
           </div>
-          <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-accent flex items-center justify-center text-white text-xs font-semibold flex-shrink-0">
+          <div aria-hidden="true" class="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-accent flex items-center justify-center text-white text-xs font-semibold flex-shrink-0">
             {{ inicialesUsuario }}
           </div>
           <button
@@ -122,7 +116,7 @@
             title="Cerrar sesión"
             aria-label="Cerrar sesión"
           >
-            <lucide-icon [img]="icLogout" [size]="16" />
+            <lucide-icon aria-hidden="true" [img]="icLogout" [size]="16" />
           </button>
         </div>
       </div>

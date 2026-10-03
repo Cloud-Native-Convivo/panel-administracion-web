@@ -29,18 +29,15 @@ h1, h2, h3, h4, label, button {
   font-weight: 500;
 }
 
-/* Scrollbar fina como en el original */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+/* Reduced Motion (WCAG 2.3) */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-::-webkit-scrollbar-thumb {
-  background: #E2E8F0;
-  border-radius: 999px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: #cbd5e1;
-}
+

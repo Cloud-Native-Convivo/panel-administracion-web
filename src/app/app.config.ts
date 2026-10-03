@@ -1,5 +1,5 @@
-import { ApplicationConfig, inject, provideAppInitializer, provideBrowserGlobalErrorListeners } from '@angular/core'
-import { provideRouter } from '@angular/router'
+import { ApplicationConfig, ErrorHandler, inject, provideAppInitializer, provideBrowserGlobalErrorListeners } from '@angular/core'
+import { provideRouter, withViewTransitions } from '@angular/router'
 import {
   HTTP_INTERCEPTORS,
   provideHttpClient,
@@ -28,10 +28,13 @@ export function MSALInstanceFactory(): IPublicClientApplication {
   return new PublicClientApplication(msalConfig)
 }
 
+import { GlobalErrorHandler } from './core/global-error-handler'
+
 export const appConfig: ApplicationConfig = {
   providers: [
+    { provide: ErrorHandler, useClass: GlobalErrorHandler },
     provideBrowserGlobalErrorListeners(),
-    provideRouter(routes),
+    provideRouter(routes, withViewTransitions()),
     // authInterceptor agrega identidad (X-Usuario-Roles/X-Usuario-Sub);
     // MsalInterceptor (withInterceptorsFromDi) adjunta el Bearer token según
     // protectedResourceMap (ver msalConfig.ts).
