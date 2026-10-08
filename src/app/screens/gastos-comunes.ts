@@ -16,14 +16,14 @@ import {
   type Pago,
 } from '../models/gasto-comun.model';
 import { StatusBadge } from '../shared/status-badge';
-import { formatoMonto } from '../shared/formato';
 import { ModalDialog } from '../shared/modal-dialog';
+import { CurrencyPipe } from '@angular/common';
 
 const TAMANO_PAGINA = 20;
 
 @Component({
   selector: 'app-gastos-comunes',
-  imports: [LucideAngularModule, StatusBadge, ModalDialog],
+  imports: [LucideAngularModule, StatusBadge, ModalDialog, CurrencyPipe],
   templateUrl: './gastos-comunes.html',
 })
 export class GastosComunes implements OnInit {
@@ -333,7 +333,7 @@ export class GastosComunes implements OnInit {
 
   // --- Utilidades ---
 
-  protected readonly formatoMonto = formatoMonto;
+  
 
   protected formatoFecha(iso: string | null): string {
     if (!iso) {

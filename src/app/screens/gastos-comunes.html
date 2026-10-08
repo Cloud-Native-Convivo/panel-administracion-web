@@ -113,8 +113,8 @@
                     </button>
                   </td>
                   <td class="px-4 py-3.5 text-sm text-gray-600">{{ g.concepto }}</td>
-                  <td class="px-4 py-3.5 text-sm text-text whitespace-nowrap">{{ formatoMonto(g.monto) }}</td>
-                  <td class="px-4 py-3.5 text-sm text-text whitespace-nowrap">{{ formatoMonto(g.saldoPendiente) }}</td>
+                  <td class="px-4 py-3.5 text-sm text-text whitespace-nowrap">{{ (g.monto | currency:'CLP':'symbol-narrow':'1.0-0') }}</td>
+                  <td class="px-4 py-3.5 text-sm text-text whitespace-nowrap">{{ (g.saldoPendiente | currency:'CLP':'symbol-narrow':'1.0-0') }}</td>
                   <td class="px-4 py-3.5 whitespace-nowrap"><app-status-badge [status]="g.estado.toLowerCase()" /></td>
                   <td class="px-4 py-3.5 text-sm text-gray-500 whitespace-nowrap">{{ formatoFecha(g.fechaVencimiento) }}</td>
                 </tr>
@@ -190,11 +190,11 @@
         <div class="grid grid-cols-2 gap-4">
           <div>
             <p class="text-xs text-muted mb-0.5">Monto</p>
-            <p class="text-sm text-text font-medium">{{ formatoMonto(s.monto) }}</p>
+            <p class="text-sm text-text font-medium">{{ (s.monto | currency:'CLP':'symbol-narrow':'1.0-0') }}</p>
           </div>
           <div>
             <p class="text-xs text-muted mb-0.5">Saldo pendiente</p>
-            <p class="text-sm text-text font-medium">{{ formatoMonto(s.saldoPendiente) }}</p>
+            <p class="text-sm text-text font-medium">{{ (s.saldoPendiente | currency:'CLP':'symbol-narrow':'1.0-0') }}</p>
           </div>
         </div>
 
@@ -252,7 +252,7 @@
               @for (p of pagos(); track p.id) {
                 <div class="flex items-center justify-between text-sm border border-border rounded-lg px-3 py-2.5">
                   <div class="min-w-0">
-                    <p class="text-text font-medium">{{ formatoMonto(p.monto) }}</p>
+                    <p class="text-text font-medium">{{ (p.monto | currency:'CLP':'symbol-narrow':'1.0-0') }}</p>
                     <p class="text-xs text-muted">{{ p.metodo.toLowerCase() }} · {{ formatoFecha(p.fechaPago) }}</p>
                   </div>
                 </div>
@@ -359,7 +359,7 @@
             <lucide-icon [img]="icX" [size]="17" />
           </button>
         </div>
-        <p class="text-xs text-muted mb-5">{{ s.concepto }} · unidad {{ s.unidadId }} · saldo {{ formatoMonto(s.saldoPendiente) }}</p>
+        <p class="text-xs text-muted mb-5">{{ s.concepto }} · unidad {{ s.unidadId }} · saldo {{ (s.saldoPendiente | currency:'CLP':'symbol-narrow':'1.0-0') }}</p>
 
         <div class="space-y-4">
           <div>

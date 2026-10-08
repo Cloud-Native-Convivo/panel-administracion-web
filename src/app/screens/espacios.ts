@@ -17,9 +17,9 @@ import {
 } from 'lucide-angular';
 import { StatusBadge } from '../shared/status-badge';
 import { ModalDialog } from '../shared/modal-dialog';
-import { formatoMonto } from '../shared/formato';
 import { EspaciosService } from '../services/espacios.service';
 import { Espacio, CrearEspacioDto, ActualizarEspacioDto } from '../models/espacio.model';
+import { CurrencyPipe } from '@angular/common';
 
 export interface FormularioEspacio {
   nombre: string;
@@ -33,7 +33,7 @@ export interface FormularioEspacio {
 @Component({
   selector: 'app-espacios',
   standalone: true,
-  imports: [LucideAngularModule, StatusBadge, FormsModule, ModalDialog],
+  imports: [LucideAngularModule, StatusBadge, FormsModule, ModalDialog, CurrencyPipe],
   templateUrl: './espacios.html',
 })
 export class Espacios implements OnInit {
@@ -84,8 +84,6 @@ export class Espacios implements OnInit {
   protected readonly icDollar = DollarSign;
   protected readonly icMapPin = MapPin;
   protected readonly icCheck = CheckCircle2;
-
-  protected readonly formatoMonto = formatoMonto;
 
   ngOnInit(): void {
     this.cargarEspacios();
