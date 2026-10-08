@@ -28,11 +28,15 @@ export function MSALInstanceFactory(): IPublicClientApplication {
   return new PublicClientApplication(msalConfig)
 }
 
-import { GlobalErrorHandler } from './core/global-error-handler'
+import { LOCALE_ID } from '@angular/core';
+import { registerLocaleData } from '@angular/common';
+import localeEsCl from '@angular/common/locales/es-CL';
+
+registerLocaleData(localeEsCl, 'es-CL');
 
 export const appConfig: ApplicationConfig = {
   providers: [
-    { provide: ErrorHandler, useClass: GlobalErrorHandler },
+    { provide: LOCALE_ID, useValue: 'es-CL' },
     provideBrowserGlobalErrorListeners(),
     provideRouter(routes, withViewTransitions()),
     // authInterceptor agrega identidad (X-Usuario-Roles/X-Usuario-Sub);

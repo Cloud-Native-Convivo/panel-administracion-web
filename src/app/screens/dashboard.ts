@@ -7,12 +7,12 @@ import { LucideAngularModule } from 'lucide-angular';
 import type { LucideIconData } from 'lucide-angular';
 import { Building2, Users, Search, Calendar, Wallet } from 'lucide-angular';
 import { MsalService } from '@azure/msal-angular';
+import { CurrencyPipe } from '@angular/common';
 import { StatusBadge } from '../shared/status-badge';
 import { EspaciosService } from '../services/espacios.service';
 import { GastosComunesService } from '../services/gastos-comunes.service';
 import { ReservasService } from '../services/reservas.service';
 import { saludoSegunHora } from '../shared/saludo';
-import { formatoMonto } from '../shared/formato';
 import { mapearReservaUi, type UiReservationEntry } from '../shared/reserva-mapper';
 import type { Espacio } from '../models/espacio.model';
 
@@ -36,7 +36,7 @@ interface Kpi {
 
 @Component({
   selector: 'app-dashboard',
-  imports: [LucideAngularModule, StatusBadge],
+  imports: [LucideAngularModule, StatusBadge, CurrencyPipe],
   templateUrl: './dashboard.html',
 })
 export class Dashboard implements OnInit {
@@ -85,8 +85,6 @@ export class Dashboard implements OnInit {
     }).format(new Date());
     return texto.charAt(0).toUpperCase() + texto.slice(1);
   }
-
-  protected readonly formatoMonto = formatoMonto;
 
   // Iconos sueltos del template
   protected readonly icWallet = Wallet;

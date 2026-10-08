@@ -1,24 +1,27 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, computed } from '@angular/core';
 import { Router, RouterOutlet } from '@angular/router';
 import { LucideAngularModule } from 'lucide-angular';
 import type { LucideIconData } from 'lucide-angular';
 import {
   Home, Users, Building2, Search, Calendar, Settings,
   DollarSign, MessageSquare, Camera, Target, Bell, Lock, LogOut,
-  Menu, X,
+  Menu, X, List,
 } from 'lucide-angular';
 import { MsalService } from '@azure/msal-angular';
+import { CondominiosService } from '../services/condominios.service';
 
 interface NavItem {
   id: string;
   label: string;
   icon: LucideIconData;
+  requiresCondominio?: boolean;
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { id: 'dashboard',   label: 'Inicio',          icon: Home      },
-  { id: 'espacios',    label: 'Espacios comunes',icon: Search    },
-  { id: 'gastos-comunes', label: 'Gastos comunes', icon: DollarSign },
+  { id: 'dashboard',      label: 'Inicio',           icon: Home },
+  { id: 'condominios',    label: 'Mis Condominios',  icon: List },
+  { id: 'espacios',       label: 'Espacios comunes', icon: Search,     requiresCondominio: true },
+  { id: 'gastos-comunes', label: 'Gastos comunes',   icon: DollarSign, requiresCondominio: true },
 ];
 
 // Usuarios y Unidades no tienen microservicio propio todavía (no hay
@@ -53,11 +56,17 @@ const PAGE_TITLES: Record<string, string> = {
 export class Shell {
   private readonly router = inject(Router);
   private readonly msalService = inject(MsalService);
+  private readonly condominiosService = inject(CondominiosService);
 
   protected readonly isMobileMenuOpen = signal(false);
 
-  protected readonly navItems = NAV_ITEMS;
+  protected readonly navItems = computed(() => {
+    const hasActive = !!this.condominiosService.condominioActivo();
+    return NAV_ITEMS.filter(item => !item.requiresCondominio || hasActive);
+  });
+  
   protected readonly soonItems = SOON_ITEMS;
+  protected readonly hasActiveCondominio = computed(() => !!this.condominiosService.condominioActivo());
 
   private get cuenta() {
     return this.msalService.instance.getActiveAccount();
