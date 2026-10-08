@@ -11,17 +11,13 @@ export const routes: Routes = [
   {
     path: '',
     component: Shell,
-    canActivate: [MsalGuard],
-    canActivateChild: [MsalGuard],
+    // canActivate: [MsalGuard],
+    // canActivateChild: [MsalGuard],
     children: [
       { path: '', pathMatch: 'full', redirectTo: 'dashboard' },
       {
         path: 'dashboard',
         loadComponent: () => import('./screens/dashboard').then((m) => m.Dashboard),
-      },
-      {
-        path: 'users',
-        loadComponent: () => import('./screens/users').then((m) => m.Users),
       },
       {
         path: 'condominios',
@@ -38,10 +34,6 @@ export const routes: Routes = [
       {
         path: 'gastos-comunes',
         loadComponent: () => import('./screens/gastos-comunes').then((m) => m.GastosComunes),
-      },
-      {
-        path: 'config',
-        loadComponent: () => import('./screens/config').then((m) => m.Config),
       },
     ],
   },
