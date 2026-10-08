@@ -46,3 +46,7 @@ Thumbs.db
 # Exclusiones de cache
 .ruff_cache/
 .codegraph/
+
+# Exclusiones de cache
+.ruff_cache/
+.codegraph/
