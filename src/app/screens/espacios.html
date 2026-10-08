@@ -111,7 +111,7 @@
                   <div class="flex items-center gap-2">
                     <lucide-icon [img]="icDollar" [size]="14" class="text-muted flex-shrink-0" />
                     <span>
-                      {{ e.tarifa_hora ? ('Tarifa: ' + formatoMonto(e.tarifa_hora) + ' / hora') : 'Uso gratuito' }}
+                      {{ e.tarifa_hora ? ('Tarifa: ' + (e.tarifa_hora | currency:'CLP':'symbol-narrow':'1.0-0') + ' / hora') : 'Uso gratuito' }}
                     </span>
                   </div>
                 </div>
