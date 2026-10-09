@@ -20,10 +20,7 @@ const ESTADO_MAPEADO: Record<string, ReservationStatus> = {
   expirada: 'cancelada',
 };
 
-export function mapearReservaUi(
-  r: Reserva,
-  mapaEspacios: Map<number, string>,
-): UiReservationEntry {
+export function mapearReservaUi(r: Reserva, mapaEspacios: Map<number, string>): UiReservationEntry {
   const dInicio = new Date(r.fecha_inicio);
   const dFin = new Date(r.fecha_fin);
 
@@ -79,8 +76,18 @@ export function formatearFecha(d: Date): string {
     d1.getDate() === d2.getDate();
 
   const meses = [
-    'ene', 'feb', 'mar', 'abr', 'may', 'jun',
-    'jul', 'ago', 'sep', 'oct', 'nov', 'dic',
+    'ene',
+    'feb',
+    'mar',
+    'abr',
+    'may',
+    'jun',
+    'jul',
+    'ago',
+    'sep',
+    'oct',
+    'nov',
+    'dic',
   ];
   const dias = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
 

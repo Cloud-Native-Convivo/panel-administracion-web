@@ -1,15 +1,18 @@
-import { ApplicationConfig, ErrorHandler, inject, provideAppInitializer, provideBrowserGlobalErrorListeners } from '@angular/core'
-import { provideRouter, withViewTransitions } from '@angular/router'
+import {
+  ApplicationConfig,
+  ErrorHandler,
+  inject,
+  provideAppInitializer,
+  provideBrowserGlobalErrorListeners,
+} from '@angular/core';
+import { provideRouter, withViewTransitions } from '@angular/router';
 import {
   HTTP_INTERCEPTORS,
   provideHttpClient,
   withInterceptors,
   withInterceptorsFromDi,
-} from '@angular/common/http'
-import {
-  type IPublicClientApplication,
-  PublicClientApplication,
-} from '@azure/msal-browser'
+} from '@angular/common/http';
+import { type IPublicClientApplication, PublicClientApplication } from '@azure/msal-browser';
 import {
   MSAL_GUARD_CONFIG,
   MSAL_INSTANCE,
@@ -18,14 +21,18 @@ import {
   MsalGuard,
   MsalInterceptor,
   MsalService,
-} from '@azure/msal-angular'
+} from '@azure/msal-angular';
 
-import { routes } from './app.routes'
-import { msalConfig, MSALGuardConfigFactory, MSALInterceptorConfigFactory } from '../auth/msalConfig'
-import { authInterceptor } from './interceptors/auth.interceptor'
+import { routes } from './app.routes';
+import {
+  msalConfig,
+  MSALGuardConfigFactory,
+  MSALInterceptorConfigFactory,
+} from '../auth/msalConfig';
+import { authInterceptor } from './interceptors/auth.interceptor';
 
 export function MSALInstanceFactory(): IPublicClientApplication {
-  return new PublicClientApplication(msalConfig)
+  return new PublicClientApplication(msalConfig);
 }
 
 import { LOCALE_ID } from '@angular/core';
@@ -69,4 +76,4 @@ export const appConfig: ApplicationConfig = {
     MsalGuard,
     MsalBroadcastService,
   ],
-}
+};

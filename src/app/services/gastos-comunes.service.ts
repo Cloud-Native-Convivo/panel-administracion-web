@@ -40,9 +40,12 @@ export class GastosComunesService {
   /** Lista filtrada por unidad. 403 si la unidad no es la propia y quien pregunta no es admin/comité. */
   listarPorUnidad(unidadId: string, page = 0, size = 20): Observable<PaginaSpring<GastoComun>> {
     const params = new HttpParams().set('page', page).set('size', size);
-    return this.http.get<PaginaSpring<GastoComun>>(`${this.base}/unidad/${encodeURIComponent(unidadId)}`, {
-      params,
-    });
+    return this.http.get<PaginaSpring<GastoComun>>(
+      `${this.base}/unidad/${encodeURIComponent(unidadId)}`,
+      {
+        params,
+      },
+    );
   }
 
   obtener(id: number): Observable<GastoComun> {
@@ -59,7 +62,11 @@ export class GastosComunesService {
    * DTO del microservicio lo exige (@NotBlank), pero el backend lo ignora
    * al actualizar: no permite reasignar la unidad desde acá.
    */
-  actualizar(id: number, unidadId: string, cambios: ActualizarGastoComunRequest): Observable<GastoComun> {
+  actualizar(
+    id: number,
+    unidadId: string,
+    cambios: ActualizarGastoComunRequest,
+  ): Observable<GastoComun> {
     return this.http.put<GastoComun>(`${this.base}/${id}`, { unidadId, ...cambios });
   }
 

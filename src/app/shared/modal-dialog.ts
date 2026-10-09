@@ -30,7 +30,9 @@ export class ModalDialog implements AfterViewInit, OnDestroy {
     // Tras el render: si el origen desapareció (ej. tarjeta eliminada), el foco
     // iría a <body>; se deja en el contenido principal del shell.
     queueMicrotask(() => {
-      const destino = this.previo?.isConnected ? this.previo : document.getElementById('main-content');
+      const destino = this.previo?.isConnected
+        ? this.previo
+        : document.getElementById('main-content');
       destino?.focus();
     });
   }

@@ -49,10 +49,37 @@ export class Dashboard implements OnInit {
 
   // KPIs reales y futuros
   protected readonly kpis = signal<Kpi[]>([
-    { label: 'Total unidades',       value: '—',  sub: 'Próximamente',              icon: Building2, color: 'bg-teal-50 text-primary', route: 'condominios' },
-    { label: 'Usuarios activos',     value: '—',  sub: 'Próximamente',              icon: Users,     color: 'bg-blue-50 text-blue-600', route: 'users' },
-    { label: 'Espacios habilitados', value: '—',  sub: 'Cargando…',                 icon: Search,    color: 'bg-violet-50 text-violet-600', route: 'espacios' },
-    { label: 'Reservas hoy',         value: '—',  sub: 'Cargando…',                 icon: Calendar,  color: 'bg-orange-50 text-orange-600' },
+    {
+      label: 'Total unidades',
+      value: '—',
+      sub: 'Próximamente',
+      icon: Building2,
+      color: 'bg-teal-50 text-primary',
+      route: 'condominios',
+    },
+    {
+      label: 'Usuarios activos',
+      value: '—',
+      sub: 'Próximamente',
+      icon: Users,
+      color: 'bg-blue-50 text-blue-600',
+      route: 'users',
+    },
+    {
+      label: 'Espacios habilitados',
+      value: '—',
+      sub: 'Cargando…',
+      icon: Search,
+      color: 'bg-violet-50 text-violet-600',
+      route: 'espacios',
+    },
+    {
+      label: 'Reservas hoy',
+      value: '—',
+      sub: 'Cargando…',
+      icon: Calendar,
+      color: 'bg-orange-50 text-orange-600',
+    },
   ]);
 
   protected readonly upcoming = signal<UiReservationEntry[]>([]);
@@ -117,7 +144,8 @@ export class Dashboard implements OnInit {
             error: false,
             saldoPendienteTotal,
             vencidos: gastos.filter((g) => g.estado === 'VENCIDO').length,
-            pendientes: gastos.filter((g) => g.estado === 'PENDIENTE' || g.estado === 'PARCIAL').length,
+            pendientes: gastos.filter((g) => g.estado === 'PENDIENTE' || g.estado === 'PARCIAL')
+              .length,
             pagados: gastos.filter((g) => g.estado === 'PAGADO').length,
           });
         },
@@ -145,9 +173,7 @@ export class Dashboard implements OnInit {
           const mantencion = espacios.filter((e) => {
             const estado = (e?.estado || '').toLowerCase().trim();
             return (
-              estado === 'mantenimiento' ||
-              estado === 'en mantención' ||
-              estado === 'en mantencion'
+              estado === 'mantenimiento' || estado === 'en mantención' || estado === 'en mantencion'
             );
           }).length;
 
@@ -159,8 +185,8 @@ export class Dashboard implements OnInit {
                     value: habilitados.toString(),
                     sub: `${mantencion} en mantención`,
                   }
-                : kpi
-            )
+                : kpi,
+            ),
           );
         },
         error: () => {
@@ -168,8 +194,8 @@ export class Dashboard implements OnInit {
             items.map((kpi) =>
               kpi.label === 'Espacios habilitados'
                 ? { ...kpi, value: '—', sub: 'Error de conexión' }
-                : kpi
-            )
+                : kpi,
+            ),
           );
         },
       });
@@ -182,12 +208,8 @@ export class Dashboard implements OnInit {
    */
   protected cargarReservas(): void {
     forkJoin({
-      espacios: this.espaciosService.listar().pipe(
-        catchError(() => of([] as Espacio[])),
-      ),
-      reservas: this.reservasService.listar().pipe(
-        catchError(() => of([])),
-      ),
+      espacios: this.espaciosService.listar().pipe(catchError(() => of([] as Espacio[]))),
+      reservas: this.reservasService.listar().pipe(catchError(() => of([]))),
     })
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(({ espacios, reservas }) => {
