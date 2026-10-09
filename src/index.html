@@ -1,5 +1,6 @@
 <!doctype html>
 <html lang="es-CL">
+
 <head>
   <meta charset="utf-8">
   <title>Convivo · Panel de Administración</title>
@@ -7,12 +8,12 @@
   <!-- Content Security Policy & Trusted Types -->
   <meta http-equiv="Content-Security-Policy" content="
     default-src 'self';
-    script-src 'self' 'unsafe-inline' 'unsafe-eval' https://login.microsoftonline.com;
+    frame-src 'self' https://login.microsoftonline.com;
+    script-src 'self' 'unsafe-inline' https://login.microsoftonline.com;
     style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
     font-src 'self' https://fonts.gstatic.com;
     img-src 'self' data: https:;
     connect-src 'self' ws://localhost:* http://localhost:* https://login.microsoftonline.com;
-    require-trusted-types-for 'script';
   ">
   <script>
     // Contraparte de public/404.html — decodifica la ruta real antes de
@@ -35,9 +36,10 @@
     })(window.location);
   </script>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Panel de administración de Convivo para la gestión de condominios, espacios comunes, reservas y comunidad en Chile." />
+  <meta name="description"
+    content="Panel de administración de Convivo para la gestión de condominios, espacios comunes, reservas y comunidad en Chile." />
   <meta name="robots" content="noindex, nofollow" />
-  
+
   <!-- Open Graph / Meta tags adicionales -->
   <meta property="og:title" content="Convivo · Panel de Administración" />
   <meta property="og:description" content="Panel de administración privado para la gestión de condominios en Chile." />
@@ -65,10 +67,19 @@
   <link rel="icon" type="image/x-icon" href="favicon.ico">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gloock:ital@0;1&family=Inter:ital,opsz,wght@0,14..32,300..700;1,14..32,300..700&display=optional">
+  <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Gloock:ital@0;1&family=Inter:ital,opsz,wght@0,14..32,300..700;1,14..32,300..700&display=optional">
   <style>
-    html, body { height: 100%; margin: 0; }
-    app-root { display: block; height: 100%; }
+    html,
+    body {
+      height: 100%;
+      margin: 0;
+    }
+
+    app-root {
+      display: block;
+      height: 100%;
+    }
   </style>
   <script type="speculationrules">
   {
@@ -78,8 +89,19 @@
     }]
   }
   </script>
+  <script>
+    (function () {
+      var isDocker = window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1';
+      window.__ENV = {
+        bffBaseUrl: isDocker ? 'http://bff:3000/api' : 'http://localhost:3000/api',
+        apiEspaciosUrl: isDocker ? 'http://bff:3000/api/v1/espacios-comunes' : 'http://localhost:3000/api/v1/espacios-comunes',
+      };
+    })();
+  </script>
 </head>
+
 <body>
   <app-root></app-root>
 </body>
+
 </html>

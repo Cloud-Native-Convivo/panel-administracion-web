@@ -33,14 +33,15 @@ export class Login implements OnInit {
   protected async loginSso(): Promise<void> {
     // Feedback visual inmediato para INP
     this.isLoggingIn.set(true);
-    
-    // Yield al navegador para que pinte el estado de carga antes de bloquear
-    await new Promise(r => setTimeout(r, 0));
 
-    this.msalService.instance.initialize().then(() =>
-      this.msalService.loginRedirect(loginRequest)
-    ).catch(() => {
-      this.isLoggingIn.set(false);
-    });
+    // Yield al navegador para que pinte el estado de carga antes de bloquear
+    await new Promise((r) => setTimeout(r, 0));
+
+    this.msalService.instance
+      .initialize()
+      .then(() => this.msalService.loginRedirect(loginRequest))
+      .catch(() => {
+        this.isLoggingIn.set(false);
+      });
   }
 }

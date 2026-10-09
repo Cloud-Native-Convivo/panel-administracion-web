@@ -1,7 +1,16 @@
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { LucideAngularModule } from 'lucide-angular';
-import { Plus, X, Wallet, ChevronLeft, ChevronRight, RefreshCw, Pencil, Trash2 } from 'lucide-angular';
+import {
+  Plus,
+  X,
+  Wallet,
+  ChevronLeft,
+  ChevronRight,
+  RefreshCw,
+  Pencil,
+  Trash2,
+} from 'lucide-angular';
 import { MsalService } from '@azure/msal-angular';
 import { finalize } from 'rxjs';
 
@@ -50,7 +59,9 @@ export class GastosComunes implements OnInit {
   });
 
   // --- Rol de la cuenta activa (best-effort, ver ../../auth/roles.ts) ---
-  protected readonly roles = computed(() => rolesDeCuenta(this.msalService.instance.getActiveAccount()));
+  protected readonly roles = computed(() =>
+    rolesDeCuenta(this.msalService.instance.getActiveAccount()),
+  );
   // Control de acceso por mínimo privilegio (PoLP):
   // Solo se habilitan acciones administrativas si la cuenta tiene el rol asignado.
   protected readonly puedeCrearCobro = computed(() => {
@@ -230,9 +241,10 @@ export class GastosComunes implements OnInit {
       fechaVencimiento: this.cobroVencimiento() || null,
     };
 
-    const peticion = gastoActual && this.modoEdicionCobro()
-      ? this.service.actualizar(gastoActual.id, this.cobroUnidadId(), cambios)
-      : this.service.crear({ unidadId: this.cobroUnidadId().trim(), ...cambios });
+    const peticion =
+      gastoActual && this.modoEdicionCobro()
+        ? this.service.actualizar(gastoActual.id, this.cobroUnidadId(), cambios)
+        : this.service.crear({ unidadId: this.cobroUnidadId().trim(), ...cambios });
 
     peticion.pipe(finalize(() => this.guardandoCobro.set(false))).subscribe({
       next: (resultado) => {
@@ -288,7 +300,9 @@ export class GastosComunes implements OnInit {
           // Refresca el detalle (saldo/estado) y el listado.
           this.service.obtener(gasto.id).subscribe((actualizado) => {
             this.seleccionado.set(actualizado);
-            this.gastos.update((lista) => lista.map((g) => (g.id === actualizado.id ? actualizado : g)));
+            this.gastos.update((lista) =>
+              lista.map((g) => (g.id === actualizado.id ? actualizado : g)),
+            );
           });
           this.seleccionar(gasto);
         },
@@ -333,8 +347,6 @@ export class GastosComunes implements OnInit {
 
   // --- Utilidades ---
 
-  
-
   protected formatoFecha(iso: string | null): string {
     if (!iso) {
       return '—';
@@ -361,6 +373,8 @@ export class GastosComunes implements OnInit {
         'El microservicio de Gastos Comunes no respondió (¿está corriendo en el puerto 8083?).'
       );
     }
-    return (err.error?.message as string | undefined) ?? 'Ocurrió un error inesperado. Intenta de nuevo.';
+    return (
+      (err.error?.message as string | undefined) ?? 'Ocurrió un error inesperado. Intenta de nuevo.'
+    );
   }
 }

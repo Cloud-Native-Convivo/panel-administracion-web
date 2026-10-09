@@ -65,7 +65,9 @@ export class Reservas implements OnInit {
   protected readonly spaceOptions = computed(() => {
     const espaciosEnReservas = this.rsvs().map((r) => r.space);
     const nombresEspacios = Array.from(this.espaciosMap().values());
-    const combinados = Array.from(new Set([...espaciosEnReservas, ...nombresEspacios])).filter(Boolean);
+    const combinados = Array.from(new Set([...espaciosEnReservas, ...nombresEspacios])).filter(
+      Boolean,
+    );
     return ['Todos', ...combinados];
   });
 
@@ -194,9 +196,7 @@ export class Reservas implements OnInit {
   }
 
   protected cancel(id: number): void {
-    this.rsvs.update((prev) =>
-      prev.map((r) => (r.id === id ? { ...r, status: 'cancelada' } : r)),
-    );
+    this.rsvs.update((prev) => prev.map((r) => (r.id === id ? { ...r, status: 'cancelada' } : r)));
     this.mostrarFeedback('exito', `Reserva #${id} cancelada.`);
   }
 
@@ -224,5 +224,4 @@ export class Reservas implements OnInit {
     lunes.setHours(0, 0, 0, 0);
     return lunes;
   }
-
 }
