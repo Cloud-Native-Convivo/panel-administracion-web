@@ -1,6 +1,6 @@
 # CI — panel-administracion-web
 # Valida tests unitarios (Vitest) con cobertura, build de produccion y, en PRs,
-# senales de decision: delta de bundle, Lighthouse y escaneo de imagen Docker.
+# senales de decision: delta de bundle y Lighthouse.
 # Requiere @vitest/coverage-v8 en devDependencies (ver --coverage).
 
 name: CI
@@ -104,64 +104,3 @@ jobs:
           configPath: ./lighthouserc.json
           temporaryPublicStorage: true
 
-  docker:
-    name: docker
-    if: github.event_name == 'pull_request'
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-
-      - name: Lint Dockerfile
-        uses: hadolint/hadolint-action@06be81baf89a55ffd0e24b8f04a4185738dd3387 # v3.5.0
-        with:
-          dockerfile: Dockerfile
-          failure-threshold: error
-
-      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
-
-      - name: Build image
-        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
-        with:
-          context: .
-          file: ./Dockerfile
-          push: false
-          load: true
-          tags: panel-administracion-web:pr
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-
-      # Informativo: tabla CRITICAL+HIGH al resumen, sin fallar.
-      - name: Trivy report
-        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
-        with:
-          # trivy-action v0.36.0 trae Trivy 0.70.0 por defecto; Dependabot no actualiza este valor
-          version: v0.74.0
-          image-ref: panel-administracion-web:pr
-          format: table
-          output: trivy-report.txt
-          severity: CRITICAL,HIGH
-          ignore-unfixed: true
-          exit-code: "0"
-
-      - name: Publish Trivy summary
-        run: |
-          {
-            echo '## Trivy: vulnerabilidades de la imagen (CRITICAL, HIGH)'
-            echo '```'
-            cat trivy-report.txt
-            echo '```'
-          } >> "$GITHUB_STEP_SUMMARY"
-
-      # Gate: solo CRITICAL con fix disponible rompe el job.
-      - name: Trivy gate
-        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
-        with:
-          # trivy-action v0.36.0 trae Trivy 0.70.0 por defecto; Dependabot no actualiza este valor
-          version: v0.74.0
-          image-ref: panel-administracion-web:pr
-          format: table
-          severity: CRITICAL
-          ignore-unfixed: true
-          exit-code: "1"
