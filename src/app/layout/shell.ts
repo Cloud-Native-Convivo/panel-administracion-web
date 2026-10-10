@@ -10,24 +10,22 @@ import {
 import { MsalService } from '@azure/msal-angular';
 import { CondominiosService } from '../services/condominios.service';
 
-interface NavItem {
+export interface NavItem {
   id: string;
   label: string;
   icon: LucideIconData;
   requiresCondominio?: boolean;
 }
 
-const NAV_ITEMS: NavItem[] = [
+export const NAV_ITEMS: NavItem[] = [
   { id: 'dashboard',      label: 'Inicio',           icon: Home },
-  { id: 'condominios',    label: 'Mis Condominios',  icon: List },
-  { id: 'espacios',       label: 'Espacios comunes', icon: Search,     requiresCondominio: true },
-  { id: 'gastos-comunes', label: 'Gastos comunes',   icon: DollarSign, requiresCondominio: true },
+  { id: 'espacios',       label: 'Espacios comunes', icon: Search,     requiresCondominio: false },
+  { id: 'gastos-comunes', label: 'Gastos comunes',   icon: DollarSign, requiresCondominio: false },
 ];
 
-// Usuarios y Unidades no tienen microservicio propio todavía (no hay
-// ms-usuarios ni ms-condominios) -- quedan bloqueadas junto al resto de
-// "Próximamente" en vez de mostrar datos de ejemplo como si fueran reales.
-const SOON_ITEMS: NavItem[] = [
+// Usuarios, Condominios y Unidades quedan en "Próximamente" (fuera de alcance MVP)
+export const SOON_ITEMS: NavItem[] = [
+  { id: '', label: 'Mis Condominios',  icon: List           },
   { id: '', label: 'Usuarios',         icon: Users          },
   { id: '', label: 'Unidades',         icon: Building2      },
   { id: '', label: 'Reservas',         icon: Calendar       },
