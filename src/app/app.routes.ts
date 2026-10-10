@@ -1,6 +1,6 @@
 import { Routes } from '@angular/router';
-import { MsalGuard } from '@azure/msal-angular';
 import { Shell } from './layout/shell';
+import { authGuard } from './guards/auth.guard';
 
 export const routes: Routes = [
   { path: '', pathMatch: 'full', redirectTo: 'login' },
@@ -11,8 +11,8 @@ export const routes: Routes = [
   {
     path: '',
     component: Shell,
-    // canActivate: [MsalGuard],
-    // canActivateChild: [MsalGuard],
+    canActivate: [authGuard],
+    canActivateChild: [authGuard],
     children: [
       { path: '', pathMatch: 'full', redirectTo: 'dashboard' },
       {
