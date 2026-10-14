@@ -211,7 +211,7 @@ Los controles de esta sección son la implementación técnica de ISO/IEC 27001 
 - A09 Fallos de logging y alertado: eventos de seguridad (login fallido, cambio de permisos) quedan loggeados y generan alerta, sin datos sensibles en el log.
 - A10 Manejo indebido de condiciones excepcionales: errores no filtran stack trace/info interna al cliente, fallos no dejan el sistema en estado inseguro (fail-open).
 
-Alcance real en este proyecto — frontend Angular puro de administración, prototipo UI con datos mock, sin backend ni DB propia todavía (auth planificada con Microsoft Entra ID vía JWT Authorizer en API Gateway, ver `ERS.md` §4.6):
+Alcance real en este proyecto — frontend Angular puro de administración, prototipo UI con datos mock, sin backend ni DB propia todavía (auth planificada con Microsoft Entra ID vía JWT Authorizer en API Gateway; el detalle funcional vivía en `ERS.md` §4.6, archivo que no existe en este workspace -- verificado 2026-10-14):
 
 - Aplican: **A02** (configuración de build y empaquetado de producción en Angular), **A03** (dependencias npm, lockfile committeado), **A08** (integridad de dependencias y scripts de build).
 - Enfoque preventivo frontend: sanitización nativa de plantillas de Angular (DOM sanitizer contra XSS / inyección en HTML).
