@@ -17,17 +17,19 @@ const ROLES_VALIDOS: readonly RolConvivo[] = [
 ];
 
 /**
- * Lee, de forma best-effort, los roles de negocio del ID token de la
- * cuenta activa. Claim por defecto: `roles`.
+ * Lee los roles de negocio del ID token de la cuenta activa en Microsoft Entra ID.
+ * Claim por defecto: `roles`.
  *
- * IMPORTANTE: el App Role / claim de rol definitivo todavía NO está
- * registrado en Entra ID — hasta que se registre, esto normalmente
- * devuelve `[]` aunque la cuenta sea válida. Úsalo solo para
- * mostrar/ocultar atajos de UI, nunca como control de acceso real: la
- * autorización de verdad la hace el backend.
+ * Principio Fail-Closed (OWASP A01 / security-audit):
+ * Si la cuenta no posee claim de roles o no tiene sesión activa, devuelve siempre `[]`.
+ * La seguridad en la UI es defensa en profundidad; el backend valida criptográficamente.
  */
 export function rolesDeCuenta(cuenta: AccountInfo | null, claim = 'roles'): RolConvivo[] {
-  const raw = cuenta?.idTokenClaims?.[claim as keyof typeof cuenta.idTokenClaims];
+  if (!cuenta?.idTokenClaims) {
+    return [];
+  }
+
+  const raw = (cuenta.idTokenClaims as Record<string, unknown>)[claim];
   const valores = Array.isArray(raw)
     ? raw.map(String)
     : typeof raw === 'string'
