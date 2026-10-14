@@ -9,23 +9,37 @@ import {
 } from 'lucide-angular';
 import { MsalService } from '@azure/msal-angular';
 import { CondominiosService } from '../services/condominios.service';
+import { rolesDeCuenta, type RolConvivo } from '../../auth/roles';
 
 export interface NavItem {
   id: string;
   label: string;
   icon: LucideIconData;
   requiresCondominio?: boolean;
+  requiredRoles?: RolConvivo[];
 }
 
 export const NAV_ITEMS: NavItem[] = [
   { id: 'dashboard',      label: 'Inicio',           icon: Home },
-  { id: 'espacios',       label: 'Espacios comunes', icon: Search,     requiresCondominio: false },
-  { id: 'gastos-comunes', label: 'Gastos comunes',   icon: DollarSign, requiresCondominio: false },
+  { id: 'condominios',    label: 'Mis Condominios',  icon: List },
+  {
+    id: 'espacios',
+    label: 'Espacios comunes',
+    icon: Search,
+    requiresCondominio: true,
+    requiredRoles: ['administrador', 'admin', 'conserje', 'comite'],
+  },
+  {
+    id: 'gastos-comunes',
+    label: 'Gastos comunes',
+    icon: DollarSign,
+    requiresCondominio: true,
+    requiredRoles: ['administrador', 'admin', 'comite'],
+  },
 ];
 
-// Usuarios, Condominios y Unidades quedan en "Próximamente" (fuera de alcance MVP)
+// Usuarios y Unidades quedan en "Próximamente" (fuera de alcance MVP)
 export const SOON_ITEMS: NavItem[] = [
-  { id: '', label: 'Mis Condominios',  icon: List           },
   { id: '', label: 'Usuarios',         icon: Users          },
   { id: '', label: 'Unidades',         icon: Building2      },
   { id: '', label: 'Reservas',         icon: Calendar       },
@@ -60,14 +74,19 @@ export class Shell {
 
   protected readonly navItems = computed(() => {
     const hasActive = !!this.condominiosService.condominioActivo();
-    return NAV_ITEMS.filter(item => !item.requiresCondominio || hasActive);
+    const roles = rolesDeCuenta(this.cuenta);
+    return NAV_ITEMS.filter((item) => {
+      if (item.requiresCondominio && !hasActive) return false;
+      if (item.requiredRoles && !item.requiredRoles.some((r) => roles.includes(r))) return false;
+      return true;
+    });
   });
   
   protected readonly soonItems = SOON_ITEMS;
   protected readonly hasActiveCondominio = computed(() => !!this.condominiosService.condominioActivo());
 
   private get cuenta() {
-    return this.msalService.instance.getActiveAccount();
+    return this.msalService.instance.getActiveAccount() ?? this.msalService.instance.getAllAccounts()[0] ?? null;
   }
 
   protected get nombreUsuario(): string {

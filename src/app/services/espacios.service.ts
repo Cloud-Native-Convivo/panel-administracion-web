@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, map } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { Espacio, CrearEspacioDto, ActualizarEspacioDto } from '../models/espacio.model';
@@ -49,15 +49,17 @@ export class EspaciosService {
     };
   }
 
-  listar(): Observable<Espacio[]> {
+  listar(condominioId: number): Observable<Espacio[]> {
+    const params = new HttpParams().set('condominio_id', condominioId);
     return this.http
-      .get<Espacio[]>(`${this.baseUrl}`)
+      .get<Espacio[]>(`${this.baseUrl}`, { params })
       .pipe(map((espacios) => espacios.map((e) => this.enriquecerConImagen(e))));
   }
 
-  obtenerPorId(id: number): Observable<Espacio> {
+  obtenerPorId(id: number, condominioId: number): Observable<Espacio> {
+    const params = new HttpParams().set('condominio_id', condominioId);
     return this.http
-      .get<Espacio>(`${this.baseUrl}/${id}`)
+      .get<Espacio>(`${this.baseUrl}/${id}`, { params })
       .pipe(map((espacio) => this.enriquecerConImagen(espacio)));
   }
 
@@ -67,13 +69,15 @@ export class EspaciosService {
       .pipe(map((espacio) => this.enriquecerConImagen(espacio)));
   }
 
-  actualizar(id: number, dto: ActualizarEspacioDto): Observable<Espacio> {
+  actualizar(id: number, condominioId: number, dto: ActualizarEspacioDto): Observable<Espacio> {
+    const params = new HttpParams().set('condominio_id', condominioId);
     return this.http
-      .put<Espacio>(`${this.baseUrl}/${id}`, dto)
+      .put<Espacio>(`${this.baseUrl}/${id}`, dto, { params })
       .pipe(map((espacio) => this.enriquecerConImagen(espacio)));
   }
 
-  eliminar(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.baseUrl}/${id}`);
+  eliminar(id: number, condominioId: number): Observable<void> {
+    const params = new HttpParams().set('condominio_id', condominioId);
+    return this.http.delete<void>(`${this.baseUrl}/${id}`, { params });
   }
 }
