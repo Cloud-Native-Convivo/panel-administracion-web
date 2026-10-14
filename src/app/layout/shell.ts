@@ -21,25 +21,25 @@ export interface NavItem {
 
 export const NAV_ITEMS: NavItem[] = [
   { id: 'dashboard',      label: 'Inicio',           icon: Home },
+  { id: 'condominios',    label: 'Mis Condominios',  icon: List },
   {
     id: 'espacios',
     label: 'Espacios comunes',
     icon: Search,
-    requiresCondominio: false,
+    requiresCondominio: true,
     requiredRoles: ['administrador', 'admin', 'conserje', 'comite'],
   },
   {
     id: 'gastos-comunes',
     label: 'Gastos comunes',
     icon: DollarSign,
-    requiresCondominio: false,
+    requiresCondominio: true,
     requiredRoles: ['administrador', 'admin', 'comite'],
   },
 ];
 
-// Usuarios, Condominios y Unidades quedan en "Próximamente" (fuera de alcance MVP)
+// Usuarios y Unidades quedan en "Próximamente" (fuera de alcance MVP)
 export const SOON_ITEMS: NavItem[] = [
-  { id: '', label: 'Mis Condominios',  icon: List           },
   { id: '', label: 'Usuarios',         icon: Users          },
   { id: '', label: 'Unidades',         icon: Building2      },
   { id: '', label: 'Reservas',         icon: Calendar       },

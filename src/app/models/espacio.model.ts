@@ -1,5 +1,6 @@
 export interface Espacio {
   id: number;
+  condominio_id: number;
   nombre: string;
   descripcion: string | null;
   capacidad: number;
@@ -12,6 +13,7 @@ export interface Espacio {
 }
 
 export interface CrearEspacioDto {
+  condominio_id: number;
   nombre: string;
   capacidad: number;
   tarifa_hora?: number;

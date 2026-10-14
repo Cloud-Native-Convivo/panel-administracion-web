@@ -32,14 +32,19 @@ export class GastosComunesService {
   private readonly base = `${environment.bffBaseUrl}/gastos/api/v1/gastos-comunes`;
 
   /** Lista paginada. Admin/comité ven todo; propietario/residente, solo su unidad (filtrado por el microservicio). */
-  listar(page = 0, size = 20): Observable<PaginaSpring<GastoComun>> {
-    const params = new HttpParams().set('page', page).set('size', size);
+  listar(condominioId: string, page = 0, size = 20): Observable<PaginaSpring<GastoComun>> {
+    const params = new HttpParams().set('condominioId', condominioId).set('page', page).set('size', size);
     return this.http.get<PaginaSpring<GastoComun>>(this.base, { params });
   }
 
   /** Lista filtrada por unidad. 403 si la unidad no es la propia y quien pregunta no es admin/comité. */
-  listarPorUnidad(unidadId: string, page = 0, size = 20): Observable<PaginaSpring<GastoComun>> {
-    const params = new HttpParams().set('page', page).set('size', size);
+  listarPorUnidad(
+    unidadId: string,
+    condominioId: string,
+    page = 0,
+    size = 20,
+  ): Observable<PaginaSpring<GastoComun>> {
+    const params = new HttpParams().set('condominioId', condominioId).set('page', page).set('size', size);
     return this.http.get<PaginaSpring<GastoComun>>(
       `${this.base}/unidad/${encodeURIComponent(unidadId)}`,
       {
@@ -48,8 +53,9 @@ export class GastosComunesService {
     );
   }
 
-  obtener(id: number): Observable<GastoComun> {
-    return this.http.get<GastoComun>(`${this.base}/${id}`);
+  obtener(id: number, condominioId: string): Observable<GastoComun> {
+    const params = new HttpParams().set('condominioId', condominioId);
+    return this.http.get<GastoComun>(`${this.base}/${id}`, { params });
   }
 
   /** Alta manual de un cobro/cuota. Solo administrador/comité (el microservicio lo exige igual con @PreAuthorize). */
@@ -58,30 +64,39 @@ export class GastosComunesService {
   }
 
   /**
-   * Edita concepto/monto/vencimiento. `unidadId` va en el body porque el
-   * DTO del microservicio lo exige (@NotBlank), pero el backend lo ignora
-   * al actualizar: no permite reasignar la unidad desde acá.
+   * Edita concepto/monto/vencimiento. `unidadId`/`condominioId` van en el
+   * body porque el DTO del microservicio los exige (@NotBlank), pero el
+   * backend los ignora al actualizar: no permite reasignar unidad ni
+   * condominio desde acá.
    */
   actualizar(
     id: number,
     unidadId: string,
+    condominioId: string,
     cambios: ActualizarGastoComunRequest,
   ): Observable<GastoComun> {
-    return this.http.put<GastoComun>(`${this.base}/${id}`, { unidadId, ...cambios });
+    const params = new HttpParams().set('condominioId', condominioId);
+    return this.http.put<GastoComun>(
+      `${this.base}/${id}`,
+      { unidadId, condominioId, ...cambios },
+      { params },
+    );
   }
 
   /** Borrado lógico (anula el gasto). No permitido si ya está PAGADO. */
-  eliminar(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.base}/${id}`);
+  eliminar(id: number, condominioId: string): Observable<void> {
+    const params = new HttpParams().set('condominioId', condominioId);
+    return this.http.delete<void>(`${this.base}/${id}`, { params });
   }
 
   /** Registra un abono/pago sobre un gasto común existente. */
-  registrarPago(id: number, request: NuevoPagoRequest): Observable<Pago> {
-    return this.http.post<Pago>(`${this.base}/${id}/pagos`, request);
+  registrarPago(id: number, condominioId: string, request: NuevoPagoRequest): Observable<Pago> {
+    const params = new HttpParams().set('condominioId', condominioId);
+    return this.http.post<Pago>(`${this.base}/${id}/pagos`, request, { params });
   }
 
-  listarPagos(id: number, page = 0, size = 20): Observable<PaginaSpring<Pago>> {
-    const params = new HttpParams().set('page', page).set('size', size);
+  listarPagos(id: number, condominioId: string, page = 0, size = 20): Observable<PaginaSpring<Pago>> {
+    const params = new HttpParams().set('condominioId', condominioId).set('page', page).set('size', size);
     return this.http.get<PaginaSpring<Pago>>(`${this.base}/${id}/pagos`, { params });
   }
 }
