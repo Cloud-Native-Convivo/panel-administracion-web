@@ -44,6 +44,20 @@ To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use th
 ng test
 ```
 
+### Verificación Preventiva Local Pre-push
+
+Antes de abrir un Pull Request o enviar commits al repositorio remoto, validar localmente con el runner nativo:
+
+```bash
+# 1. Ejecutar pruebas unitarias y validación Gitmoji
+pnpm test
+
+# 2. Compilar aplicación para validar tipos y empaquetado
+pnpm run build
+```
+
+> **Nota de CI**: `src/app/git-commit-convention.spec.ts` asegura que los mensajes de commit respeten la sintaxis Gitmoji + Conventional Commits (`pr-quality.yml`).
+
 ## Running end-to-end tests
 
 For end-to-end (e2e) testing, run:
