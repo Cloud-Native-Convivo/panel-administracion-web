@@ -151,17 +151,35 @@
       <!-- Listado de Condominios -->
       <div class="flex justify-between items-center mb-6">
         <h2 class="font-serif text-2xl text-text">Mis Condominios</h2>
-        <button (click)="isModalOpen.set(true)" class="flex items-center gap-2 px-4 py-2 bg-accent hover:bg-text text-white rounded-lg text-sm font-medium transition-colors">
+        <button (click)="abrirModalCrear()" class="flex items-center gap-2 px-4 py-2 bg-accent hover:bg-text text-white rounded-lg text-sm font-medium transition-colors">
           <lucide-icon [img]="icPlus" [size]="14" /> Crear Condominio
         </button>
       </div>
 
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         @for (c of listaCondominios(); track c.id) {
-          <div (click)="seleccionar(c)" class="bg-white border border-border rounded-xl p-5 cursor-pointer hover:shadow-md transition-shadow">
-            <h3 class="font-serif text-lg text-text mb-1">{{ c.nombre }}</h3>
-            <p class="text-sm text-muted mb-3">{{ c.direccion }}</p>
-            <span class="text-xs font-semibold text-teal-700 bg-teal-50 px-2 py-1 rounded border border-teal-100">Tipo {{ c.tipo }}</span>
+          <div class="bg-white border border-border rounded-xl p-5 hover:shadow-md transition-shadow">
+            <div (click)="seleccionar(c)" class="cursor-pointer">
+              <h3 class="font-serif text-lg text-text mb-1">{{ c.nombre }}</h3>
+              <p class="text-sm text-muted mb-3">{{ c.direccion }}</p>
+              <span class="text-xs font-semibold text-teal-700 bg-teal-50 px-2 py-1 rounded border border-teal-100">Tipo {{ c.tipo }}</span>
+            </div>
+            <div class="flex gap-2 mt-4 pt-3 border-t border-gray-100">
+              <button
+                (click)="abrirModalEditar(c)"
+                [attr.aria-label]="'Editar ' + c.nombre"
+                class="flex-1 flex items-center justify-center gap-2 min-h-11 py-2 px-3 border border-border hover:bg-gray-50 text-text rounded-lg text-sm font-medium transition-colors"
+              >
+                <lucide-icon [img]="icEdit" [size]="14" /> Editar
+              </button>
+              <button
+                (click)="abrirModalEliminar(c)"
+                [attr.aria-label]="'Eliminar ' + c.nombre"
+                class="flex-1 flex items-center justify-center gap-2 min-h-11 py-2 px-3 border border-red-100 hover:bg-red-50 text-red-600 rounded-lg text-sm font-medium transition-colors"
+              >
+                <lucide-icon [img]="icTrash" [size]="14" /> Eliminar
+              </button>
+            </div>
           </div>
         }
         @if (listaCondominios().length === 0) {
@@ -172,7 +190,7 @@
       @if (isModalOpen()) {
         <div class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
           <div class="bg-white rounded-xl max-w-md w-full p-6">
-            <h3 class="text-xl font-serif mb-4">Crear Nuevo Condominio</h3>
+            <h3 class="text-xl font-serif mb-4">{{ modoEdicion() ? 'Editar Condominio' : 'Crear Nuevo Condominio' }}</h3>
             <div class="space-y-4">
               <div><label class="block text-sm font-medium text-text mb-1">Nombre</label><input [(ngModel)]="formData().nombre" type="text" class="w-full px-3 py-2 border border-border rounded-lg"></div>
               <div><label class="block text-sm font-medium text-text mb-1">Dirección</label><input [(ngModel)]="formData().direccion" type="text" class="w-full px-3 py-2 border border-border rounded-lg"></div>
@@ -188,13 +206,53 @@
                 <label class="flex items-center gap-2 text-sm"><input type="checkbox" [(ngModel)]="formData().plan_emergencia"> Plan Emergencia</label>
               </div>
               <div><label class="block text-sm font-medium text-text mb-1">Registro MINVU Administrador</label><input [(ngModel)]="formData().registro_minvu" type="text" class="w-full px-3 py-2 border border-border rounded-lg"></div>
+              @if (errorGuardado(); as errG) {
+                <p role="alert" class="text-sm text-red-600">{{ errG }}</p>
+              }
               <div class="flex justify-end gap-3 mt-6">
                 <button (click)="isModalOpen.set(false)" class="px-4 py-2 text-sm font-medium text-muted hover:text-text">Cancelar</button>
-                <button (click)="guardarNuevo()" class="px-4 py-2 bg-accent hover:bg-text text-white rounded-lg text-sm font-medium">Crear</button>
+                <button (click)="guardarNuevo()" class="px-4 py-2 bg-accent hover:bg-text text-white rounded-lg text-sm font-medium">{{ modoEdicion() ? 'Guardar cambios' : 'Crear' }}</button>
               </div>
             </div>
           </div>
         </div>
+      }
+
+      @if (modalEliminarVisible()) {
+        <dialog
+          appModal
+          (cerrar)="cerrarModalEliminar()"
+          aria-labelledby="titulo-eliminar-condominio"
+          class="m-auto w-[calc(100%-2rem)] max-w-sm max-h-[90vh] overflow-y-auto rounded-xl bg-white p-6 text-text backdrop:bg-black/40"
+        >
+          <h3 id="titulo-eliminar-condominio" class="font-serif text-lg text-text mb-2">Eliminar condominio</h3>
+          <p class="text-sm text-gray-500 mb-2">
+            ¿Estás seguro que quieres eliminar "{{ condominioAEliminar()?.nombre }}"?
+          </p>
+          @if (cargandoConteoAsociados()) {
+            <p class="text-xs text-muted mb-5">Comprobando espacios y gastos asociados…</p>
+          } @else if (conteoAsociados(); as conteo) {
+            <p class="text-sm text-red-700 bg-red-50 border border-red-100 rounded-lg px-3 py-2 mb-5">
+              Tiene <strong>{{ conteo.espacios }}</strong> espacio(s) y <strong>{{ conteo.gastos }}</strong> gasto(s)
+              común(es) asociados. No se eliminan junto con él y quedarán huérfanos.
+            </p>
+          } @else {
+            <p class="text-sm text-gray-500 mb-5">
+              Sus espacios y gastos comunes asociados no se eliminan junto con él y quedarán huérfanos.
+            </p>
+          }
+          @if (errorGuardado(); as errG) {
+            <p role="alert" class="text-sm text-red-600 mb-3">{{ errG }}</p>
+          }
+          <div class="flex gap-2">
+            <button (click)="cerrarModalEliminar()" class="flex-1 min-h-11 py-2.5 px-4 border border-border text-gray-600 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors">
+              Cancelar
+            </button>
+            <button (click)="confirmarEliminar()" class="flex-1 min-h-11 py-2.5 px-4 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-medium transition-colors">
+              Eliminar
+            </button>
+          </div>
+        </dialog>
       }
     }
   </div>

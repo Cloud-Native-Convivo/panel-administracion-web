@@ -1,8 +1,10 @@
 import { TestBed } from '@angular/core/testing';
+import { signal } from '@angular/core';
 import { of } from 'rxjs';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { Espacios, FormularioEspacio } from './espacios';
 import { EspaciosService } from '../services/espacios.service';
+import { CondominiosService } from '../services/condominios.service';
 import { Espacio } from '../models/espacio.model';
 
 describe('Espacios Screen UI Actions', () => {
@@ -17,6 +19,7 @@ describe('Espacios Screen UI Actions', () => {
 
   const sampleEspacio: Espacio = {
     id: 1,
+    condominio_id: 1,
     nombre: 'Quincho Principal',
     descripcion: 'Parrilla y mesas',
     capacidad: 25,
@@ -36,10 +39,15 @@ describe('Espacios Screen UI Actions', () => {
       eliminar: vi.fn().mockReturnValue(of(void 0)),
     };
 
+    const mockCondominiosService = {
+      condominioActivo: signal({ id: 1, nombre: 'Condominio Central' }),
+    };
+
     TestBed.configureTestingModule({
       providers: [
         Espacios,
         { provide: EspaciosService, useValue: mockService },
+        { provide: CondominiosService, useValue: mockCondominiosService },
       ],
     });
 
@@ -109,7 +117,7 @@ describe('Espacios Screen UI Actions', () => {
 
     target.confirmarEliminar();
 
-    expect(mockService.eliminar).toHaveBeenCalledWith(1);
+    expect(mockService.eliminar).toHaveBeenCalledWith(1, 1);
     expect(target.modalEliminarVisible()).toBe(false);
     expect(target.feedback()).toEqual({
       tipo: 'exito',

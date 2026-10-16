@@ -72,6 +72,7 @@ describe('GastosComunes Screen UI Actions', () => {
   it('abrirEditarCobro carga datos del gasto seleccionado y abre modal en modo edición', () => {
     const gastoMock: GastoComun = {
       id: 101,
+      condominioId: '1',
       unidadId: 'DEP-402',
       concepto: 'Gasto común Mayo',
       monto: 85000,

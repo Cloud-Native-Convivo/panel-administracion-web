@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal, DestroyRef } from '@angular/core';
+import { Component, OnInit, inject, signal, effect, DestroyRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
 import { forkJoin, of } from 'rxjs';
@@ -12,6 +12,7 @@ import { StatusBadge } from '../shared/status-badge';
 import { EspaciosService } from '../services/espacios.service';
 import { GastosComunesService } from '../services/gastos-comunes.service';
 import { ReservasService } from '../services/reservas.service';
+import { CondominiosService } from '../services/condominios.service';
 import { saludoSegunHora } from '../shared/saludo';
 import { mapearReservaUi, type UiReservationEntry } from '../shared/reserva-mapper';
 import type { Espacio } from '../models/espacio.model';
@@ -44,15 +45,20 @@ export class Dashboard implements OnInit {
   private readonly espaciosService = inject(EspaciosService);
   private readonly gastosComunesService = inject(GastosComunesService);
   private readonly reservasService = inject(ReservasService);
+  private readonly condominiosService = inject(CondominiosService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly msalService = inject(MsalService);
+
+  private get condominioId(): number {
+    return this.condominiosService.condominioActivo()!.id;
+  }
 
   // KPIs reales y futuros
   protected readonly kpis = signal<Kpi[]>([
     {
       label: 'Total unidades',
       value: '—',
-      sub: 'Próximamente',
+      sub: 'Cargando…',
       icon: Building2,
       color: 'bg-teal-50 text-primary',
       route: 'condominios',
@@ -116,7 +122,28 @@ export class Dashboard implements OnInit {
   // Iconos sueltos del template
   protected readonly icWallet = Wallet;
 
+  constructor() {
+    effect(() => {
+      const total = this.condominiosService.condominios().length;
+      const cargando = this.condominiosService.loading();
+      const error = this.condominiosService.error();
+
+      this.kpis.update((items) =>
+        items.map((kpi) =>
+          kpi.label === 'Total unidades'
+            ? {
+                ...kpi,
+                value: error ? '—' : total.toString(),
+                sub: cargando ? 'Cargando…' : error ? 'Error de conexión' : 'Condominios registrados',
+              }
+            : kpi,
+        ),
+      );
+    });
+  }
+
   ngOnInit(): void {
+    this.condominiosService.loadCondominios();
     this.cargarEspaciosKpi();
     this.cargarResumenGastos();
     this.cargarReservas();
@@ -130,7 +157,7 @@ export class Dashboard implements OnInit {
    */
   protected cargarResumenGastos(): void {
     this.gastosComunesService
-      .listar(0, 200)
+      .listar(String(this.condominioId), 0, 200)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (pagina) => {
@@ -157,7 +184,7 @@ export class Dashboard implements OnInit {
 
   protected cargarEspaciosKpi(): void {
     this.espaciosService
-      .listar()
+      .listar(this.condominioId)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (espacios) => {
@@ -208,7 +235,7 @@ export class Dashboard implements OnInit {
    */
   protected cargarReservas(): void {
     forkJoin({
-      espacios: this.espaciosService.listar().pipe(catchError(() => of([] as Espacio[]))),
+      espacios: this.espaciosService.listar(this.condominioId).pipe(catchError(() => of([] as Espacio[]))),
       reservas: this.reservasService.listar().pipe(catchError(() => of([]))),
     })
       .pipe(takeUntilDestroyed(this.destroyRef))

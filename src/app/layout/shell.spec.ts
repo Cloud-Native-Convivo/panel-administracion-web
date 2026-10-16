@@ -48,13 +48,14 @@ describe('Shell Navigation Items & RBAC', () => {
     });
   });
 
-  it('no debe exponer rutas fuera de alcance MVP (condominios, users)', () => {
+  it('expone condominios pero no rutas fuera de alcance (users)', () => {
     const ids = NAV_ITEMS.map((item) => item.id);
-    expect(ids).not.toContain('condominios');
+    expect(ids).toContain('condominios');
     expect(ids).not.toContain('users');
   });
 
   it('filtra gastos-comunes si el usuario no tiene rol administrador o comite', () => {
+    mockCondominiosService.condominioActivo.set({ id: 1, nombre: 'Condominio Central' } as any);
     mockMsal.instance.getActiveAccount.mockReturnValue({
       username: 'conserje@convivo.cl',
       idTokenClaims: {
@@ -66,11 +67,13 @@ describe('Shell Navigation Items & RBAC', () => {
     const visibleIds = (shell as unknown as { navItems: () => typeof NAV_ITEMS }).navItems().map((i) => i.id);
 
     expect(visibleIds).toContain('dashboard');
+    expect(visibleIds).toContain('condominios');
     expect(visibleIds).toContain('espacios');
     expect(visibleIds).not.toContain('gastos-comunes');
   });
 
   it('muestra gastos-comunes y espacios si el usuario tiene rol administrador', () => {
+    mockCondominiosService.condominioActivo.set({ id: 1, nombre: 'Condominio Central' } as any);
     mockMsal.instance.getActiveAccount.mockReturnValue({
       username: 'admin@convivo.cl',
       idTokenClaims: {
@@ -82,11 +85,13 @@ describe('Shell Navigation Items & RBAC', () => {
     const visibleIds = (shell as unknown as { navItems: () => typeof NAV_ITEMS }).navItems().map((i) => i.id);
 
     expect(visibleIds).toContain('dashboard');
+    expect(visibleIds).toContain('condominios');
     expect(visibleIds).toContain('espacios');
     expect(visibleIds).toContain('gastos-comunes');
   });
 
   it('oculta módulos restringidos si la cuenta no tiene roles (Fail-Closed)', () => {
+    mockCondominiosService.condominioActivo.set({ id: 1, nombre: 'Condominio Central' } as any);
     mockMsal.instance.getActiveAccount.mockReturnValue({
       username: 'sin-roles@convivo.cl',
       idTokenClaims: {},
@@ -95,6 +100,6 @@ describe('Shell Navigation Items & RBAC', () => {
     const shell = TestBed.inject(Shell);
     const visibleIds = (shell as unknown as { navItems: () => typeof NAV_ITEMS }).navItems().map((i) => i.id);
 
-    expect(visibleIds).toEqual(['dashboard']);
+    expect(visibleIds).toEqual(['dashboard', 'condominios']);
   });
 });

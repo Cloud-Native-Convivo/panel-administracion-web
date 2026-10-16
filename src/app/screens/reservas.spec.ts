@@ -1,9 +1,11 @@
 import { TestBed } from '@angular/core/testing';
+import { signal } from '@angular/core';
 import { of } from 'rxjs';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { Reservas } from './reservas';
 import { ReservasService } from '../services/reservas.service';
 import { EspaciosService } from '../services/espacios.service';
+import { CondominiosService } from '../services/condominios.service';
 import { Reserva } from '../models/reserva.model';
 import { Espacio } from '../models/espacio.model';
 import { UiReservationEntry } from '../shared/reserva-mapper';
@@ -20,6 +22,7 @@ describe('Reservas Screen UI Actions', () => {
 
   const sampleEspacio: Espacio = {
     id: 10,
+    condominio_id: 1,
     nombre: 'Salón de Eventos',
     descripcion: 'Espacio común',
     capacidad: 50,
@@ -50,11 +53,16 @@ describe('Reservas Screen UI Actions', () => {
       listar: vi.fn().mockReturnValue(of([sampleEspacio])),
     };
 
+    const mockCondominiosService = {
+      condominioActivo: signal({ id: 1, nombre: 'Condominio Central' }),
+    };
+
     TestBed.configureTestingModule({
       providers: [
         Reservas,
         { provide: ReservasService, useValue: mockReservasService },
         { provide: EspaciosService, useValue: mockEspaciosService },
+        { provide: CondominiosService, useValue: mockCondominiosService },
       ],
     });
 
