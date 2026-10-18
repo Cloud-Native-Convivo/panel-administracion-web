@@ -1,9 +1,11 @@
 import { TestBed } from '@angular/core/testing';
+import { signal } from '@angular/core';
 import { MsalService } from '@azure/msal-angular';
-import { of } from 'rxjs';
+import { of, Subject } from 'rxjs';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { GastosComunes } from './gastos-comunes';
 import { GastosComunesService } from '../services/gastos-comunes.service';
+import { CondominiosService } from '../services/condominios.service';
 import { type GastoComun } from '../models/gasto-comun.model';
 
 describe('GastosComunes Screen UI Actions', () => {
@@ -129,5 +131,26 @@ describe('GastosComunes Screen UI Actions', () => {
 
     state.cerrarEliminarCobro();
     expect(state.mostrarEliminarCobro()).toBe(false);
+  });
+
+  it('renderiza la cabecera Monto con alineación a la derecha y skeleton loaders cuando está cargando', () => {
+    mockService.listar = vi.fn().mockReturnValue(new Subject());
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      imports: [GastosComunes],
+      providers: [
+        { provide: GastosComunesService, useValue: mockService },
+        { provide: MsalService, useValue: mockMsal },
+        { provide: CondominiosService, useValue: { condominioActivo: signal({ id: 1, nombre: 'Test' }) } },
+      ],
+    });
+    const fixture = TestBed.createComponent(GastosComunes);
+    fixture.detectChanges();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    expect(compiled.querySelector('.animate-pulse')).toBeTruthy();
+    const ths = Array.from(compiled.querySelectorAll('th'));
+    const thMonto = ths.find((th) => th.textContent?.trim() === 'Monto');
+    expect(thMonto?.className).toContain('text-right');
   });
 });
