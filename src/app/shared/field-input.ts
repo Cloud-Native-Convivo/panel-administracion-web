@@ -27,7 +27,7 @@ export class FieldInput {
 
   readonly inputCls = computed(
     () =>
-      `w-full py-2.5 px-3.5 border border-border-input rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-colors ${
+      `w-full py-2.5 px-3.5 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-colors ${
         this.disabled() ? 'bg-gray-50 text-muted cursor-not-allowed' : 'bg-white text-text'
       }`,
   );
