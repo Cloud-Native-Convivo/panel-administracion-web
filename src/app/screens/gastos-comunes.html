@@ -81,17 +81,24 @@
             <tr class="border-b border-border bg-gray-50/60">
               <th class="text-left text-[11px] text-muted font-medium py-3 px-6 uppercase tracking-wide">Unidad</th>
               <th class="text-left text-[11px] text-muted font-medium py-3 px-4 uppercase tracking-wide">Concepto</th>
-              <th class="text-left text-[11px] text-muted font-medium py-3 px-4 uppercase tracking-wide">Monto</th>
-              <th class="text-left text-[11px] text-muted font-medium py-3 px-4 uppercase tracking-wide">Saldo pendiente</th>
+              <th class="text-right text-[11px] text-muted font-medium py-3 px-4 uppercase tracking-wide">Monto</th>
+              <th class="text-right text-[11px] text-muted font-medium py-3 px-4 uppercase tracking-wide">Saldo pendiente</th>
               <th class="text-left text-[11px] text-muted font-medium py-3 px-4 uppercase tracking-wide">Estado</th>
               <th class="text-left text-[11px] text-muted font-medium py-3 px-4 uppercase tracking-wide">Vencimiento</th>
             </tr>
           </thead>
           <tbody>
             @if (cargando()) {
-              <tr>
-                <td colspan="6" class="px-6 py-16 text-center text-muted text-sm">Cargando…</td>
-              </tr>
+              @for (i of [1, 2, 3, 4, 5]; track i) {
+                <tr class="animate-pulse border-b border-border">
+                  <td class="px-6 py-4"><div class="h-4 bg-slate-200 rounded w-16"></div></td>
+                  <td class="px-4 py-4"><div class="h-4 bg-slate-200 rounded w-32"></div></td>
+                  <td class="px-4 py-4"><div class="h-4 bg-slate-200 rounded w-20 ml-auto"></div></td>
+                  <td class="px-4 py-4"><div class="h-4 bg-slate-200 rounded w-20 ml-auto"></div></td>
+                  <td class="px-4 py-4"><div class="h-5 bg-slate-200 rounded-full w-24"></div></td>
+                  <td class="px-4 py-4"><div class="h-4 bg-slate-200 rounded w-24"></div></td>
+                </tr>
+              }
             } @else {
               @for (g of filtrados(); track g.id; let last = $last) {
                 <tr
@@ -113,8 +120,8 @@
                     </button>
                   </td>
                   <td class="px-4 py-3.5 text-sm text-gray-600">{{ g.concepto }}</td>
-                  <td class="px-4 py-3.5 text-sm text-text whitespace-nowrap">{{ (g.monto | currency:'CLP':'symbol-narrow':'1.0-0') }}</td>
-                  <td class="px-4 py-3.5 text-sm text-text whitespace-nowrap">{{ (g.saldoPendiente | currency:'CLP':'symbol-narrow':'1.0-0') }}</td>
+                  <td class="px-4 py-3.5 text-sm text-text whitespace-nowrap text-right tabular-nums">{{ (g.monto | currency:'CLP':'symbol-narrow':'1.0-0') }}</td>
+                  <td class="px-4 py-3.5 text-sm text-text whitespace-nowrap text-right tabular-nums">{{ (g.saldoPendiente | currency:'CLP':'symbol-narrow':'1.0-0') }}</td>
                   <td class="px-4 py-3.5 whitespace-nowrap"><app-status-badge [status]="g.estado.toLowerCase()" /></td>
                   <td class="px-4 py-3.5 text-sm text-gray-500 whitespace-nowrap">{{ formatoFecha(g.fechaVencimiento) }}</td>
                 </tr>
