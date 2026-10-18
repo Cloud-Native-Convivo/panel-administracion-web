@@ -13,9 +13,15 @@ import { EspaciosService } from '../services/espacios.service';
 import { GastosComunesService } from '../services/gastos-comunes.service';
 import { ReservasService } from '../services/reservas.service';
 import { CondominiosService } from '../services/condominios.service';
-import { saludoSegunHora } from '../shared/saludo';
 import { mapearReservaUi, type UiReservationEntry } from '../shared/reserva-mapper';
 import type { Espacio } from '../models/espacio.model';
+
+function saludoSegunHora(fecha: Date = new Date()): string {
+  const hora = fecha.getHours();
+  if (hora < 12) return 'Buenos días';
+  if (hora < 19) return 'Buenas tardes';
+  return 'Buenas noches';
+}
 
 interface ResumenGastos {
   cargando: boolean;
