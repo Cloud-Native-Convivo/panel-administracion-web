@@ -6,7 +6,7 @@ import { TORRES, SECTORES_B, CONDOMINIO_INFO } from '../data/sample-data';
 import type { UnitEntry } from '../data/sample-data';
 import { StatusBadge } from '../shared/status-badge';
 import { ModalDialog } from '../shared/modal-dialog';
-import { CondominiosService } from '../services/condominios.service';
+import { CondominiosService, type SolicitudAsignacion } from '../services/condominios.service';
 import { EspaciosService } from '../services/espacios.service';
 import { GastosComunesService } from '../services/gastos-comunes.service';
 import { Condominio } from '../models/condominio.model';
@@ -36,6 +36,24 @@ export class Condominios implements OnInit {
 
   ngOnInit() {
     this.condominiosService.loadCondominios();
+    this.cargarSolicitudes();
+  }
+
+  protected readonly solicitudes = signal<SolicitudAsignacion[]>([]);
+  protected readonly errorSolicitudes = signal<string | null>(null);
+
+  protected cargarSolicitudes(): void {
+    this.condominiosService.listarSolicitudes().subscribe({
+      next: (solicitudes) => this.solicitudes.set(solicitudes),
+      error: () => this.errorSolicitudes.set('No se pudieron cargar las solicitudes.'),
+    });
+  }
+
+  protected aprobarSolicitud(id: number): void {
+    this.condominiosService.aprobarSolicitud(id).subscribe({
+      next: () => this.solicitudes.update((lista) => lista.filter((solicitud) => solicitud.id !== id)),
+      error: () => this.errorSolicitudes.set('No se pudo aprobar la solicitud.'),
+    });
   }
 
   protected readonly listaCondominios = this.condominiosService.condominios;

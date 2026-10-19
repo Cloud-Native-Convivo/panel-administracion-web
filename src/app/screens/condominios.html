@@ -1,5 +1,16 @@
 <div class="flex flex-col lg:flex-row h-full overflow-hidden relative">
   <div class="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 min-w-0">
+    <section class="mb-6 rounded-xl border border-border bg-white p-4 sm:p-6" aria-labelledby="solicitudes-titulo">
+      <h2 id="solicitudes-titulo" class="font-serif text-xl text-text">Solicitudes de residentes</h2>
+      @if (errorSolicitudes()) { <p role="alert" class="text-sm text-red-700">{{ errorSolicitudes() }}</p> }
+      @if (solicitudes().length === 0) { <p class="text-sm text-muted">No hay solicitudes pendientes.</p> }
+      @for (solicitud of solicitudes(); track solicitud.id) {
+        <div class="flex flex-col gap-3 border-t border-border py-3 sm:flex-row sm:items-center sm:justify-between">
+          <p class="text-sm text-text">{{ solicitud.usuario_sub }} · Condominio {{ solicitud.condominio_id }} · {{ solicitud.unidad }}</p>
+          <button type="button" (click)="aprobarSolicitud(solicitud.id)" class="min-h-[44px] rounded-lg bg-accent px-4 text-sm font-semibold text-white">Aprobar asignación</button>
+        </div>
+      }
+    </section>
     @if (info(); as cInfo) {
       <div class="mb-4 flex items-center justify-between">
         <button (click)="seleccionar(null)" class="text-sm font-medium text-accent hover:text-text flex items-center gap-2">
