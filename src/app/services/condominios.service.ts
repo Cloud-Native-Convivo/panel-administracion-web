@@ -4,6 +4,14 @@ import { Condominio } from '../models/condominio.model';
 import { Observable, catchError, map, of, tap } from 'rxjs';
 import { environment } from '../../environments/environment';
 
+export interface SolicitudAsignacion {
+  id: number;
+  usuario_sub: string;
+  condominio_id: number;
+  unidad: string;
+  estado: string;
+}
+
 @Injectable({ providedIn: 'root' })
 export class CondominiosService {
   private apiUrl = `${environment.bffBaseUrl}/condominios`;
@@ -14,6 +22,14 @@ export class CondominiosService {
   public error = signal<string | null>(null);
 
   constructor(private http: HttpClient) {}
+
+  public listarSolicitudes(): Observable<SolicitudAsignacion[]> {
+    return this.http.get<SolicitudAsignacion[]>(`${this.apiUrl}/solicitudes`);
+  }
+
+  public aprobarSolicitud(id: number): Observable<SolicitudAsignacion> {
+    return this.http.post<SolicitudAsignacion>(`${this.apiUrl}/solicitudes/${id}/aprobar`, {});
+  }
 
   public loadCondominios(): void {
     this.loading.set(true);
