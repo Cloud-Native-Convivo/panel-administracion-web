@@ -16,6 +16,7 @@ import type { ReservationStatus } from '../data/sample-data';
 import { StatusBadge } from '../shared/status-badge';
 import { ReservasService } from '../services/reservas.service';
 import { EspaciosService } from '../services/espacios.service';
+import { CondominiosService } from '../services/condominios.service';
 import { Espacio } from '../models/espacio.model';
 import { mapearReservaUi, type UiReservationEntry } from '../shared/reserva-mapper';
 
@@ -27,6 +28,11 @@ import { mapearReservaUi, type UiReservationEntry } from '../shared/reserva-mapp
 export class Reservas implements OnInit {
   private readonly reservasService = inject(ReservasService);
   private readonly espaciosService = inject(EspaciosService);
+  private readonly condominiosService = inject(CondominiosService);
+
+  private get condominioId(): number {
+    return this.condominiosService.condominioActivo()!.id;
+  }
 
   // Estados de vista y filtros
   protected readonly view = signal<'lista' | 'calendario'>('lista');
@@ -65,7 +71,9 @@ export class Reservas implements OnInit {
   protected readonly spaceOptions = computed(() => {
     const espaciosEnReservas = this.rsvs().map((r) => r.space);
     const nombresEspacios = Array.from(this.espaciosMap().values());
-    const combinados = Array.from(new Set([...espaciosEnReservas, ...nombresEspacios])).filter(Boolean);
+    const combinados = Array.from(new Set([...espaciosEnReservas, ...nombresEspacios])).filter(
+      Boolean,
+    );
     return ['Todos', ...combinados];
   });
 
@@ -146,7 +154,7 @@ export class Reservas implements OnInit {
     this.error.set(null);
 
     forkJoin({
-      espacios: this.espaciosService.listar().pipe(
+      espacios: this.espaciosService.listar(this.condominioId).pipe(
         catchError((err) => {
           console.warn('No se pudieron obtener espacios comunes:', err);
           return of([] as Espacio[]);
@@ -194,9 +202,7 @@ export class Reservas implements OnInit {
   }
 
   protected cancel(id: number): void {
-    this.rsvs.update((prev) =>
-      prev.map((r) => (r.id === id ? { ...r, status: 'cancelada' } : r)),
-    );
+    this.rsvs.update((prev) => prev.map((r) => (r.id === id ? { ...r, status: 'cancelada' } : r)));
     this.mostrarFeedback('exito', `Reserva #${id} cancelada.`);
   }
 
@@ -224,5 +230,4 @@ export class Reservas implements OnInit {
     lunes.setHours(0, 0, 0, 0);
     return lunes;
   }
-
 }

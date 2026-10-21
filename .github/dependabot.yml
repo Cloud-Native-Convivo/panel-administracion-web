@@ -13,9 +13,21 @@ updates:
     labels: ["dependencies"]
     commit-message:
       prefix: ":arrow_up: chore(deps)"
+    ignore:
+      - dependency-name: "@angular/*"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "@angular-devkit/*"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "@schematics/*"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "tailwindcss"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "typescript"
+        update-types: ["version-update:semver-major"]
     groups:
       angular:
         patterns: ["@angular/*", "@angular-devkit/*", "@schematics/*", "typescript", "tslib", "rxjs"]
+        update-types: ["minor", "patch"]
       testing:
         patterns: ["vitest", "@vitest/*", "jsdom"]
       lint-format:
@@ -55,3 +67,8 @@ updates:
     labels: ["dependencies"]
     commit-message:
       prefix: ":whale: build(deps)"
+    ignore:
+      - dependency-name: "node"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "nginx"
+        update-types: ["version-update:semver-major"]

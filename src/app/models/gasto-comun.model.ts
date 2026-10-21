@@ -11,6 +11,7 @@ export const METODOS_PAGO: MetodoPago[] = ['TRANSFERENCIA', 'TARJETA', 'EFECTIVO
 /** GastoComunResponse del microservicio. */
 export interface GastoComun {
   id: number;
+  condominioId: string;
   unidadId: string;
   concepto: string;
   monto: number;
@@ -35,6 +36,7 @@ export interface Pago {
 
 /** GastoComunRequest — alta manual (solo administrador/comité). */
 export interface NuevoGastoComunRequest {
+  condominioId: string;
   unidadId: string;
   concepto: string;
   monto: number;

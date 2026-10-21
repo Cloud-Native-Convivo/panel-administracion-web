@@ -17,9 +17,10 @@ import {
 } from 'lucide-angular';
 import { StatusBadge } from '../shared/status-badge';
 import { ModalDialog } from '../shared/modal-dialog';
-import { formatoMonto } from '../shared/formato';
 import { EspaciosService } from '../services/espacios.service';
+import { CondominiosService } from '../services/condominios.service';
 import { Espacio, CrearEspacioDto, ActualizarEspacioDto } from '../models/espacio.model';
+import { CurrencyPipe } from '@angular/common';
 
 export interface FormularioEspacio {
   nombre: string;
@@ -33,11 +34,16 @@ export interface FormularioEspacio {
 @Component({
   selector: 'app-espacios',
   standalone: true,
-  imports: [LucideAngularModule, StatusBadge, FormsModule, ModalDialog],
+  imports: [LucideAngularModule, StatusBadge, FormsModule, ModalDialog, CurrencyPipe],
   templateUrl: './espacios.html',
 })
 export class Espacios implements OnInit {
   private readonly espaciosService = inject(EspaciosService);
+  private readonly condominiosService = inject(CondominiosService);
+
+  private get condominioId(): number {
+    return this.condominiosService.condominioActivo()!.id;
+  }
 
   // Estado reactivo principal
   protected readonly espacios = signal<Espacio[]>([]);
@@ -85,8 +91,6 @@ export class Espacios implements OnInit {
   protected readonly icMapPin = MapPin;
   protected readonly icCheck = CheckCircle2;
 
-  protected readonly formatoMonto = formatoMonto;
-
   ngOnInit(): void {
     this.cargarEspacios();
   }
@@ -95,7 +99,7 @@ export class Espacios implements OnInit {
     this.cargando.set(true);
     this.error.set(null);
 
-    this.espaciosService.listar().subscribe({
+    this.espaciosService.listar(this.condominioId).subscribe({
       next: (datos) => {
         this.espacios.set(datos);
         this.cargando.set(false);
@@ -190,7 +194,7 @@ export class Espacios implements OnInit {
         estado: f.estado,
       };
 
-      this.espaciosService.actualizar(actual.id, dto).subscribe({
+      this.espaciosService.actualizar(actual.id, this.condominioId, dto).subscribe({
         next: (actualizado) => {
           this.espacios.update((lista) =>
             lista.map((e) => (e.id === actualizado.id ? actualizado : e)),
@@ -207,6 +211,7 @@ export class Espacios implements OnInit {
       });
     } else {
       const dto: CrearEspacioDto = {
+        condominio_id: this.condominioId,
         nombre,
         capacidad: Math.floor(capacidad),
         tarifa_hora,
@@ -246,7 +251,7 @@ export class Espacios implements OnInit {
 
     this.eliminando.set(true);
 
-    this.espaciosService.eliminar(espacio.id).subscribe({
+    this.espaciosService.eliminar(espacio.id, this.condominioId).subscribe({
       next: () => {
         this.eliminando.set(false);
         this.cerrarModalEliminar();

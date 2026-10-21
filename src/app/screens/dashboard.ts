@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal, DestroyRef } from '@angular/core';
+import { Component, OnInit, inject, signal, effect, DestroyRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
 import { forkJoin, of } from 'rxjs';
@@ -7,14 +7,21 @@ import { LucideAngularModule } from 'lucide-angular';
 import type { LucideIconData } from 'lucide-angular';
 import { Building2, Users, Search, Calendar, Wallet } from 'lucide-angular';
 import { MsalService } from '@azure/msal-angular';
+import { CurrencyPipe } from '@angular/common';
 import { StatusBadge } from '../shared/status-badge';
 import { EspaciosService } from '../services/espacios.service';
 import { GastosComunesService } from '../services/gastos-comunes.service';
 import { ReservasService } from '../services/reservas.service';
-import { saludoSegunHora } from '../shared/saludo';
-import { formatoMonto } from '../shared/formato';
+import { CondominiosService } from '../services/condominios.service';
 import { mapearReservaUi, type UiReservationEntry } from '../shared/reserva-mapper';
 import type { Espacio } from '../models/espacio.model';
+
+function saludoSegunHora(fecha: Date = new Date()): string {
+  const hora = fecha.getHours();
+  if (hora < 12) return 'Buenos días';
+  if (hora < 19) return 'Buenas tardes';
+  return 'Buenas noches';
+}
 
 interface ResumenGastos {
   cargando: boolean;
@@ -36,7 +43,7 @@ interface Kpi {
 
 @Component({
   selector: 'app-dashboard',
-  imports: [LucideAngularModule, StatusBadge],
+  imports: [LucideAngularModule, StatusBadge, CurrencyPipe],
   templateUrl: './dashboard.html',
 })
 export class Dashboard implements OnInit {
@@ -44,15 +51,47 @@ export class Dashboard implements OnInit {
   private readonly espaciosService = inject(EspaciosService);
   private readonly gastosComunesService = inject(GastosComunesService);
   private readonly reservasService = inject(ReservasService);
+  private readonly condominiosService = inject(CondominiosService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly msalService = inject(MsalService);
 
+  private get condominioId(): number {
+    return this.condominiosService.condominioActivo()!.id;
+  }
+
   // KPIs reales y futuros
   protected readonly kpis = signal<Kpi[]>([
-    { label: 'Total unidades',       value: '—',  sub: 'Próximamente',              icon: Building2, color: 'bg-teal-50 text-primary', route: 'condominios' },
-    { label: 'Usuarios activos',     value: '—',  sub: 'Próximamente',              icon: Users,     color: 'bg-blue-50 text-blue-600', route: 'users' },
-    { label: 'Espacios habilitados', value: '—',  sub: 'Cargando…',                 icon: Search,    color: 'bg-violet-50 text-violet-600', route: 'espacios' },
-    { label: 'Reservas hoy',         value: '—',  sub: 'Cargando…',                 icon: Calendar,  color: 'bg-orange-50 text-orange-600' },
+    {
+      label: 'Total unidades',
+      value: '—',
+      sub: 'Cargando…',
+      icon: Building2,
+      color: 'bg-teal-50 text-primary',
+      route: 'condominios',
+    },
+    {
+      label: 'Usuarios activos',
+      value: '—',
+      sub: 'Próximamente',
+      icon: Users,
+      color: 'bg-blue-50 text-blue-600',
+      route: 'users',
+    },
+    {
+      label: 'Espacios habilitados',
+      value: '—',
+      sub: 'Cargando…',
+      icon: Search,
+      color: 'bg-violet-50 text-violet-600',
+      route: 'espacios',
+    },
+    {
+      label: 'Reservas hoy',
+      value: '—',
+      sub: 'Cargando…',
+      icon: Calendar,
+      color: 'bg-orange-50 text-orange-600',
+    },
   ]);
 
   protected readonly upcoming = signal<UiReservationEntry[]>([]);
@@ -86,12 +125,31 @@ export class Dashboard implements OnInit {
     return texto.charAt(0).toUpperCase() + texto.slice(1);
   }
 
-  protected readonly formatoMonto = formatoMonto;
-
   // Iconos sueltos del template
   protected readonly icWallet = Wallet;
 
+  constructor() {
+    effect(() => {
+      const total = this.condominiosService.condominios().length;
+      const cargando = this.condominiosService.loading();
+      const error = this.condominiosService.error();
+
+      this.kpis.update((items) =>
+        items.map((kpi) =>
+          kpi.label === 'Total unidades'
+            ? {
+                ...kpi,
+                value: error ? '—' : total.toString(),
+                sub: cargando ? 'Cargando…' : error ? 'Error de conexión' : 'Condominios registrados',
+              }
+            : kpi,
+        ),
+      );
+    });
+  }
+
   ngOnInit(): void {
+    this.condominiosService.loadCondominios();
     this.cargarEspaciosKpi();
     this.cargarResumenGastos();
     this.cargarReservas();
@@ -105,7 +163,7 @@ export class Dashboard implements OnInit {
    */
   protected cargarResumenGastos(): void {
     this.gastosComunesService
-      .listar(0, 200)
+      .listar(String(this.condominioId), 0, 200)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (pagina) => {
@@ -119,7 +177,8 @@ export class Dashboard implements OnInit {
             error: false,
             saldoPendienteTotal,
             vencidos: gastos.filter((g) => g.estado === 'VENCIDO').length,
-            pendientes: gastos.filter((g) => g.estado === 'PENDIENTE' || g.estado === 'PARCIAL').length,
+            pendientes: gastos.filter((g) => g.estado === 'PENDIENTE' || g.estado === 'PARCIAL')
+              .length,
             pagados: gastos.filter((g) => g.estado === 'PAGADO').length,
           });
         },
@@ -131,7 +190,7 @@ export class Dashboard implements OnInit {
 
   protected cargarEspaciosKpi(): void {
     this.espaciosService
-      .listar()
+      .listar(this.condominioId)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (espacios) => {
@@ -147,9 +206,7 @@ export class Dashboard implements OnInit {
           const mantencion = espacios.filter((e) => {
             const estado = (e?.estado || '').toLowerCase().trim();
             return (
-              estado === 'mantenimiento' ||
-              estado === 'en mantención' ||
-              estado === 'en mantencion'
+              estado === 'mantenimiento' || estado === 'en mantención' || estado === 'en mantencion'
             );
           }).length;
 
@@ -161,8 +218,8 @@ export class Dashboard implements OnInit {
                     value: habilitados.toString(),
                     sub: `${mantencion} en mantención`,
                   }
-                : kpi
-            )
+                : kpi,
+            ),
           );
         },
         error: () => {
@@ -170,8 +227,8 @@ export class Dashboard implements OnInit {
             items.map((kpi) =>
               kpi.label === 'Espacios habilitados'
                 ? { ...kpi, value: '—', sub: 'Error de conexión' }
-                : kpi
-            )
+                : kpi,
+            ),
           );
         },
       });
@@ -184,12 +241,8 @@ export class Dashboard implements OnInit {
    */
   protected cargarReservas(): void {
     forkJoin({
-      espacios: this.espaciosService.listar().pipe(
-        catchError(() => of([] as Espacio[])),
-      ),
-      reservas: this.reservasService.listar().pipe(
-        catchError(() => of([])),
-      ),
+      espacios: this.espaciosService.listar(this.condominioId).pipe(catchError(() => of([] as Espacio[]))),
+      reservas: this.reservasService.listar().pipe(catchError(() => of([]))),
     })
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(({ espacios, reservas }) => {

@@ -1,9 +1,15 @@
-export const environment = {
-  clientId: '8c375036-6298-414a-bc3f-eb0f8fbdf26c',
-  tenantId: '936612c7-66b8-41ba-a9dd-83f50365f818',
-  redirectUri: 'http://localhost:4200',
-  postLogoutRedirectUri: 'http://localhost:4200/login',
-  apiUrl: 'https://3d2ods6had.execute-api.us-east-1.amazonaws.com',
-  apiEspaciosUrl: 'http://localhost:3000/api/v1/espacios-comunes',
-  bffBaseUrl: 'http://localhost:3000/api',
-};
+function getEnv() {
+  const w = typeof window !== 'undefined' ? (window as any) : {};
+  const env = w.__ENV || {};
+  return {
+    clientId: '8c375036-6298-414a-bc3f-eb0f8fbdf26c',
+    tenantId: '936612c7-66b8-41ba-a9dd-83f50365f818',
+    redirectUri: 'http://localhost:4200',
+    postLogoutRedirectUri: 'http://localhost:4200/login',
+    apiUrl: 'https://3d2ods6had.execute-api.us-east-1.amazonaws.com',
+    apiEspaciosUrl: env.apiEspaciosUrl || 'http://localhost:3000/api/v1/espacios-comunes',
+    bffBaseUrl: env.bffBaseUrl || 'http://localhost:3000/api',
+  };
+}
+
+export const environment = getEnv();

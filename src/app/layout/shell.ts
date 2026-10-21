@@ -1,30 +1,45 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, computed } from '@angular/core';
 import { Router, RouterOutlet } from '@angular/router';
 import { LucideAngularModule } from 'lucide-angular';
 import type { LucideIconData } from 'lucide-angular';
 import {
   Home, Users, Building2, Search, Calendar, Settings,
   DollarSign, MessageSquare, Camera, Target, Bell, Lock, LogOut,
-  Menu, X,
+  Menu, X, List,
 } from 'lucide-angular';
 import { MsalService } from '@azure/msal-angular';
+import { CondominiosService } from '../services/condominios.service';
+import { rolesDeCuenta, type RolConvivo } from '../../auth/roles';
 
-interface NavItem {
+export interface NavItem {
   id: string;
   label: string;
   icon: LucideIconData;
+  requiresCondominio?: boolean;
+  requiredRoles?: RolConvivo[];
 }
 
-const NAV_ITEMS: NavItem[] = [
-  { id: 'dashboard',   label: 'Inicio',          icon: Home      },
-  { id: 'espacios',    label: 'Espacios comunes',icon: Search    },
-  { id: 'gastos-comunes', label: 'Gastos comunes', icon: DollarSign },
+export const NAV_ITEMS: NavItem[] = [
+  { id: 'dashboard',      label: 'Inicio',           icon: Home },
+  { id: 'condominios',    label: 'Mis Condominios',  icon: List },
+  {
+    id: 'espacios',
+    label: 'Espacios comunes',
+    icon: Search,
+    requiresCondominio: true,
+    requiredRoles: ['administrador', 'admin', 'conserje', 'comite'],
+  },
+  {
+    id: 'gastos-comunes',
+    label: 'Gastos comunes',
+    icon: DollarSign,
+    requiresCondominio: true,
+    requiredRoles: ['administrador', 'admin', 'comite'],
+  },
 ];
 
-// Usuarios y Unidades no tienen microservicio propio todavía (no hay
-// ms-usuarios ni ms-condominios) -- quedan bloqueadas junto al resto de
-// "Próximamente" en vez de mostrar datos de ejemplo como si fueran reales.
-const SOON_ITEMS: NavItem[] = [
+// Usuarios y Unidades quedan en "Próximamente" (fuera de alcance MVP)
+export const SOON_ITEMS: NavItem[] = [
   { id: '', label: 'Usuarios',         icon: Users          },
   { id: '', label: 'Unidades',         icon: Building2      },
   { id: '', label: 'Reservas',         icon: Calendar       },
@@ -53,14 +68,25 @@ const PAGE_TITLES: Record<string, string> = {
 export class Shell {
   private readonly router = inject(Router);
   private readonly msalService = inject(MsalService);
+  private readonly condominiosService = inject(CondominiosService);
 
   protected readonly isMobileMenuOpen = signal(false);
 
-  protected readonly navItems = NAV_ITEMS;
+  protected readonly navItems = computed(() => {
+    const hasActive = !!this.condominiosService.condominioActivo();
+    const roles = rolesDeCuenta(this.cuenta);
+    return NAV_ITEMS.filter((item) => {
+      if (item.requiresCondominio && !hasActive) return false;
+      if (item.requiredRoles && !item.requiredRoles.some((r) => roles.includes(r))) return false;
+      return true;
+    });
+  });
+  
   protected readonly soonItems = SOON_ITEMS;
+  protected readonly hasActiveCondominio = computed(() => !!this.condominiosService.condominioActivo());
 
   private get cuenta() {
-    return this.msalService.instance.getActiveAccount();
+    return this.msalService.instance.getActiveAccount() ?? this.msalService.instance.getAllAccounts()[0] ?? null;
   }
 
   protected get nombreUsuario(): string {

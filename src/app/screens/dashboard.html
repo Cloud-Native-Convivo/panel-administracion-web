@@ -110,7 +110,7 @@
             <div class="mb-4">
               <p class="text-xs text-muted mb-0.5">Saldo pendiente total</p>
               <p class="text-2xl font-semibold text-text tracking-tight">
-                {{ formatoMonto(resumenGastos().saldoPendienteTotal) }}
+                {{ (resumenGastos().saldoPendienteTotal | currency:'CLP':'symbol-narrow':'1.0-0') }}
               </p>
             </div>
             <div class="space-y-2.5">

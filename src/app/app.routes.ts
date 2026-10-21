@@ -1,6 +1,8 @@
 import { Routes } from '@angular/router';
-import { MsalGuard } from '@azure/msal-angular';
 import { Shell } from './layout/shell';
+import { authGuard } from './guards/auth.guard';
+import { roleGuard } from './guards/role.guard';
+import { condominioGuard } from './guards/condominio.guard';
 
 export const routes: Routes = [
   { path: '', pathMatch: 'full', redirectTo: 'login' },
@@ -11,37 +13,38 @@ export const routes: Routes = [
   {
     path: '',
     component: Shell,
-    canActivate: [MsalGuard],
-    canActivateChild: [MsalGuard],
+    canActivate: [authGuard],
+    canActivateChild: [authGuard],
     children: [
       { path: '', pathMatch: 'full', redirectTo: 'dashboard' },
       {
         path: 'dashboard',
+        canActivate: [condominioGuard],
         loadComponent: () => import('./screens/dashboard').then((m) => m.Dashboard),
       },
       {
-        path: 'users',
-        loadComponent: () => import('./screens/users').then((m) => m.Users),
-      },
-      {
         path: 'condominios',
+        canActivate: [roleGuard],
+        data: { roles: ['administrador', 'admin'] },
         loadComponent: () => import('./screens/condominios').then((m) => m.Condominios),
       },
       {
         path: 'espacios',
+        canActivate: [roleGuard, condominioGuard],
+        data: { roles: ['administrador', 'admin', 'conserje', 'comite'] },
         loadComponent: () => import('./screens/espacios').then((m) => m.Espacios),
       },
       {
         path: 'reservas',
+        canActivate: [roleGuard, condominioGuard],
+        data: { roles: ['administrador', 'admin', 'conserje', 'comite'] },
         loadComponent: () => import('./screens/reservas').then((m) => m.Reservas),
       },
       {
         path: 'gastos-comunes',
+        canActivate: [roleGuard, condominioGuard],
+        data: { roles: ['administrador', 'admin', 'comite'] },
         loadComponent: () => import('./screens/gastos-comunes').then((m) => m.GastosComunes),
-      },
-      {
-        path: 'config',
-        loadComponent: () => import('./screens/config').then((m) => m.Config),
       },
     ],
   },

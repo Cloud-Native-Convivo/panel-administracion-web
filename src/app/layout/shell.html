@@ -41,8 +41,8 @@
 
     <nav class="flex-1 py-4 px-3 overflow-y-auto">
       <div class="space-y-0.5">
-        @for (item of navItems; track item.id) {
-          @if (item.id !== 'users' && item.id !== 'condominios') {
+        @for (item of navItems(); track item.id) {
+          @if (item.id !== 'users') {
             <button
               (click)="go(item.id)"
               [attr.aria-current]="isActive(item.id) ? 'page' : null"
@@ -64,7 +64,8 @@
         }
       </div>
 
-      <div class="mt-5 pt-4 border-t border-border">
+      @if (hasActiveCondominio()) {
+        <div class="mt-5 pt-4 border-t border-border">
         <p class="px-3 text-[10px] text-muted uppercase tracking-widest font-medium mb-2">Próximamente</p>
         <div class="space-y-0.5">
           @for (item of soonItems; track item.label) {
@@ -76,6 +77,7 @@
           }
         </div>
       </div>
+      }
     </nav>
   </aside>
 

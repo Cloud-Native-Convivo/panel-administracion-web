@@ -1,12 +1,8 @@
-import {
-  BrowserCacheLocation,
-  LogLevel,
-  type Configuration,
-} from '@azure/msal-browser'
-import type { MsalGuardConfiguration, MsalInterceptorConfiguration } from '@azure/msal-angular'
-import { InteractionType } from '@azure/msal-browser'
-import { environment } from '../environments/environment'
-import { API_SCOPES } from './apiScopes'
+import { BrowserCacheLocation, LogLevel, type Configuration } from '@azure/msal-browser';
+import { InteractionType } from '@azure/msal-browser';
+import { MsalGuardConfiguration, MsalInterceptorConfiguration } from '@azure/msal-angular';
+import { environment } from '../environments/environment';
+import { API_SCOPES } from './apiScopes';
 
 // document.baseURI resuelve el <base href> del index.html a una URL absoluta:
 // http://localhost:4200/ en dev, https://cloud-native-convivo.github.io/panel-administracion-web/
@@ -29,47 +25,48 @@ export const msalConfig: Configuration = {
     loggerOptions: {
       loggerCallback: (level, message, containsPii) => {
         if (containsPii) {
-          return
+          return;
         }
         switch (level) {
           case LogLevel.Error:
-            console.error(message)
-            return
+            console.error(message);
+            return;
           case LogLevel.Warning:
-            console.warn(message)
-            return
+            console.warn(message);
+            return;
           default:
-            return
+            return;
         }
       },
     },
   },
-}
+};
 
 export function MSALGuardConfigFactory(): MsalGuardConfiguration {
   return {
     interactionType: InteractionType.Redirect,
     authRequest: { scopes: API_SCOPES },
-  }
+  };
 }
 
 // Mapea qué llamadas HTTP llevan Bearer token y con qué scope. OJO: para una
-// URL que SÍ está en este mapa, MsalInterceptor no se queda callado si falla
-// acquireTokenSilent (sin cuenta, sesión expirada, lo que sea) -- dispara
-// acquireTokenRedirect siempre (interactionType Redirect/Popup es
-// obligatorio para esta librería, no existe modo "solo silencioso"; ver
-// @azure/msal-angular, MsalInterceptor.acquireToken). Por eso localhost:3000
-// (bff local) NO está mapeado acá: así el interceptor ni lo mira, y correr
-// `ng serve` sin login real no dispara un redirect a Azure AD.
 export function MSALInterceptorConfigFactory(): MsalInterceptorConfiguration {
-  const cleanApiUrl = (environment.apiUrl || '').replace(/\/+$/, '')
-  const protectedResourceMap = new Map<string, Array<string> | null>([
-    [cleanApiUrl, API_SCOPES],
-  ])
+  const cleanApiUrl = (environment.apiUrl || '').replace(/\/+$/, '');
+  const cleanBffUrl = (environment.bffBaseUrl || '').replace(/\/+$/, '');
+  const cleanEspaciosUrl = (environment.apiEspaciosUrl || '').replace(/\/+$/, '');
+
+  const rawUrls = Array.from(new Set([cleanApiUrl, cleanBffUrl, cleanEspaciosUrl].filter(Boolean)));
+  // Evitar duplicados de prefijos (ej. /api y /api/v1/...) que disparan advertencia de MSAL
+  const urls = rawUrls.filter(
+    (url, index, arr) => !arr.some((other, otherIdx) => otherIdx !== index && url.startsWith(other + '/')),
+  );
+  const protectedResourceMap = new Map<string, Array<string> | null>(
+    urls.map((url) => [url, API_SCOPES]),
+  );
 
   return {
     interactionType: InteractionType.Redirect,
     protectedResourceMap,
     strictMatching: false,
-  }
+  };
 }

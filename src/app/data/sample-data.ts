@@ -84,3 +84,21 @@ export const TORRES: TorreEntry[] = [
 export function ini(name: string): string {
   return name.split(" ").slice(0, 2).map(n => n[0]).join("").toUpperCase();
 }
+
+export const SECTORES_B: TorreEntry[] = [
+  { id: "S-N", name: "Sector Norte", units: [
+    { id: "S-N-1", num: "Casa 1", owner: "Familia Rojas", residents: ["Juan Rojas"], status: "activo", moroso: false },
+    { id: "S-N-2", num: "Casa 2", owner: "Familia Silva", residents: ["Pedro Silva"], status: "activo", moroso: true },
+  ]},
+  { id: "S-S", name: "Sector Sur", units: [
+    { id: "S-S-10", num: "Sitio 10", owner: "Inversiones SPA", residents: [], status: "vacío", moroso: false },
+  ]},
+];
+
+export const CONDOMINIO_INFO = {
+  nombre: "Condominio Los Álamos",
+  direccion: "Av. Américo Vespucio Norte 2350, Vitacura, Santiago",
+  registro_minvu: "REG-2023-8921",
+  seguro_incendio: true,
+  plan_emergencia: true
+};
