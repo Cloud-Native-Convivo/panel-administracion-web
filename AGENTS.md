@@ -381,7 +381,7 @@ git push origin main develop --tags
 - Nunca rebase de una rama ya pusheada que otros puedan tener checkout local (`feature/*` propia sí se puede rebasear antes de publicar).
 - Nunca borrar `release/*`/`hotfix/*` sin haber mergeado a ambos destinos — si se aborta, documentarlo en el PR/issue antes de borrar.
 
-**Branch protection / PR (si el remoto es GitHub/GitLab):** `main` y `develop` protegidas, requieren PR + al menos 1 review antes de merge, checks de CI en verde obligatorios (ver §4/§9). `release/*` y `hotfix/*` heredan la misma exigencia por ser destino de merge a `main`. `feature/*` sin restricción, es la rama de trabajo diario.
+**Branch protection / PR (si el remoto es GitHub/GitLab):** `main` y `develop` protegidas, requieren PR, sin review obligatorio (equipo de dos personas: a menudo no hay otra persona que apruebe), checks de CI en verde obligatorios (ver §4/§9). `release/*` y `hotfix/*` heredan la misma exigencia por ser destino de merge a `main`. `feature/*` sin restricción, es la rama de trabajo diario.
 
 **CLI `git-flow` (opcional):** si el equipo prefiere no memorizar los comandos de arriba, la extensión `git-flow` (nvie/AVH) los envuelve 1:1 — `git flow feature start/finish`, `git flow release start/finish`, `git flow hotfix start/finish`. Equivalente funcional, no un modelo distinto; no instalarla si nadie del equipo la va a usar, los comandos crudos de arriba alcanzan.
 
