@@ -23,6 +23,10 @@ export const routes: Routes = [
         loadComponent: () => import('./screens/dashboard').then((m) => m.Dashboard),
       },
       {
+        path: 'sin-condominio',
+        loadComponent: () => import('./screens/sin-condominio').then((m) => m.SinCondominio),
+      },
+      {
         path: 'condominios',
         canActivate: [roleGuard],
         data: { roles: ['administrador', 'admin'] },

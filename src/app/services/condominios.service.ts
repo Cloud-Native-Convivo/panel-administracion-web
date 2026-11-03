@@ -12,6 +12,8 @@ export interface SolicitudAsignacion {
   estado: string;
 }
 
+const ACTIVO_KEY = 'convivo.condominioActivoId';
+
 @Injectable({ providedIn: 'root' })
 export class CondominiosService {
   private apiUrl = `${environment.bffBaseUrl}/condominios`;
@@ -32,25 +34,55 @@ export class CondominiosService {
   }
 
   public loadCondominios(): void {
-    this.loading.set(true);
-    this.error.set(null);
-    this.http
-      .get<Condominio[]>(this.apiUrl)
-      .pipe(
-        catchError((err) => {
-          console.error('Error cargando condominios', err);
-          this.error.set(this.mensajeError(err));
-          return of([]);
-        }),
-      )
-      .subscribe((data) => {
-        this.condominios.set(data);
-        this.loading.set(false);
-      });
+    this.cargarCondominios().subscribe();
   }
 
-  public seleccionar(condominio: Condominio): void {
+  /** Carga la lista y restaura el condominio activo guardado en la sesión, si sigue existiendo. */
+  public cargarCondominios(): Observable<Condominio[]> {
+    this.loading.set(true);
+    this.error.set(null);
+    return this.http.get<Condominio[]>(this.apiUrl).pipe(
+      catchError((err) => {
+        console.error('Error cargando condominios', err);
+        this.error.set(this.mensajeError(err));
+        return of([] as Condominio[]);
+      }),
+      tap((data) => {
+        this.condominios.set(data);
+        this.loading.set(false);
+        this.restaurarActivo(data);
+      }),
+    );
+  }
+
+  public seleccionar(condominio: Condominio | null): void {
     this.condominioActivo.set(condominio);
+    this.guardarActivoId(condominio?.id ?? null);
+  }
+
+  private restaurarActivo(lista: Condominio[]): void {
+    if (this.condominioActivo()) return;
+    const id = this.leerActivoId();
+    const guardado = id === null ? undefined : lista.find((c) => c.id === id);
+    if (guardado) this.condominioActivo.set(guardado);
+  }
+
+  private leerActivoId(): number | null {
+    try {
+      const valor = sessionStorage.getItem(ACTIVO_KEY);
+      return valor === null ? null : Number(valor);
+    } catch {
+      return null;
+    }
+  }
+
+  private guardarActivoId(id: number | null): void {
+    try {
+      if (id === null) sessionStorage.removeItem(ACTIVO_KEY);
+      else sessionStorage.setItem(ACTIVO_KEY, String(id));
+    } catch {
+      // sessionStorage no disponible (modo privado o bloqueado): la selección queda solo en memoria.
+    }
   }
 
   /** Devuelve el condominio creado, o null si falló (ver `error()` para el motivo). */
@@ -73,7 +105,10 @@ export class CondominiosService {
   }
 
   /** Devuelve el condominio actualizado, o null si falló (ver `error()` para el motivo). */
-  public actualizarCondominio(id: number, cambios: Partial<Condominio>): Observable<Condominio | null> {
+  public actualizarCondominio(
+    id: number,
+    cambios: Partial<Condominio>,
+  ): Observable<Condominio | null> {
     this.loading.set(true);
     this.error.set(null);
     return this.http.put<Condominio>(`${this.apiUrl}/${id}`, cambios).pipe(
@@ -104,7 +139,7 @@ export class CondominiosService {
       tap(() => {
         this.condominios.update((list) => list.filter((c) => c.id !== id));
         if (this.condominioActivo()?.id === id) {
-          this.condominioActivo.set(null);
+          this.seleccionar(null);
         }
         this.loading.set(false);
       }),
@@ -127,7 +162,11 @@ export class CondominiosService {
       return 'Tu sesión expiró o no es válida. Vuelve a iniciar sesión.';
     }
     if (status === 403) {
-      return detalle?.detail ?? detalle?.message ?? 'No tienes permiso para esta acción (requiere rol ADMIN).';
+      return (
+        detalle?.detail ??
+        detalle?.message ??
+        'No tienes permiso para esta acción (requiere rol ADMIN).'
+      );
     }
     if (status === 404) {
       return 'El condominio no existe o fue eliminado.';
