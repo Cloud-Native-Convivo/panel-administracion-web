@@ -449,9 +449,20 @@ El criterio de fondo, no la lista: **lo reversible dentro del repo se hace; lo q
 
 Este bloque es el que un agente debe poder aplicar sin interpretar: si una acción no está listada y el criterio de fondo tampoco la resuelve, agregar la fila acá después de resolverla, para que el próximo no tenga que deducirla.
 
-## 13. Deploy (opcional — completar si el proyecto tiene pipeline de despliegue propio)
+## 13. Deploy
 
-(sin uso actual en este proyecto — deploy pendiente de configurar)
+El panel se despliega a GitHub Pages con `.github/workflows/deploy.yml`. Build local equivalente al de producción (la base es la ruta de Pages, no la raíz):
+
+```bash
+pnpm install --frozen-lockfile
+pnpm exec ng build --base-href /panel-administracion-web/
+```
+
+- Disparador: push a `main` o ejecución manual (`workflow_dispatch`). Como `main` está protegida (PR sin review obligatorio + checks en verde, sin push directo — §11.3), el trigger real es un PR de `release/*` o `hotfix/*` mergeado a `main`. Requiere aprobación explícita — ver §12.
+- El workflow sobrescribe `src/environments/environment.ts` y `environment.prod.ts` con `ENTRA_CLIENT_ID`, `ENTRA_TENANT_ID`, `API_URL` y `REDIRECT_URI`, tomados de los secrets o variables del repositorio; si faltan usa valores por defecto y deja una advertencia en el log.
+- Copia `index.html` como `404.html` para que Angular Router resuelva las rutas al recargar o entrar directo: GitHub Pages sirve estáticos.
+- Publica `dist/panel-admin/browser` en el entorno `github-pages` con `actions/deploy-pages`.
+- Rollback: revertir el merge en `main` mediante PR; el push a `main` vuelve a disparar el workflow.
 
 ## 14. Monorepo (opcional — solo si el repo tiene múltiples subproyectos)
 
