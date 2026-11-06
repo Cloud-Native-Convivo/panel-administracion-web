@@ -3,6 +3,9 @@ import { Shell } from './layout/shell';
 import { authGuard } from './guards/auth.guard';
 import { roleGuard } from './guards/role.guard';
 import { condominioGuard } from './guards/condominio.guard';
+import type { RolConvivo } from '../auth/roles';
+
+const ROLES_PANEL: RolConvivo[] = ['administrador', 'admin', 'conserje', 'comite'];
 
 export const routes: Routes = [
   { path: '', pathMatch: 'full', redirectTo: 'login' },
@@ -19,12 +22,20 @@ export const routes: Routes = [
       { path: '', pathMatch: 'full', redirectTo: 'dashboard' },
       {
         path: 'dashboard',
-        canActivate: [condominioGuard],
+        canActivate: [roleGuard, condominioGuard],
+        data: { roles: ROLES_PANEL, redirectTo: '/sin-acceso' },
         loadComponent: () => import('./screens/dashboard').then((m) => m.Dashboard),
       },
       {
         path: 'sin-condominio',
+        canActivate: [roleGuard],
+        data: { roles: ROLES_PANEL, redirectTo: '/sin-acceso' },
         loadComponent: () => import('./screens/sin-condominio').then((m) => m.SinCondominio),
+      },
+      {
+        // Destino de rechazo del roleGuard: solo authGuard (heredado del Shell), sin roleGuard.
+        path: 'sin-acceso',
+        loadComponent: () => import('./screens/sin-acceso').then((m) => m.SinAcceso),
       },
       {
         path: 'condominios',
