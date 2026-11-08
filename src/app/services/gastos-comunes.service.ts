@@ -22,9 +22,8 @@ import type {
  * tipeo, es cómo queda armado el proxy.
  *
  * El Bearer token lo adjunta `MsalInterceptor` (protectedResourceMap en
- * auth/msalConfig.ts, sobre `environment.apiUrl`); `authInterceptor` (ver
- * app/interceptors/auth.interceptor.ts) solo agrega identidad
- * (X-Usuario-Roles/X-Usuario-Sub).
+ * auth/msalConfig.ts, sobre `environment.apiUrl`). La identidad (usuario y
+ * roles) la deriva el BFF del JWT validado; el panel no la envía.
  */
 @Injectable({ providedIn: 'root' })
 export class GastosComunesService {

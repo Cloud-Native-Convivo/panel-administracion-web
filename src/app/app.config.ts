@@ -9,7 +9,6 @@ import { provideRouter, withViewTransitions } from '@angular/router';
 import {
   HTTP_INTERCEPTORS,
   provideHttpClient,
-  withInterceptors,
   withInterceptorsFromDi,
 } from '@angular/common/http';
 import { type IPublicClientApplication, PublicClientApplication } from '@azure/msal-browser';
@@ -29,7 +28,6 @@ import {
   MSALGuardConfigFactory,
   MSALInterceptorConfigFactory,
 } from '../auth/msalConfig';
-import { authInterceptor } from './interceptors/auth.interceptor';
 
 export function MSALInstanceFactory(): IPublicClientApplication {
   return new PublicClientApplication(msalConfig);
@@ -46,10 +44,9 @@ export const appConfig: ApplicationConfig = {
     { provide: LOCALE_ID, useValue: 'es-CL' },
     provideBrowserGlobalErrorListeners(),
     provideRouter(routes, withViewTransitions()),
-    // authInterceptor agrega identidad (X-Usuario-Roles/X-Usuario-Sub);
     // MsalInterceptor (withInterceptorsFromDi) adjunta el Bearer token según
     // protectedResourceMap (ver msalConfig.ts).
-    provideHttpClient(withInterceptors([authInterceptor]), withInterceptorsFromDi()),
+    provideHttpClient(withInterceptorsFromDi()),
     {
       provide: HTTP_INTERCEPTORS,
       useClass: MsalInterceptor,
