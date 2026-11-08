@@ -8,7 +8,9 @@ import { rolesDeCuenta, RolConvivo } from '../../auth/roles';
  *
  * Principio Fail-Closed (security-audit / OWASP A01):
  * - Si no hay sesión activa -> redirige a /login.
- * - Si la ruta define data.roles y el usuario no posee ninguno -> redirige a /dashboard.
+ * - Si la ruta define data.roles y el usuario no posee ninguno -> redirige a data.redirectTo
+ *   (por defecto /dashboard). Una ruta cuyo destino de rechazo es ella misma o lleva este
+ *   guard (como /dashboard) debe fijar redirectTo a una ruta sin roleGuard, o habría un bucle.
  * - Si la ruta no define roles requeridos -> permite acceso.
  */
 export const roleGuard: CanActivateFn = (route: ActivatedRouteSnapshot) => {
@@ -28,5 +30,6 @@ export const roleGuard: CanActivateFn = (route: ActivatedRouteSnapshot) => {
   const userRoles = rolesDeCuenta(cuenta);
   const hasRole = userRoles.some((r) => expectedRoles.includes(r));
 
-  return hasRole ? true : router.createUrlTree(['/dashboard']);
+  const destino = (route.data?.['redirectTo'] as string | undefined) ?? '/dashboard';
+  return hasRole ? true : router.createUrlTree([destino]);
 };

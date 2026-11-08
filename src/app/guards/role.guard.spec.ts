@@ -93,6 +93,64 @@ describe('roleGuard (RBAC)', () => {
     expect(result).toEqual({ commands: ['/dashboard'] });
   });
 
+  it('redirige a data.redirectTo cuando el rol no coincide', () => {
+    mockMsal.instance.getActiveAccount.mockReturnValue({
+      username: 'residente@convivo.cl',
+      idTokenClaims: { roles: ['residente'] },
+    });
+
+    const route = {
+      data: { roles: ['administrador', 'admin', 'conserje', 'comite'], redirectTo: '/sin-acceso' },
+    } as unknown as ActivatedRouteSnapshot;
+
+    const result = TestBed.runInInjectionContext(() => roleGuard(route, {} as never));
+    expect(mockRouter.createUrlTree).toHaveBeenCalledWith(['/sin-acceso']);
+    expect(result).toEqual({ commands: ['/sin-acceso'] });
+  });
+
+  it.each(['administrador', 'admin', 'conserje', 'comite'])(
+    'permite %s en las rutas del panel',
+    (rol) => {
+      mockMsal.instance.getActiveAccount.mockReturnValue({
+        username: 'u@convivo.cl',
+        idTokenClaims: { roles: [rol] },
+      });
+      const route = {
+        data: { roles: ['administrador', 'admin', 'conserje', 'comite'], redirectTo: '/sin-acceso' },
+      } as unknown as ActivatedRouteSnapshot;
+
+      expect(TestBed.runInInjectionContext(() => roleGuard(route, {} as never))).toBe(true);
+    },
+  );
+
+  it.each(['residente', 'propietario'])('rechaza a %s en las rutas del panel', (rol) => {
+    mockMsal.instance.getActiveAccount.mockReturnValue({
+      username: 'u@convivo.cl',
+      idTokenClaims: { roles: [rol] },
+    });
+    const route = {
+      data: { roles: ['administrador', 'admin', 'conserje', 'comite'], redirectTo: '/sin-acceso' },
+    } as unknown as ActivatedRouteSnapshot;
+
+    expect(TestBed.runInInjectionContext(() => roleGuard(route, {} as never))).toEqual({
+      commands: ['/sin-acceso'],
+    });
+  });
+
+  it('cuenta sin claim roles va a /sin-acceso en rutas con redirectTo', () => {
+    mockMsal.instance.getActiveAccount.mockReturnValue({
+      username: 'sin-roles@convivo.cl',
+      idTokenClaims: {},
+    });
+    const route = {
+      data: { roles: ['administrador', 'admin', 'conserje', 'comite'], redirectTo: '/sin-acceso' },
+    } as unknown as ActivatedRouteSnapshot;
+
+    expect(TestBed.runInInjectionContext(() => roleGuard(route, {} as never))).toEqual({
+      commands: ['/sin-acceso'],
+    });
+  });
+
   it('bloquea acceso y redirige a /login si no hay sesion activa', () => {
     mockMsal.instance.getActiveAccount.mockReturnValue(null);
     mockMsal.instance.getAllAccounts.mockReturnValue([]);
