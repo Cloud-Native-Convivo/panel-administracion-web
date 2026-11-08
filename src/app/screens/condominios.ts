@@ -1,10 +1,7 @@
 import { Component, computed, signal, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { LucideAngularModule, Building2, AlertCircle, Plus, ChevronRight, ChevronDown, X, Edit2, Trash2, Home, Map, ShieldCheck, FileText, ClipboardList } from 'lucide-angular';
+import { LucideAngularModule, Plus, Edit2, Trash2, Map, ShieldCheck, FileText, ClipboardList } from 'lucide-angular';
 import { forkJoin } from 'rxjs';
-import { TORRES, SECTORES_B, CONDOMINIO_INFO } from '../data/sample-data';
-import type { UnitEntry } from '../data/sample-data';
-import { StatusBadge } from '../shared/status-badge';
 import { ModalDialog } from '../shared/modal-dialog';
 import { CondominiosService, type SolicitudAsignacion } from '../services/condominios.service';
 import { EspaciosService } from '../services/espacios.service';
@@ -13,7 +10,7 @@ import { Condominio } from '../models/condominio.model';
 
 @Component({
   selector: 'app-condominios',
-  imports: [LucideAngularModule, StatusBadge, FormsModule, ModalDialog],
+  imports: [LucideAngularModule, FormsModule, ModalDialog],
   templateUrl: './condominios.html',
 })
 export class Condominios implements OnInit {
@@ -164,48 +161,11 @@ export class Condominios implements OnInit {
     });
   }
 
-  // Reemplazar señal manual tipoVista por un computed basado en el backend
-  protected readonly tipoVista = computed(() => this.info()?.tipo || 'A');
-  
-  protected readonly torres = computed(() => this.tipoVista() === 'A' ? TORRES : SECTORES_B);
-
-  
-  protected readonly icHome = Home;
   protected readonly icMap = Map;
   protected readonly icShieldCheck = ShieldCheck;
   protected readonly icFileText = FileText;
   protected readonly icClipboardList = ClipboardList;
-  protected readonly icBuilding = Building2;
-  protected readonly icAlert = AlertCircle;
   protected readonly icPlus = Plus;
-  protected readonly icChevronRight = ChevronRight;
-  protected readonly icChevronDown = ChevronDown;
-  protected readonly icX = X;
   protected readonly icEdit = Edit2;
   protected readonly icTrash = Trash2;
-
-  protected readonly expanded = signal<Set<string>>(new Set(['A', 'B']));
-  protected readonly selectedUnit = signal<UnitEntry | null>(null);
-  protected readonly selectedTorre = signal('');
-
-  protected readonly totalMorosos = computed(
-    () => this.torres().flatMap(t => t.units).filter(u => u.moroso).length,
-  );
-
-  protected toggle(id: string): void {
-    this.expanded.update(prev => {
-      const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
-      return next;
-    });
-  }
-
-  protected morososDe(torreId: string): number {
-    return this.torres().find(t => t.id === torreId)!.units.filter(u => u.moroso).length;
-  }
-
-  protected selectUnit(unit: UnitEntry, torreName: string): void {
-    this.selectedUnit.set(unit);
-    this.selectedTorre.set(torreName);
-  }
 }

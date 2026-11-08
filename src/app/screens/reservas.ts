@@ -12,13 +12,12 @@ import {
   X,
   Calendar as CalendarIcon,
 } from 'lucide-angular';
-import type { ReservationStatus } from '../data/sample-data';
 import { StatusBadge } from '../shared/status-badge';
 import { ReservasService } from '../services/reservas.service';
 import { EspaciosService } from '../services/espacios.service';
 import { CondominiosService } from '../services/condominios.service';
 import { Espacio } from '../models/espacio.model';
-import { mapearReservaUi, type UiReservationEntry } from '../shared/reserva-mapper';
+import { mapearReservaUi, type ReservationStatus, type UiReservationEntry } from '../shared/reserva-mapper';
 
 @Component({
   selector: 'app-reservas',

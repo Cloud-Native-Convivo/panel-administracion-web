@@ -1,5 +1,6 @@
-import type { ReservationStatus } from '../data/sample-data';
 import type { Reserva } from '../models/reserva.model';
+
+export type ReservationStatus = 'confirmada' | 'pendiente' | 'cancelada';
 
 export interface UiReservationEntry {
   id: number;
