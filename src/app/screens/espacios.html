@@ -39,6 +39,17 @@
       </div>
     }
 
+    <!-- Banner: solicitud aceptada, resultado pendiente -->
+    @if (solicitudesEnCurso() > 0) {
+      <div
+        role="status"
+        class="mb-4 pl-4 pr-3 py-3 rounded-lg border border-border bg-gray-50 text-sm text-gray-700 flex items-center gap-2.5"
+      >
+        <lucide-icon [img]="icRefresh" [size]="16" class="flex-shrink-0 animate-spin motion-reduce:animate-none" />
+        <span>Solicitud enviada. Procesando el cambio…</span>
+      </div>
+    }
+
     <!-- Estado de Error -->
     @if (error() && !cargando()) {
       <div role="alert" class="mb-4 pl-4 pr-1 py-1 rounded-lg border border-red-100 bg-red-50 text-sm text-red-700 flex items-center justify-between gap-3">
@@ -303,6 +314,10 @@
         Si tiene reservas registradas, pasará a <span class="font-medium text-text">inactivo</span>
         para preservar el historial.
       </p>
+
+      @if (errorModalEliminar(); as errEliminar) {
+        <p role="alert" class="text-sm text-red-600 mb-4">{{ errEliminar }}</p>
+      }
 
       <div class="flex gap-2">
         <button
