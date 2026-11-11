@@ -29,3 +29,31 @@ export interface ActualizarEspacioDto {
   ubicacion?: string | null;
   estado?: string;
 }
+
+/** Cuerpo del 202 con el que el bff acepta una mutación asíncrona de espacios. */
+export interface Respuesta202 {
+  ticket_id: string;
+  estado: string;
+  status_url: string;
+  creado_en: string;
+}
+
+export type EstadoJob = 'EN_COLA' | 'PROCESANDO' | 'COMPLETADO' | 'FALLIDO';
+
+export interface ErrorJob {
+  codigo: string;
+  mensaje: string;
+  status_code: number;
+}
+
+/** Resultado de GET /espacios-comunes/jobs/{ticket}. */
+export interface JobEspacio {
+  ticket_id: string;
+  modulo: string;
+  accion: string;
+  estado: EstadoJob;
+  resultado: Record<string, unknown> | null;
+  error: ErrorJob | null;
+  creado_en: string | null;
+  actualizado_en: string | null;
+}

@@ -1,4 +1,7 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { HttpErrorResponse } from '@angular/common/http';
+import { Observable, catchError, finalize, of, switchMap } from 'rxjs';
 import { FormsModule } from '@angular/forms';
 import { LucideAngularModule } from 'lucide-angular';
 import {
@@ -19,8 +22,21 @@ import { StatusBadge } from '../shared/status-badge';
 import { ModalDialog } from '../shared/modal-dialog';
 import { EspaciosService } from '../services/espacios.service';
 import { CondominiosService } from '../services/condominios.service';
-import { Espacio, CrearEspacioDto, ActualizarEspacioDto } from '../models/espacio.model';
+import {
+  Espacio,
+  CrearEspacioDto,
+  ActualizarEspacioDto,
+  JobEspacio,
+  Respuesta202,
+} from '../models/espacio.model';
 import { CurrencyPipe } from '@angular/common';
+
+type AccionEspacio = 'crear' | 'editar' | 'eliminar';
+
+const MENSAJE_SERVICIO_OCUPADO =
+  'No se pudo enviar la solicitud: el servicio está ocupado. Intenta nuevamente en unos segundos.';
+const MENSAJE_SIN_CONFIRMAR =
+  'No se pudo confirmar el resultado de la solicitud. Revisa la lista en unos momentos.';
 
 export interface FormularioEspacio {
   nombre: string;
@@ -40,6 +56,7 @@ export interface FormularioEspacio {
 export class Espacios implements OnInit {
   private readonly espaciosService = inject(EspaciosService);
   private readonly condominiosService = inject(CondominiosService);
+  private readonly destroyRef = inject(DestroyRef);
 
   private get condominioId(): number {
     return this.condominiosService.condominioActivo()!.id;
@@ -51,6 +68,8 @@ export class Espacios implements OnInit {
   protected readonly error = signal<string | null>(null);
   protected readonly guardando = signal<boolean>(false);
   protected readonly eliminando = signal<boolean>(false);
+  // Solicitudes aceptadas (202) cuyo resultado aún no se conoce: muestra el banner "Solicitud enviada".
+  protected readonly solicitudesEnCurso = signal<number>(0);
 
   // Modales
   protected readonly modalFormVisible = signal<boolean>(false);
@@ -59,6 +78,7 @@ export class Espacios implements OnInit {
 
   protected readonly modalEliminarVisible = signal<boolean>(false);
   protected readonly espacioAEliminar = signal<Espacio | null>(null);
+  protected readonly errorModalEliminar = signal<string | null>(null);
 
   // Feedback al usuario
   protected readonly feedback = signal<{
@@ -194,19 +214,16 @@ export class Espacios implements OnInit {
         estado: f.estado,
       };
 
-      this.espaciosService.actualizar(actual.id, this.condominioId, dto).subscribe({
-        next: (actualizado) => {
-          this.espacios.update((lista) =>
-            lista.map((e) => (e.id === actualizado.id ? actualizado : e)),
-          );
+      this.despachar(this.espaciosService.actualizar(actual.id, this.condominioId, dto), {
+        accion: 'editar',
+        nombre,
+        alAceptar: () => {
           this.guardando.set(false);
           this.cerrarModalForm();
-          this.mostrarFeedback('exito', `Espacio "${actualizado.nombre}" actualizado con éxito.`);
         },
-        error: (err) => {
-          console.error('Error al actualizar espacio:', err);
+        alRechazar: (mensaje) => {
           this.guardando.set(false);
-          this.errorModal.set('Error al actualizar el espacio común. Revisa la conexión.');
+          this.errorModal.set(mensaje ?? 'Error al actualizar el espacio común. Revisa la conexión.');
         },
       });
     } else {
@@ -219,17 +236,16 @@ export class Espacios implements OnInit {
         descripcion: f.descripcion.trim() || null,
       };
 
-      this.espaciosService.crear(dto).subscribe({
-        next: (nuevo) => {
-          this.espacios.update((lista) => [...lista, nuevo]);
+      this.despachar(this.espaciosService.crear(dto), {
+        accion: 'crear',
+        nombre,
+        alAceptar: () => {
           this.guardando.set(false);
           this.cerrarModalForm();
-          this.mostrarFeedback('exito', `Espacio "${nuevo.nombre}" creado exitosamente.`);
         },
-        error: (err) => {
-          console.error('Error al crear espacio:', err);
+        alRechazar: (mensaje) => {
           this.guardando.set(false);
-          this.errorModal.set('Error al registrar el nuevo espacio común. Revisa la conexión.');
+          this.errorModal.set(mensaje ?? 'Error al registrar el nuevo espacio común. Revisa la conexión.');
         },
       });
     }
@@ -237,37 +253,107 @@ export class Espacios implements OnInit {
 
   protected abrirModalEliminar(espacio: Espacio): void {
     this.espacioAEliminar.set(espacio);
+    this.errorModalEliminar.set(null);
     this.modalEliminarVisible.set(true);
   }
 
   protected cerrarModalEliminar(): void {
     this.modalEliminarVisible.set(false);
     this.espacioAEliminar.set(null);
+    this.errorModalEliminar.set(null);
   }
 
   protected confirmarEliminar(): void {
     const espacio = this.espacioAEliminar();
     if (!espacio) return;
 
+    this.errorModalEliminar.set(null);
     this.eliminando.set(true);
 
-    this.espaciosService.eliminar(espacio.id, this.condominioId).subscribe({
-      next: () => {
+    this.despachar(this.espaciosService.eliminar(espacio.id, this.condominioId), {
+      accion: 'eliminar',
+      nombre: espacio.nombre,
+      alAceptar: () => {
         this.eliminando.set(false);
         this.cerrarModalEliminar();
-        this.mostrarFeedback(
-          'exito',
-          `Operación completada sobre "${espacio.nombre}" (eliminado o marcado como inactivo).`,
-        );
-        // Recargar lista para reflejar estado real (físicamente eliminado o inactivado con reservas)
-        this.cargarEspacios();
       },
-      error: (err) => {
-        console.error('Error al eliminar espacio:', err);
+      alRechazar: (mensaje) => {
         this.eliminando.set(false);
-        this.mostrarFeedback('error', 'No se pudo eliminar el espacio.');
+        this.errorModalEliminar.set(mensaje ?? 'No se pudo eliminar el espacio.');
       },
     });
+  }
+
+  /**
+   * El bff acepta crear/editar/eliminar con 202 y un ticket: el cambio aún no
+   * ocurrió. Se espera el resultado del job y recién entonces se informa y se
+   * recarga la lista real (sin fabricar tarjetas a partir del 202).
+   * `alRechazar` recibe el mensaje solo si el bff no pudo encolar (503); con
+   * otro error recibe undefined y cada acción usa su mensaje propio.
+   */
+  private despachar(
+    solicitud: Observable<Respuesta202>,
+    opciones: {
+      accion: AccionEspacio;
+      nombre: string;
+      alAceptar: () => void;
+      alRechazar: (mensaje?: string) => void;
+    },
+  ): void {
+    const { accion, nombre, alAceptar, alRechazar } = opciones;
+
+    solicitud
+      .pipe(
+        switchMap((aceptada) => {
+          alAceptar();
+          this.solicitudesEnCurso.update((n) => n + 1);
+          return this.espaciosService.esperarJob(aceptada.ticket_id).pipe(
+            catchError((err) => {
+              console.error('No se pudo confirmar el resultado de la solicitud:', err);
+              return of(null);
+            }),
+            finalize(() => this.solicitudesEnCurso.update((n) => n - 1)),
+          );
+        }),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe({
+        next: (job) => this.informarResultado(job, accion, nombre),
+        error: (err) => {
+          console.error(`Error al enviar la solicitud para ${accion} el espacio:`, err);
+          const ocupado = err instanceof HttpErrorResponse && err.status === 503;
+          alRechazar(ocupado ? MENSAJE_SERVICIO_OCUPADO : undefined);
+        },
+      });
+  }
+
+  private informarResultado(job: JobEspacio | null, accion: AccionEspacio, nombre: string): void {
+    if (!job) {
+      this.mostrarFeedback('error', MENSAJE_SIN_CONFIRMAR);
+      this.cargarEspacios();
+      return;
+    }
+    if (job.estado === 'FALLIDO') {
+      const motivo = job.error?.mensaje;
+      this.mostrarFeedback(
+        'error',
+        motivo ? `No se pudo ${accion} el espacio: ${motivo}` : `No se pudo ${accion} el espacio.`,
+      );
+      return;
+    }
+
+    const nombreResultado =
+      typeof job.resultado?.['nombre'] === 'string' ? job.resultado['nombre'] : nombre;
+    const mensajes: Record<AccionEspacio, string> = {
+      crear: `Espacio "${nombreResultado}" creado correctamente.`,
+      editar: `Espacio "${nombreResultado}" actualizado correctamente.`,
+      eliminar:
+        job.resultado?.['resultado'] === 'inactivado'
+          ? `Espacio "${nombre}" quedó inactivo porque tiene reservas registradas.`
+          : `Espacio "${nombre}" eliminado.`,
+    };
+    this.mostrarFeedback('exito', mensajes[accion]);
+    this.cargarEspacios();
   }
 
   protected cerrarFeedback(): void {
