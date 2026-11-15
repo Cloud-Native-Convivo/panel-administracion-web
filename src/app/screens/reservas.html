@@ -147,21 +147,17 @@
                     <td class="px-4 py-3.5 text-xs sm:text-sm text-gray-500 whitespace-nowrap">{{ r.unit }}</td>
                     <td class="px-4 py-3.5 text-xs sm:text-sm text-gray-600 whitespace-nowrap">{{ r.date }}</td>
                     <td class="px-4 py-3.5 text-xs sm:text-sm text-gray-500 whitespace-nowrap">{{ r.time }}</td>
-                    <td class="px-4 py-3.5 whitespace-nowrap"><app-status-badge [status]="r.status" /></td>
+                    <td class="px-4 py-3.5">
+                      <app-status-badge [status]="r.status" />
+                      @if (r.status === 'pendiente') {
+                        <p data-testid="pago-pendiente" class="mt-1 max-w-48 text-[11px] leading-snug text-muted">
+                          Se confirma al registrarse el pago del gasto común
+                        </p>
+                      }
+                    </td>
                     <td class="px-4 py-3.5 whitespace-nowrap">
                       @if (r.status !== 'cancelada') {
                         <div class="flex gap-1">
-                          @if (r.status === 'pendiente') {
-                            <button
-                              (click)="confirm(r.id)"
-                              [disabled]="confirmandoId() === r.id"
-                              [attr.aria-label]="'Confirmar pago de reserva ' + r.id"
-                              class="p-1.5 hover:bg-teal-50 hover:text-teal-600 rounded-lg text-muted transition-colors disabled:opacity-50"
-                              title="Confirmar pago de reserva"
-                            >
-                              <lucide-icon [img]="icCheck" [size]="14" [class.animate-spin]="confirmandoId() === r.id" />
-                            </button>
-                          }
                           <button
                             (click)="cancel(r.id)"
                             [attr.aria-label]="'Cancelar reserva ' + r.id"

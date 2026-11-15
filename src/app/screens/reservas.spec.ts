@@ -14,7 +14,6 @@ describe('Reservas Screen UI Actions', () => {
   let component: Reservas;
   let mockReservasService: {
     listar: ReturnType<typeof vi.fn>;
-    confirmarPago: ReturnType<typeof vi.fn>;
   };
   let mockEspaciosService: {
     listar: ReturnType<typeof vi.fn>;
@@ -47,7 +46,6 @@ describe('Reservas Screen UI Actions', () => {
   beforeEach(() => {
     mockReservasService = {
       listar: vi.fn().mockReturnValue(of([sampleReserva])),
-      confirmarPago: vi.fn().mockReturnValue(of({ ...sampleReserva, estado: 'activa' })),
     };
     mockEspaciosService = {
       listar: vi.fn().mockReturnValue(of([sampleEspacio])),
@@ -84,22 +82,32 @@ describe('Reservas Screen UI Actions', () => {
     expect(lista[0].status).toBe('pendiente');
   });
 
-  it('confirm ejecuta confirmacion de pago y actualiza el estado a confirmada', () => {
-    component.ngOnInit();
-
-    const target = component as unknown as {
-      confirm: (id: number) => void;
-      rsvs: () => UiReservationEntry[];
-      feedback: () => { tipo: string; mensaje: string } | null;
+  describe('reserva en pendiente_pago (el pago se confirma por la cola reserva_pagada)', () => {
+    const render = () => {
+      const fixture = TestBed.createComponent(Reservas);
+      fixture.detectChanges();
+      return fixture.nativeElement as HTMLElement;
     };
 
-    target.confirm(101);
+    it('no ofrece el boton de confirmar pago', () => {
+      const dom = render();
 
-    expect(mockReservasService.confirmarPago).toHaveBeenCalledWith(101);
-    expect(target.rsvs()[0].status).toBe('confirmada');
-    expect(target.feedback()).toEqual({
-      tipo: 'exito',
-      mensaje: 'Reserva #101 confirmada exitosamente.',
+      expect(dom.querySelector('[aria-label^="Confirmar pago"]')).toBeNull();
+      expect(dom.querySelector('[title="Confirmar pago de reserva"]')).toBeNull();
+      expect(dom.textContent).not.toContain('Confirmar pago');
+    });
+
+    it('muestra el estado pendiente con el texto explicativo', () => {
+      const dom = render();
+
+      expect(dom.querySelector('[data-testid="pago-pendiente"]')?.textContent).toContain(
+        'Se confirma al registrarse el pago del gasto común',
+      );
+    });
+
+    it('no expone confirm en el componente ni confirmarPago en el servicio', () => {
+      expect('confirm' in component).toBe(false);
+      expect('confirmarPago' in ReservasService.prototype).toBe(false);
     });
   });
 

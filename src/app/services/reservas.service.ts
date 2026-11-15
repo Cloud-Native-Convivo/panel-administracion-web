@@ -14,8 +14,4 @@ export class ReservasService {
   listar(): Observable<Reserva[]> {
     return this.http.get<Reserva[]>(`${this.baseUrl}/`);
   }
-
-  confirmarPago(id: number): Observable<Reserva> {
-    return this.http.post<Reserva>(`${this.baseUrl}/${id}/confirmar-pago`, {});
-  }
 }

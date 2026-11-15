@@ -4,7 +4,6 @@ import { catchError } from 'rxjs/operators';
 import { LucideAngularModule } from 'lucide-angular';
 import {
   Plus,
-  Check,
   Trash2,
   RefreshCw,
   AlertCircle,
@@ -50,7 +49,6 @@ export class Reservas implements OnInit {
   protected readonly espaciosMap = signal<Map<number, string>>(new Map());
   protected readonly cargando = signal<boolean>(true);
   protected readonly error = signal<string | null>(null);
-  protected readonly confirmandoId = signal<number | null>(null);
   protected readonly feedback = signal<{
     tipo: 'exito' | 'error';
     mensaje: string;
@@ -58,7 +56,6 @@ export class Reservas implements OnInit {
 
   // Iconos del template
   protected readonly icPlus = Plus;
-  protected readonly icCheck = Check;
   protected readonly icTrash = Trash2;
   protected readonly icRefresh = RefreshCw;
   protected readonly icAlert = AlertCircle;
@@ -178,24 +175,6 @@ export class Reservas implements OnInit {
           'No se pudo conectar con el microservicio de espacios comunes. Verifica que esté en ejecución en el puerto 8082.',
         );
         this.cargando.set(false);
-      },
-    });
-  }
-
-  protected confirm(id: number): void {
-    this.confirmandoId.set(id);
-    this.reservasService.confirmarPago(id).subscribe({
-      next: () => {
-        this.confirmandoId.set(null);
-        this.rsvs.update((prev) =>
-          prev.map((r) => (r.id === id ? { ...r, status: 'confirmada' } : r)),
-        );
-        this.mostrarFeedback('exito', `Reserva #${id} confirmada exitosamente.`);
-      },
-      error: (err) => {
-        this.confirmandoId.set(null);
-        console.error('Error al confirmar reserva:', err);
-        this.mostrarFeedback('error', `Error al confirmar la reserva #${id}.`);
       },
     });
   }
