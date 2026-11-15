@@ -49,8 +49,17 @@ export class Condominios implements OnInit {
   protected aprobarSolicitud(id: number): void {
     this.condominiosService.aprobarSolicitud(id).subscribe({
       next: () => this.solicitudes.update((lista) => lista.filter((solicitud) => solicitud.id !== id)),
-      error: () => this.errorSolicitudes.set('No se pudo aprobar la solicitud.'),
+      // Un 422 trae el motivo (p. ej. la unidad ya no existe); se muestra tal cual.
+      error: (err: { error?: { message?: unknown } }) =>
+        this.errorSolicitudes.set(
+          typeof err?.error?.message === 'string' ? err.error.message : 'No se pudo aprobar la solicitud.',
+        ),
     });
+  }
+
+  /** El admin reconoce el condominio por su nombre, no por el id. */
+  protected nombreCondominio(id: number): string {
+    return this.condominiosService.condominios().find((c) => c.id === id)?.nombre ?? `Condominio #${id}`;
   }
 
   protected readonly listaCondominios = this.condominiosService.condominios;
