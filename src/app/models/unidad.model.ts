@@ -21,7 +21,10 @@ export interface CrearUnidadDto {
 export const TORRE_UNICA = 'UNICA';
 
 /** Mismo texto que arma ms-condominios para la solicitud del residente. */
-export function describirUnidad(tipo: string, unidad: Pick<Unidad, 'torre' | 'piso' | 'numero'>): string {
+export function describirUnidad(
+  tipo: string,
+  unidad: Pick<Unidad, 'torre' | 'piso' | 'numero'>,
+): string {
   if (tipo === 'B') return `Casa ${unidad.numero}`;
   const partes = unidad.torre === TORRE_UNICA ? [] : [`Torre ${unidad.torre}`];
   return [...partes, `Piso ${unidad.piso}`, `Unidad ${unidad.numero}`].join(' · ');

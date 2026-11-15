@@ -76,14 +76,18 @@ export class Unidades implements OnInit {
     const piso = this.piso().trim();
     const torre = this.torre().trim();
     if (!numero) {
-      this.errorForm.set(this.esCasas() ? 'Indica el número de la casa.' : 'Indica el número del departamento.');
+      this.errorForm.set(
+        this.esCasas() ? 'Indica el número de la casa.' : 'Indica el número del departamento.',
+      );
       return;
     }
     if (!this.esCasas() && !piso) {
       this.errorForm.set('Indica el piso del departamento.');
       return;
     }
-    const dto: CrearUnidadDto = this.esCasas() ? { numero } : { numero, piso, ...(torre ? { torre } : {}) };
+    const dto: CrearUnidadDto = this.esCasas()
+      ? { numero }
+      : { numero, piso, ...(torre ? { torre } : {}) };
 
     this.guardando.set(true);
     this.errorForm.set(null);
@@ -118,7 +122,10 @@ export class Unidades implements OnInit {
       },
       error: (err) => {
         this.cambiandoId.set(null);
-        this.mostrarFeedback('error', this.mensajeError(err, 'No se pudo cambiar el estado de la unidad.'));
+        this.mostrarFeedback(
+          'error',
+          this.mensajeError(err, 'No se pudo cambiar el estado de la unidad.'),
+        );
       },
     });
   }
