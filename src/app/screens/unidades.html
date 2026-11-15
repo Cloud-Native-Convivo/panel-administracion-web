@@ -1,0 +1,175 @@
+<div class="h-full overflow-y-auto">
+  <div class="p-4 sm:p-6 lg:p-8">
+    <!-- Encabezado -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
+      <div>
+        <h2 class="text-xl font-bold text-text">Unidades</h2>
+        <p class="text-xs sm:text-sm text-muted">
+          {{ condominio().nombre }} ·
+          {{ esCasas() ? 'Condominio de casas (tipo B)' : 'Condominio de departamentos (tipo A)' }}
+        </p>
+      </div>
+      <button
+        type="button"
+        (click)="cargar()"
+        [disabled]="cargando()"
+        class="flex items-center justify-center gap-2 min-h-11 border border-border hover:bg-gray-50 text-gray-700 px-3 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
+      >
+        <lucide-icon [img]="icRefresh" [size]="16" [class.animate-spin]="cargando()" />
+        <span>Actualizar</span>
+      </button>
+    </div>
+
+    <!-- Aviso de acciones -->
+    @if (feedback(); as fb) {
+      <div
+        role="status"
+        class="mb-6 p-4 rounded-xl border flex items-center justify-between gap-3"
+        [class]="fb.tipo === 'exito' ? 'bg-emerald-50 border-emerald-200 text-emerald-800' : 'bg-rose-50 border-rose-200 text-rose-800'"
+      >
+        <div class="flex items-center gap-2.5">
+          <lucide-icon [img]="fb.tipo === 'exito' ? icCheckCircle : icAlert" [size]="18" />
+          <span class="text-sm font-medium">{{ fb.mensaje }}</span>
+        </div>
+        <button type="button" (click)="cerrarFeedback()" class="text-muted hover:text-gray-600" aria-label="Cerrar mensaje">
+          <lucide-icon [img]="icX" [size]="15" />
+        </button>
+      </div>
+    }
+
+    <!-- Alta -->
+    <form (submit)="crear($event)" novalidate class="bg-white border border-border rounded-xl p-4 sm:p-6 mb-6">
+      <h3 class="text-sm font-semibold text-text mb-1">{{ esCasas() ? 'Agregar casa' : 'Agregar departamento' }}</h3>
+      <p class="text-xs text-muted mb-4">
+        @if (esCasas()) {
+          En un condominio de casas solo se indica el número de la casa o sitio.
+        } @else {
+          El piso es obligatorio. Deja la torre en blanco si el condominio tiene una sola.
+        }
+      </p>
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        @if (!esCasas()) {
+          <label class="flex flex-col gap-1 text-xs font-medium text-gray-700">
+            Torre (opcional)
+            <input
+              type="text"
+              maxlength="50"
+              [value]="torre()"
+              (input)="torre.set($any($event.target).value)"
+              class="min-h-11 py-2 px-3 border border-muted rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary bg-white text-text"
+            />
+          </label>
+          <label class="flex flex-col gap-1 text-xs font-medium text-gray-700">
+            Piso
+            <input
+              type="text"
+              maxlength="10"
+              required
+              [value]="piso()"
+              (input)="piso.set($any($event.target).value)"
+              [attr.aria-describedby]="errorForm() ? 'unidad-error' : null"
+              class="min-h-11 py-2 px-3 border border-muted rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary bg-white text-text"
+            />
+          </label>
+        }
+        <label class="flex flex-col gap-1 text-xs font-medium text-gray-700">
+          {{ esCasas() ? 'Número de casa' : 'Número de departamento' }}
+          <input
+            type="text"
+            maxlength="20"
+            required
+            [value]="numero()"
+            (input)="numero.set($any($event.target).value)"
+            [attr.aria-invalid]="errorForm() ? 'true' : null"
+            [attr.aria-describedby]="errorForm() ? 'unidad-error' : null"
+            class="min-h-11 py-2 px-3 border border-muted rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary bg-white text-text"
+          />
+        </label>
+      </div>
+      @if (errorForm()) {
+        <p id="unidad-error" role="alert" class="mt-3 text-sm text-rose-700">{{ errorForm() }}</p>
+      }
+      <button
+        type="submit"
+        [disabled]="guardando()"
+        class="mt-4 inline-flex items-center justify-center gap-2 min-h-11 w-full sm:w-auto bg-accent hover:bg-text text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
+      >
+        <lucide-icon [img]="icPlus" [size]="16" />
+        {{ guardando() ? 'Agregando...' : 'Agregar' }}
+      </button>
+    </form>
+
+    <!-- Listado -->
+    <div class="flex items-center justify-between gap-3 mb-3">
+      <p class="text-sm text-muted">
+        @if (!cargando()) {
+          {{ unidades().length }} {{ unidades().length === 1 ? 'unidad' : 'unidades' }}
+        }
+      </p>
+      <label class="flex items-center gap-2 min-h-11 text-sm text-gray-700">
+        <input
+          type="checkbox"
+          [checked]="mostrarInactivas()"
+          (change)="cambiarFiltroInactivas($any($event.target).checked)"
+          class="h-4 w-4"
+        />
+        Mostrar inactivas
+      </label>
+    </div>
+
+    @if (errorCarga() && !cargando()) {
+      <div role="alert" class="bg-amber-50 border border-amber-200 rounded-xl p-4 text-sm text-amber-800">
+        {{ errorCarga() }}
+      </div>
+    } @else {
+      <div class="bg-white border border-border rounded-xl overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full min-w-[420px]">
+            <thead>
+              <tr class="border-b border-border bg-gray-50/60">
+                <th class="text-left text-[11px] text-muted font-medium px-6 py-3 uppercase tracking-wide">Unidad</th>
+                <th class="text-left text-[11px] text-muted font-medium px-4 py-3 uppercase tracking-wide">Estado</th>
+                <th class="text-left text-[11px] text-muted font-medium px-4 py-3 uppercase tracking-wide"><span class="sr-only">Acciones</span></th>
+              </tr>
+            </thead>
+            <tbody>
+              @if (cargando()) {
+                <tr><td colspan="3" class="px-6 py-10 text-center text-muted text-sm">Cargando unidades...</td></tr>
+              } @else {
+                @for (u of unidades(); track u.id; let last = $last) {
+                  <tr [class]="last ? '' : 'border-b border-border'" [class.opacity-60]="!u.activa">
+                    <td class="px-6 py-3.5 text-sm font-medium text-text whitespace-nowrap">{{ descripcion(u) }}</td>
+                    <td class="px-4 py-3.5 text-sm whitespace-nowrap">
+                      <span
+                        class="inline-flex px-2 py-0.5 rounded-full text-xs font-medium"
+                        [class]="u.activa ? 'bg-emerald-50 text-emerald-700' : 'bg-gray-100 text-gray-600'"
+                      >{{ u.activa ? 'Activa' : 'Inactiva' }}</span>
+                    </td>
+                    <td class="px-4 py-3.5 text-right whitespace-nowrap">
+                      <button
+                        type="button"
+                        (click)="cambiarActiva(u)"
+                        [disabled]="cambiandoId() === u.id"
+                        [attr.aria-label]="(u.activa ? 'Desactivar ' : 'Activar ') + descripcion(u)"
+                        class="min-h-11 px-3 py-1.5 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-100 transition-colors disabled:opacity-50"
+                      >
+                        {{ u.activa ? 'Desactivar' : 'Activar' }}
+                      </button>
+                    </td>
+                  </tr>
+                }
+                @if (unidades().length === 0) {
+                  <tr>
+                    <td colspan="3" class="px-6 py-12 text-center text-muted text-sm">
+                      Aún no hay unidades. Mientras no existan, los residentes no pueden pedir su asignación.
+                    </td>
+                  </tr>
+                }
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    }
+  </div>
+</div>
