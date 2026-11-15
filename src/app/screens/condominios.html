@@ -6,8 +6,18 @@
       @if (solicitudes().length === 0) { <p class="text-sm text-muted">No hay solicitudes pendientes.</p> }
       @for (solicitud of solicitudes(); track solicitud.id) {
         <div class="flex flex-col gap-3 border-t border-border py-3 sm:flex-row sm:items-center sm:justify-between">
-          <p class="text-sm text-text">{{ solicitud.usuario_sub }} · Condominio {{ solicitud.condominio_id }} · {{ solicitud.unidad }}</p>
-          <button type="button" (click)="aprobarSolicitud(solicitud.id)" class="min-h-[44px] rounded-lg bg-accent px-4 text-sm font-semibold text-white">Aprobar asignación</button>
+          <div>
+            <p class="text-sm font-semibold text-text">{{ solicitud.unidad }}</p>
+            <p class="text-xs text-muted">
+              {{ nombreCondominio(solicitud.condominio_id) }} · {{ solicitud.usuario_email || 'Residente sin correo registrado' }}
+            </p>
+          </div>
+          <button
+            type="button"
+            (click)="aprobarSolicitud(solicitud.id)"
+            [attr.aria-label]="'Aprobar asignación de ' + solicitud.unidad + ' en ' + nombreCondominio(solicitud.condominio_id)"
+            class="min-h-[44px] rounded-lg bg-accent px-4 text-sm font-semibold text-white"
+          >Aprobar asignación</button>
         </div>
       }
     </section>
@@ -18,7 +28,7 @@
         </button>
         <div class="bg-gray-100 p-1 rounded-lg inline-flex">
           <span class="bg-white shadow-sm rounded-md px-4 py-1.5 text-sm font-medium text-text">
-            Condominio {{ cInfo.tipo === 'A' ? 'Tipo A (Edificios)' : 'Tipo B (Casas/Sitios)' }}
+            {{ cInfo.tipo === 'A' ? 'Edificio de departamentos (tipo A)' : 'Casas o sitios (tipo B)' }}
           </span>
         </div>
       </div>

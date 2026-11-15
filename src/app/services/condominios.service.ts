@@ -7,8 +7,12 @@ import { environment } from '../../environments/environment';
 export interface SolicitudAsignacion {
   id: number;
   usuario_sub: string;
+  /** Lo guarda ms-condominios desde el bff; null en solicitudes antiguas o si no se resolvió. */
+  usuario_email?: string | null;
   condominio_id: number;
+  /** Texto armado por el servidor: "Casa 24" o "Torre B · Piso 5 · Unidad 504". */
   unidad: string;
+  unidad_id?: number | null;
   estado: string;
 }
 

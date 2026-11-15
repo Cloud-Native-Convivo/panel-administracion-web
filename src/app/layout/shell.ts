@@ -23,6 +23,13 @@ export const NAV_ITEMS: NavItem[] = [
   { id: 'dashboard',      label: 'Inicio',           icon: Home },
   { id: 'condominios',    label: 'Mis Condominios',  icon: List },
   {
+    id: 'unidades',
+    label: 'Unidades',
+    icon: Building2,
+    requiresCondominio: true,
+    requiredRoles: ['administrador', 'admin'],
+  },
+  {
     id: 'espacios',
     label: 'Espacios comunes',
     icon: Search,
@@ -38,10 +45,9 @@ export const NAV_ITEMS: NavItem[] = [
   },
 ];
 
-// Usuarios y Unidades quedan en "Próximamente" (fuera de alcance MVP)
+// Usuarios queda en "Próximamente" (fuera de alcance MVP)
 export const SOON_ITEMS: NavItem[] = [
   { id: '', label: 'Usuarios',         icon: Users          },
-  { id: '', label: 'Unidades',         icon: Building2      },
   { id: '', label: 'Reservas',         icon: Calendar       },
   { id: '', label: 'Configuración',    icon: Settings       },
   { id: '', label: 'Tablón de avisos', icon: MessageSquare },
@@ -54,6 +60,7 @@ const PAGE_TITLES: Record<string, string> = {
   dashboard:   'Inicio',
   users:       'Usuarios y roles',
   condominios: 'Condominios y unidades',
+  unidades:    'Unidades',
   espacios:    'Espacios comunes',
   reservas:    'Reservas',
   'gastos-comunes': 'Gastos comunes',

@@ -44,6 +44,13 @@ export const routes: Routes = [
         loadComponent: () => import('./screens/condominios').then((m) => m.Condominios),
       },
       {
+        // Solo admin: ms-condominios restringe /unidades a ADMIN.
+        path: 'unidades',
+        canActivate: [roleGuard, condominioGuard],
+        data: { roles: ['administrador', 'admin'] },
+        loadComponent: () => import('./screens/unidades').then((m) => m.Unidades),
+      },
+      {
         path: 'espacios',
         canActivate: [roleGuard, condominioGuard],
         data: { roles: ['administrador', 'admin', 'conserje', 'comite'] },
