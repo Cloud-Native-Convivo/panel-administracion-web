@@ -45,6 +45,17 @@
       </div>
     }
 
+    <!-- Banner: cancelación aceptada, resultado pendiente -->
+    @if (solicitudesEnCurso() > 0) {
+      <div
+        role="status"
+        class="mb-4 pl-4 pr-3 py-3 rounded-lg border border-border bg-gray-50 text-sm text-gray-700 flex items-center gap-2.5"
+      >
+        <lucide-icon [img]="icRefresh" [size]="16" class="flex-shrink-0 animate-spin motion-reduce:animate-none" />
+        <span>Solicitud enviada. Procesando el cambio…</span>
+      </div>
+    }
+
     <!-- Estado de Error -->
     @if (error() && !cargando()) {
       <div class="bg-amber-50 border border-amber-200 rounded-2xl p-6 sm:p-8 text-center max-w-xl mx-auto my-8">
@@ -159,7 +170,7 @@
                       @if (r.status !== 'cancelada') {
                         <div class="flex gap-1">
                           <button
-                            (click)="cancel(r.id)"
+                            (click)="abrirModalCancelar(r)"
                             [attr.aria-label]="'Cancelar reserva ' + r.id"
                             class="p-1.5 hover:bg-red-50 hover:text-red-500 rounded-lg text-muted transition-colors"
                             title="Cancelar reserva"
@@ -225,4 +236,41 @@
       </div>
     }
   </div>
+
+  <!-- Modal: Confirmar cancelación -->
+  @if (modalCancelarVisible()) {
+    <dialog
+      appModal
+      (cerrar)="cerrarModalCancelar()"
+      aria-labelledby="titulo-cancelar-reserva"
+      class="m-auto w-[calc(100%-2rem)] max-w-sm max-h-[90vh] overflow-y-auto rounded-xl bg-white p-6 text-text backdrop:bg-black/40"
+    >
+      <h3 id="titulo-cancelar-reserva" class="font-serif text-lg text-text mb-2">Cancelar reserva</h3>
+      <p class="text-sm text-gray-500 mb-5">
+        ¿Estás seguro que quieres cancelar la reserva #{{ reservaACancelar()?.id }}
+        de "{{ reservaACancelar()?.space }}"? Esta acción no se puede deshacer.
+      </p>
+
+      @if (errorModalCancelar(); as errCancelar) {
+        <p role="alert" class="text-sm text-red-600 mb-4">{{ errCancelar }}</p>
+      }
+
+      <div class="flex gap-2">
+        <button
+          (click)="cerrarModalCancelar()"
+          [disabled]="cancelando()"
+          class="flex-1 min-h-11 py-2.5 px-4 border border-border text-gray-600 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors disabled:opacity-50"
+        >
+          Volver
+        </button>
+        <button
+          (click)="confirmarCancelacion()"
+          [disabled]="cancelando()"
+          class="flex-1 min-h-11 py-2.5 px-4 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
+        >
+          {{ cancelando() ? 'Cancelando…' : 'Cancelar reserva' }}
+        </button>
+      </div>
+    </dialog>
+  }
 </div>

@@ -30,13 +30,9 @@ import {
   Respuesta202,
 } from '../models/espacio.model';
 import { CurrencyPipe } from '@angular/common';
+import { MENSAJE_SERVICIO_OCUPADO, MENSAJE_SIN_CONFIRMAR } from '../shared/mensajes-solicitud';
 
 type AccionEspacio = 'crear' | 'editar' | 'eliminar';
-
-const MENSAJE_SERVICIO_OCUPADO =
-  'No se pudo enviar la solicitud: el servicio está ocupado. Intenta nuevamente en unos segundos.';
-const MENSAJE_SIN_CONFIRMAR =
-  'No se pudo confirmar el resultado de la solicitud. Revisa la lista en unos momentos.';
 
 export interface FormularioEspacio {
   nombre: string;
