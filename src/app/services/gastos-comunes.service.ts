@@ -2,6 +2,8 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import type { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
+import type { JobEspacio, Respuesta202 } from '../models/espacio.model';
+import { esperarJob } from '../shared/esperar-job';
 import type {
   ActualizarGastoComunRequest,
   GastoComun,
@@ -58,8 +60,8 @@ export class GastosComunesService {
   }
 
   /** Alta manual de un cobro/cuota. Solo administrador/comité (el microservicio lo exige igual con @PreAuthorize). */
-  crear(request: NuevoGastoComunRequest): Observable<GastoComun> {
-    return this.http.post<GastoComun>(this.base, request);
+  crear(request: NuevoGastoComunRequest): Observable<Respuesta202> {
+    return this.http.post<Respuesta202>(this.base, request);
   }
 
   /**
@@ -73,9 +75,9 @@ export class GastosComunesService {
     unidadId: string,
     condominioId: string,
     cambios: ActualizarGastoComunRequest,
-  ): Observable<GastoComun> {
+  ): Observable<Respuesta202> {
     const params = new HttpParams().set('condominioId', condominioId);
-    return this.http.put<GastoComun>(
+    return this.http.put<Respuesta202>(
       `${this.base}/${id}`,
       { unidadId, condominioId, ...cambios },
       { params },
@@ -83,19 +85,28 @@ export class GastosComunesService {
   }
 
   /** Borrado lógico (anula el gasto). No permitido si ya está PAGADO. */
-  eliminar(id: number, condominioId: string): Observable<void> {
+  eliminar(id: number, condominioId: string): Observable<Respuesta202> {
     const params = new HttpParams().set('condominioId', condominioId);
-    return this.http.delete<void>(`${this.base}/${id}`, { params });
+    return this.http.delete<Respuesta202>(`${this.base}/${id}`, { params });
   }
 
   /** Registra un abono/pago sobre un gasto común existente. */
-  registrarPago(id: number, condominioId: string, request: NuevoPagoRequest): Observable<Pago> {
+  registrarPago(id: number, condominioId: string, request: NuevoPagoRequest): Observable<Respuesta202> {
     const params = new HttpParams().set('condominioId', condominioId);
-    return this.http.post<Pago>(`${this.base}/${id}/pagos`, request, { params });
+    return this.http.post<Respuesta202>(`${this.base}/${id}/pagos`, request, { params });
   }
 
   listarPagos(id: number, condominioId: string, page = 0, size = 20): Observable<PaginaSpring<Pago>> {
     const params = new HttpParams().set('condominioId', condominioId).set('page', page).set('size', size);
     return this.http.get<PaginaSpring<Pago>>(`${this.base}/${id}/pagos`, { params });
+  }
+
+  /**
+   * Las mutaciones las acepta el bff con 202 y un ticket; este es su resultado.
+   * El `error` y `resultado` que devuelve hoy ms-gastos-comunes no son legibles:
+   * solo el `estado` es confiable.
+   */
+  esperarJob(ticketId: string): Observable<JobEspacio> {
+    return esperarJob(() => this.http.get<JobEspacio>(`${environment.bffBaseUrl}/v1/gastos/jobs/${ticketId}`));
   }
 }

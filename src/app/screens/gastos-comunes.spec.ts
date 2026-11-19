@@ -1,9 +1,10 @@
 import { TestBed } from '@angular/core/testing';
 import { signal } from '@angular/core';
 import { MsalService } from '@azure/msal-angular';
-import { of, Subject } from 'rxjs';
+import { of, Subject, TimeoutError } from 'rxjs';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { GastosComunes } from './gastos-comunes';
+import { GastosComunes, MENSAJE_JOB_GASTO_FALLIDO } from './gastos-comunes';
+import { MENSAJE_SIN_CONFIRMAR } from '../shared/mensajes-solicitud';
 import { GastosComunesService } from '../services/gastos-comunes.service';
 import { CondominiosService } from '../services/condominios.service';
 import { type GastoComun } from '../models/gasto-comun.model';
@@ -152,5 +153,144 @@ describe('GastosComunes Screen UI Actions', () => {
     const ths = Array.from(compiled.querySelectorAll('th'));
     const thMonto = ths.find((th) => th.textContent?.trim() === 'Monto');
     expect(thMonto?.className).toContain('text-right');
+  });
+});
+
+describe('GastosComunes: mutaciones esperan el job del 202', () => {
+  type Estado = Record<string, unknown> & {
+    seleccionado: { set: (v: GastoComun | null) => void };
+  };
+  type Signal = () => unknown;
+
+  const gasto: GastoComun = {
+    id: 7,
+    condominioId: '1',
+    unidadId: 'A-101',
+    concepto: 'Cuota',
+    monto: 1000,
+    saldoPendiente: 1000,
+    estado: 'PENDIENTE',
+    origen: 'MANUAL',
+    referenciaExterna: null,
+    fechaCreacion: '2026-11-01T10:00:00Z',
+    fechaVencimiento: null,
+  };
+  const aceptada = { ticket_id: 't1', estado: 'EN_COLA', status_url: '/x', creado_en: '' };
+
+  // Cada operación: cómo abrir su modal, cómo confirmarla y qué signals mira.
+  const operaciones = [
+    {
+      nombre: 'crear cobro',
+      metodo: 'crear',
+      abrir: (s: Estado) => {
+        (s['abrirNuevoCobro'] as () => void)();
+        (s['cobroUnidadId'] as { set: (v: string) => void }).set('A-101');
+        (s['cobroConcepto'] as { set: (v: string) => void }).set('Cuota');
+        (s['cobroMonto'] as { set: (v: string) => void }).set('1000');
+      },
+      confirmar: 'guardarCobro',
+      modal: 'mostrarModalCobro',
+      error: 'errorCobro',
+    },
+    {
+      nombre: 'editar cobro',
+      metodo: 'actualizar',
+      abrir: (s: Estado) => (s['abrirEditarCobro'] as () => void)(),
+      confirmar: 'guardarCobro',
+      modal: 'mostrarModalCobro',
+      error: 'errorCobro',
+    },
+    {
+      nombre: 'eliminar cobro',
+      metodo: 'eliminar',
+      abrir: (s: Estado) => (s['abrirEliminarCobro'] as () => void)(),
+      confirmar: 'confirmarEliminarCobro',
+      modal: 'mostrarEliminarCobro',
+      error: 'errorEliminar',
+    },
+    {
+      nombre: 'registrar pago',
+      metodo: 'registrarPago',
+      abrir: (s: Estado) => {
+        (s['abrirRegistrarPago'] as () => void)();
+        (s['pagoMonto'] as { set: (v: string) => void }).set('500');
+      },
+      confirmar: 'guardarPago',
+      modal: 'mostrarRegistrarPago',
+      error: 'errorPago',
+    },
+  ];
+
+  let job$: Subject<{ estado: string }>;
+  let mockService: Record<string, ReturnType<typeof vi.fn>>;
+
+  const preparar = (op: (typeof operaciones)[number]): Estado => {
+    job$ = new Subject();
+    mockService = {
+      listar: vi.fn().mockReturnValue(of({ content: [gasto], totalPages: 1, totalElements: 1 })),
+      obtener: vi.fn().mockReturnValue(of(gasto)),
+      listarPagos: vi.fn().mockReturnValue(of({ content: [], totalPages: 0, totalElements: 0 })),
+      crear: vi.fn(),
+      actualizar: vi.fn(),
+      eliminar: vi.fn(),
+      registrarPago: vi.fn(),
+      esperarJob: vi.fn().mockReturnValue(job$),
+    };
+    mockService[op.metodo].mockReturnValue(of(aceptada));
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      providers: [
+        GastosComunes,
+        { provide: GastosComunesService, useValue: mockService },
+        {
+          provide: MsalService,
+          useValue: {
+            instance: {
+              getActiveAccount: vi.fn().mockReturnValue({ idTokenClaims: { roles: ['ADMIN'] } }),
+              getAllAccounts: vi.fn().mockReturnValue([]),
+            },
+          },
+        },
+        { provide: CondominiosService, useValue: { condominioActivo: signal({ id: 1, nombre: 'Test' }) } },
+      ],
+    });
+    const s = TestBed.inject(GastosComunes) as unknown as Estado;
+    s.seleccionado.set(gasto);
+    op.abrir(s);
+    (s[op.confirmar] as () => void)();
+    return s;
+  };
+
+  it.each(operaciones)('$nombre: el modal sigue abierto hasta COMPLETADO y luego recarga la lista', (op) => {
+    const s = preparar(op);
+
+    expect(mockService['esperarJob']).toHaveBeenCalledWith('t1');
+    expect((s[op.modal] as Signal)()).toBe(true);
+    expect(mockService['listar']).not.toHaveBeenCalled();
+
+    job$.next({ estado: 'COMPLETADO' });
+
+    expect((s[op.modal] as Signal)()).toBe(false);
+    expect(mockService['listar']).toHaveBeenCalled();
+    expect((s[op.error] as Signal)()).toBeNull();
+  });
+
+  it.each(operaciones)('$nombre: job FALLIDO muestra error genérico y el modal sigue abierto', (op) => {
+    const s = preparar(op);
+
+    job$.next({ estado: 'FALLIDO' });
+
+    expect((s[op.modal] as Signal)()).toBe(true);
+    expect((s[op.error] as Signal)()).toBe(MENSAJE_JOB_GASTO_FALLIDO);
+    expect(mockService['listar']).not.toHaveBeenCalled();
+  });
+
+  it.each(operaciones)('$nombre: si se agota la espera muestra error y el modal sigue abierto', (op) => {
+    const s = preparar(op);
+
+    job$.error(new TimeoutError());
+
+    expect((s[op.modal] as Signal)()).toBe(true);
+    expect((s[op.error] as Signal)()).toBe(MENSAJE_SIN_CONFIRMAR);
   });
 });

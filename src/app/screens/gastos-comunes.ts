@@ -1,4 +1,13 @@
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import {
+  Component,
+  computed,
+  DestroyRef,
+  inject,
+  OnInit,
+  signal,
+  type WritableSignal,
+} from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { HttpErrorResponse } from '@angular/common/http';
 import { LucideAngularModule } from 'lucide-angular';
 import {
@@ -12,10 +21,12 @@ import {
   Trash2,
 } from 'lucide-angular';
 import { MsalService } from '@azure/msal-angular';
-import { finalize } from 'rxjs';
+import { catchError, finalize, of, switchMap, type Observable } from 'rxjs';
 
 import { GastosComunesService } from '../services/gastos-comunes.service';
 import { CondominiosService } from '../services/condominios.service';
+import type { Respuesta202 } from '../models/espacio.model';
+import { MENSAJE_SERVICIO_OCUPADO, MENSAJE_SIN_CONFIRMAR } from '../shared/mensajes-solicitud';
 import { rolesDeCuenta } from '../../auth/roles';
 import {
   ESTADOS_GASTO,
@@ -31,6 +42,9 @@ import { CurrencyPipe } from '@angular/common';
 
 const TAMANO_PAGINA = 20;
 
+/** ms-gastos-comunes aún no devuelve un error legible en el job: se muestra uno genérico. */
+export const MENSAJE_JOB_GASTO_FALLIDO = 'No se pudo completar la operación. Intenta de nuevo.';
+
 @Component({
   selector: 'app-gastos-comunes',
   imports: [LucideAngularModule, StatusBadge, ModalDialog, CurrencyPipe],
@@ -40,6 +54,7 @@ export class GastosComunes implements OnInit {
   private readonly service = inject(GastosComunesService);
   private readonly msalService = inject(MsalService);
   private readonly condominiosService = inject(CondominiosService);
+  private readonly destroyRef = inject(DestroyRef);
 
   private get condominioId(): string {
     return String(this.condominiosService.condominioActivo()!.id);
@@ -238,9 +253,6 @@ export class GastosComunes implements OnInit {
     if (this.modoEdicionCobro() && !gastoActual) {
       return;
     }
-    this.guardandoCobro.set(true);
-    this.errorCobro.set(null);
-
     const cambios = {
       concepto: this.cobroConcepto().trim(),
       monto: Number(this.cobroMonto()),
@@ -256,18 +268,16 @@ export class GastosComunes implements OnInit {
             ...cambios,
           });
 
-    peticion.pipe(finalize(() => this.guardandoCobro.set(false))).subscribe({
-      next: (resultado) => {
-        this.mostrarModalCobro.set(false);
-        if (this.modoEdicionCobro()) {
-          this.seleccionado.set(resultado);
-          this.gastos.update((lista) => lista.map((g) => (g.id === resultado.id ? resultado : g)));
-        } else {
-          this.pagina.set(0);
-          this.cargar();
-        }
-      },
-      error: (err: HttpErrorResponse) => this.errorCobro.set(this.mensajeError(err)),
+    this.despachar(peticion, this.guardandoCobro, this.errorCobro, () => {
+      this.mostrarModalCobro.set(false);
+      if (gastoActual && this.modoEdicionCobro()) {
+        this.service
+          .obtener(gastoActual.id, this.condominioId)
+          .subscribe((g) => this.seleccionado.set(g));
+      } else {
+        this.pagina.set(0);
+      }
+      this.cargar();
     });
   }
 
@@ -294,30 +304,19 @@ export class GastosComunes implements OnInit {
     if (!gasto || !this.pagoValido) {
       return;
     }
-    this.guardandoPago.set(true);
-    this.errorPago.set(null);
+    const peticion = this.service.registrarPago(gasto.id, this.condominioId, {
+      monto: Number(this.pagoMonto()),
+      metodo: this.pagoMetodo(),
+      comprobante: this.pagoComprobante() || null,
+    });
 
-    this.service
-      .registrarPago(gasto.id, this.condominioId, {
-        monto: Number(this.pagoMonto()),
-        metodo: this.pagoMetodo(),
-        comprobante: this.pagoComprobante() || null,
-      })
-      .pipe(finalize(() => this.guardandoPago.set(false)))
-      .subscribe({
-        next: () => {
-          this.mostrarRegistrarPago.set(false);
-          // Refresca el detalle (saldo/estado) y el listado.
-          this.service.obtener(gasto.id, this.condominioId).subscribe((actualizado) => {
-            this.seleccionado.set(actualizado);
-            this.gastos.update((lista) =>
-              lista.map((g) => (g.id === actualizado.id ? actualizado : g)),
-            );
-          });
-          this.seleccionar(gasto);
-        },
-        error: (err: HttpErrorResponse) => this.errorPago.set(this.mensajeError(err)),
-      });
+    this.despachar(peticion, this.guardandoPago, this.errorPago, () => {
+      this.mostrarRegistrarPago.set(false);
+      // Refresca el listado, los pagos y el detalle (saldo/estado).
+      this.cargar();
+      this.seleccionar(gasto);
+      this.service.obtener(gasto.id, this.condominioId).subscribe((g) => this.seleccionado.set(g));
+    });
   }
 
   // --- Eliminar cobro ---
@@ -335,23 +334,54 @@ export class GastosComunes implements OnInit {
     const gasto = this.seleccionado();
     if (!gasto) return;
 
-    this.eliminandoCobro.set(true);
-    this.errorEliminar.set(null);
+    this.despachar(
+      this.service.eliminar(gasto.id, this.condominioId),
+      this.eliminandoCobro,
+      this.errorEliminar,
+      () => {
+        this.mostrarEliminarCobro.set(false);
+        // Borrado lógico: al recargar queda con estado ELIMINADO, no desaparece.
+        this.cerrarDetalle();
+        this.cargar();
+      },
+    );
+  }
 
-    this.service
-      .eliminar(gasto.id, this.condominioId)
-      .pipe(finalize(() => this.eliminandoCobro.set(false)))
+  /**
+   * El bff acepta la mutación con 202 y un ticket: el modal sigue abierto
+   * (botón en curso) hasta que el job termina, y solo COMPLETADO lo cierra.
+   * El error del job no se lee porque gastos aún no lo devuelve legible.
+   */
+  private despachar(
+    solicitud: Observable<Respuesta202>,
+    enCurso: WritableSignal<boolean>,
+    error: WritableSignal<string | null>,
+    alCompletar: () => void,
+  ): void {
+    enCurso.set(true);
+    error.set(null);
+    solicitud
+      .pipe(
+        switchMap((aceptada) =>
+          this.service.esperarJob(aceptada.ticket_id).pipe(
+            catchError((err) => {
+              console.error('No se pudo confirmar el resultado de la solicitud:', err);
+              return of(null);
+            }),
+          ),
+        ),
+        finalize(() => enCurso.set(false)),
+        takeUntilDestroyed(this.destroyRef),
+      )
       .subscribe({
-        next: () => {
-          this.mostrarEliminarCobro.set(false);
-          // El DELETE es un borrado lógico (204 sin body): queda con
-          // estado ELIMINADO y visible en su filtro, no desaparece.
-          this.gastos.update((lista) =>
-            lista.map((g) => (g.id === gasto.id ? { ...g, estado: 'ELIMINADO' as const } : g)),
-          );
-          this.cerrarDetalle();
+        next: (job) => {
+          if (job?.estado === 'COMPLETADO') {
+            alCompletar();
+          } else {
+            error.set(job ? MENSAJE_JOB_GASTO_FALLIDO : MENSAJE_SIN_CONFIRMAR);
+          }
         },
-        error: (err: HttpErrorResponse) => this.errorEliminar.set(this.mensajeError(err)),
+        error: (err: HttpErrorResponse) => error.set(this.mensajeError(err)),
       });
   }
 
@@ -370,6 +400,9 @@ export class GastosComunes implements OnInit {
     }
     if (err.status === 401) {
       return 'Tu sesión expiró o no es válida. Vuelve a iniciar sesión.';
+    }
+    if (err.status === 503) {
+      return MENSAJE_SERVICIO_OCUPADO;
     }
     if (err.status === 403) {
       return (

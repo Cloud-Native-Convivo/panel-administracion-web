@@ -1,22 +1,17 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable, catchError, exhaustMap, filter, map, of, take, throwError, timeout, timer } from 'rxjs';
+import { Observable, map } from 'rxjs';
 import { environment } from '../../environments/environment';
 import {
   Espacio,
   CrearEspacioDto,
   ActualizarEspacioDto,
-  EstadoJob,
   JobEspacio,
   Respuesta202,
 } from '../models/espacio.model';
+import { esperarJob } from '../shared/esperar-job';
 
-/** Cada cuánto se consulta el estado de una solicitud aceptada con 202. */
-export const INTERVALO_SONDEO_MS = 2000;
-/** Tiempo máximo de espera del resultado antes de rendirse. */
-export const TIEMPO_MAXIMO_ESPERA_MS = 30000;
-
-const ESTADOS_FINALES: EstadoJob[] = ['COMPLETADO', 'FALLIDO'];
+export { INTERVALO_SONDEO_MS, TIEMPO_MAXIMO_ESPERA_MS } from '../shared/esperar-job';
 
 @Injectable({
   providedIn: 'root',
@@ -97,22 +92,8 @@ export class EspaciosService {
     return this.http.get<JobEspacio>(`${this.rootUrl}/jobs/${ticketId}`);
   }
 
-  /**
-   * Consulta el job cada INTERVALO_SONDEO_MS hasta que termina (COMPLETADO o
-   * FALLIDO) y emite ese job. Falla con TimeoutError pasados
-   * TIEMPO_MAXIMO_ESPERA_MS. Un 404 se tolera: el consumidor puede tardar en
-   * registrar el job. Si una consulta sigue en curso, se salta el turno.
-   */
+  /** Espera el resultado del job (ver shared/esperar-job.ts). */
   esperarJob(ticketId: string): Observable<JobEspacio> {
-    return timer(INTERVALO_SONDEO_MS, INTERVALO_SONDEO_MS).pipe(
-      exhaustMap(() =>
-        this.consultarJob(ticketId).pipe(
-          catchError((err) => (err?.status === 404 ? of(null) : throwError(() => err))),
-        ),
-      ),
-      filter((job): job is JobEspacio => job !== null && ESTADOS_FINALES.includes(job.estado)),
-      take(1),
-      timeout({ first: TIEMPO_MAXIMO_ESPERA_MS }),
-    );
+    return esperarJob(() => this.consultarJob(ticketId));
   }
 }
