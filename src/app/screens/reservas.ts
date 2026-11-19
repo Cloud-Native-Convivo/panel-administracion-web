@@ -1,6 +1,8 @@
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { HttpErrorResponse } from '@angular/common/http';
 import { forkJoin, of } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+import { catchError, finalize, switchMap } from 'rxjs/operators';
 import { LucideAngularModule } from 'lucide-angular';
 import {
   Plus,
@@ -12,21 +14,24 @@ import {
   Calendar as CalendarIcon,
 } from 'lucide-angular';
 import { StatusBadge } from '../shared/status-badge';
+import { ModalDialog } from '../shared/modal-dialog';
 import { ReservasService } from '../services/reservas.service';
 import { EspaciosService } from '../services/espacios.service';
 import { CondominiosService } from '../services/condominios.service';
-import { Espacio } from '../models/espacio.model';
+import { Espacio, JobEspacio } from '../models/espacio.model';
 import { mapearReservaUi, type ReservationStatus, type UiReservationEntry } from '../shared/reserva-mapper';
+import { MENSAJE_SERVICIO_OCUPADO, MENSAJE_SIN_CONFIRMAR } from '../shared/mensajes-solicitud';
 
 @Component({
   selector: 'app-reservas',
-  imports: [LucideAngularModule, StatusBadge],
+  imports: [LucideAngularModule, StatusBadge, ModalDialog],
   templateUrl: './reservas.html',
 })
 export class Reservas implements OnInit {
   private readonly reservasService = inject(ReservasService);
   private readonly espaciosService = inject(EspaciosService);
   private readonly condominiosService = inject(CondominiosService);
+  private readonly destroyRef = inject(DestroyRef);
 
   private get condominioId(): number {
     return this.condominiosService.condominioActivo()!.id;
@@ -53,6 +58,14 @@ export class Reservas implements OnInit {
     tipo: 'exito' | 'error';
     mensaje: string;
   } | null>(null);
+  // Cancelaciones aceptadas (202) cuyo resultado aún no se conoce: muestra el banner "Solicitud enviada".
+  protected readonly solicitudesEnCurso = signal<number>(0);
+
+  // Modal de confirmación de cancelación
+  protected readonly modalCancelarVisible = signal<boolean>(false);
+  protected readonly reservaACancelar = signal<UiReservationEntry | null>(null);
+  protected readonly errorModalCancelar = signal<string | null>(null);
+  protected readonly cancelando = signal<boolean>(false);
 
   // Iconos del template
   protected readonly icPlus = Plus;
@@ -179,9 +192,74 @@ export class Reservas implements OnInit {
     });
   }
 
-  protected cancel(id: number): void {
-    this.rsvs.update((prev) => prev.map((r) => (r.id === id ? { ...r, status: 'cancelada' } : r)));
+  protected abrirModalCancelar(reserva: UiReservationEntry): void {
+    this.reservaACancelar.set(reserva);
+    this.errorModalCancelar.set(null);
+    this.modalCancelarVisible.set(true);
+  }
+
+  protected cerrarModalCancelar(): void {
+    this.modalCancelarVisible.set(false);
+    this.reservaACancelar.set(null);
+    this.errorModalCancelar.set(null);
+  }
+
+  /**
+   * El bff acepta la cancelación con 202 y un ticket: la reserva aún no cambió.
+   * Se espera el resultado del job y recién entonces se informa y se recarga
+   * la lista real, sin marcar la fila como cancelada a partir del 202.
+   */
+  protected confirmarCancelacion(): void {
+    const reserva = this.reservaACancelar();
+    if (!reserva || this.cancelando()) return;
+
+    this.errorModalCancelar.set(null);
+    this.cancelando.set(true);
+
+    this.reservasService
+      .cancelar(reserva.id)
+      .pipe(
+        switchMap((aceptada) => {
+          this.cancelando.set(false);
+          this.cerrarModalCancelar();
+          this.solicitudesEnCurso.update((n) => n + 1);
+          return this.espaciosService.esperarJob(aceptada.ticket_id).pipe(
+            catchError((err) => {
+              console.error('No se pudo confirmar el resultado de la cancelación:', err);
+              return of(null);
+            }),
+            finalize(() => this.solicitudesEnCurso.update((n) => n - 1)),
+          );
+        }),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe({
+        next: (job) => this.informarCancelacion(job, reserva.id),
+        error: (err) => {
+          console.error('Error al enviar la cancelación de la reserva:', err);
+          this.cancelando.set(false);
+          const ocupado = err instanceof HttpErrorResponse && err.status === 503;
+          this.errorModalCancelar.set(ocupado ? MENSAJE_SERVICIO_OCUPADO : 'No se pudo cancelar la reserva.');
+        },
+      });
+  }
+
+  private informarCancelacion(job: JobEspacio | null, id: number): void {
+    if (!job) {
+      this.mostrarFeedback('error', MENSAJE_SIN_CONFIRMAR);
+      this.cargarDatos();
+      return;
+    }
+    if (job.estado === 'FALLIDO') {
+      const motivo = job.error?.mensaje;
+      this.mostrarFeedback(
+        'error',
+        motivo ? `No se pudo cancelar la reserva #${id}: ${motivo}` : `No se pudo cancelar la reserva #${id}.`,
+      );
+      return;
+    }
     this.mostrarFeedback('exito', `Reserva #${id} cancelada.`);
+    this.cargarDatos();
   }
 
   protected cerrarFeedback(): void {
