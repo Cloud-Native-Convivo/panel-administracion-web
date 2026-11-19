@@ -288,14 +288,29 @@
           @if (!modoEdicionCobro()) {
             <div>
               <label for="cobro-unidad" class="block text-sm font-medium text-text mb-1.5">Unidad</label>
-              <input
-                id="cobro-unidad"
-                autofocus
-                [value]="cobroUnidadId()"
-                (input)="cobroUnidadId.set($any($event.target).value)"
-                class="w-full min-h-11 py-2.5 px-3.5 border border-muted rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-colors"
-                placeholder="Ej: 402"
-              />
+              @if (errorUnidades()) {
+                <p role="alert" class="text-sm text-red-600">{{ errorUnidades() }}</p>
+              } @else if (unidadesCobro() === null) {
+                <p class="text-sm text-muted">Cargando unidades…</p>
+              } @else if (unidadesCobro()!.length === 0) {
+                <p class="text-sm text-muted">
+                  No hay unidades activas en este condominio.
+                  <a routerLink="/unidades" class="text-primary underline">Ir a Unidades</a>
+                </p>
+              } @else {
+                <select
+                  id="cobro-unidad"
+                  autofocus
+                  [value]="cobroUnidadId()"
+                  (change)="cobroUnidadId.set($any($event.target).value)"
+                  class="w-full min-h-11 py-2.5 px-3.5 border border-muted rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-colors"
+                >
+                  <option value="" disabled>Selecciona una unidad</option>
+                  @for (u of unidadesCobro(); track u) {
+                    <option [value]="u">{{ u }}</option>
+                  }
+                </select>
+              }
             </div>
           }
           <div>

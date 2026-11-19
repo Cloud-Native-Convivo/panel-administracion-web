@@ -20,6 +20,7 @@ import {
   Pencil,
   Trash2,
 } from 'lucide-angular';
+import { RouterLink } from '@angular/router';
 import { MsalService } from '@azure/msal-angular';
 import { catchError, finalize, of, switchMap, type Observable } from 'rxjs';
 
@@ -27,6 +28,8 @@ import { GastosComunesService } from '../services/gastos-comunes.service';
 import { CondominiosService } from '../services/condominios.service';
 import type { Respuesta202 } from '../models/espacio.model';
 import { MENSAJE_SERVICIO_OCUPADO, MENSAJE_SIN_CONFIRMAR } from '../shared/mensajes-solicitud';
+import { UnidadesService } from '../services/unidades.service';
+import { describirUnidad } from '../models/unidad.model';
 import { rolesDeCuenta } from '../../auth/roles';
 import {
   ESTADOS_GASTO,
@@ -44,10 +47,11 @@ const TAMANO_PAGINA = 20;
 
 /** ms-gastos-comunes aún no devuelve un error legible en el job: se muestra uno genérico. */
 export const MENSAJE_JOB_GASTO_FALLIDO = 'No se pudo completar la operación. Intenta de nuevo.';
+export const MENSAJE_ERROR_UNIDADES = 'No se pudieron cargar las unidades del condominio.';
 
 @Component({
   selector: 'app-gastos-comunes',
-  imports: [LucideAngularModule, StatusBadge, ModalDialog, CurrencyPipe],
+  imports: [LucideAngularModule, StatusBadge, ModalDialog, CurrencyPipe, RouterLink],
   templateUrl: './gastos-comunes.html',
 })
 export class GastosComunes implements OnInit {
@@ -55,6 +59,7 @@ export class GastosComunes implements OnInit {
   private readonly msalService = inject(MsalService);
   private readonly condominiosService = inject(CondominiosService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly unidadesService = inject(UnidadesService);
 
   private get condominioId(): string {
     return String(this.condominiosService.condominioActivo()!.id);
@@ -114,6 +119,10 @@ export class GastosComunes implements OnInit {
   protected readonly cobroVencimiento = signal('');
   protected readonly guardandoCobro = signal(false);
   protected readonly errorCobro = signal<string | null>(null);
+  // Unidades activas del condominio, como el texto que gastos guarda en unidadId
+  // (el mismo que ms-condominios asigna al residente: describirUnidad).
+  protected readonly unidadesCobro = signal<string[] | null>(null);
+  protected readonly errorUnidades = signal<string | null>(null);
 
   // --- Modal "Registrar pago" ---
   protected readonly mostrarRegistrarPago = signal(false);
@@ -220,6 +229,20 @@ export class GastosComunes implements OnInit {
     this.errorCobro.set(null);
     this.modoEdicionCobro.set(false);
     this.mostrarModalCobro.set(true);
+    this.cargarUnidadesCobro();
+  }
+
+  private cargarUnidadesCobro(): void {
+    const condominio = this.condominiosService.condominioActivo()!;
+    this.unidadesCobro.set(null);
+    this.errorUnidades.set(null);
+    this.unidadesService.listar(condominio.id).subscribe({
+      next: (lista) =>
+        this.unidadesCobro.set(
+          lista.filter((u) => u.activa).map((u) => describirUnidad(condominio.tipo, u)),
+        ),
+      error: () => this.errorUnidades.set(MENSAJE_ERROR_UNIDADES),
+    });
   }
 
   protected abrirEditarCobro(): void {

@@ -1,9 +1,17 @@
 import { TestBed } from '@angular/core/testing';
 import { signal } from '@angular/core';
 import { MsalService } from '@azure/msal-angular';
-import { of, Subject, TimeoutError } from 'rxjs';
+import { NEVER, of, Subject, TimeoutError } from 'rxjs';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { GastosComunes, MENSAJE_JOB_GASTO_FALLIDO } from './gastos-comunes';
+import { HttpErrorResponse } from '@angular/common/http';
+import { provideRouter } from '@angular/router';
+import {
+  GastosComunes,
+  MENSAJE_ERROR_UNIDADES,
+  MENSAJE_JOB_GASTO_FALLIDO,
+} from './gastos-comunes';
+import { UnidadesService } from '../services/unidades.service';
+import type { Unidad } from '../models/unidad.model';
 import { MENSAJE_SIN_CONFIRMAR } from '../shared/mensajes-solicitud';
 import { GastosComunesService } from '../services/gastos-comunes.service';
 import { CondominiosService } from '../services/condominios.service';
@@ -49,6 +57,8 @@ describe('GastosComunes Screen UI Actions', () => {
         GastosComunes,
         { provide: GastosComunesService, useValue: mockService },
         { provide: MsalService, useValue: mockMsal },
+        { provide: CondominiosService, useValue: { condominioActivo: signal({ id: 1, nombre: 'Test' }) } },
+        { provide: UnidadesService, useValue: { listar: vi.fn().mockReturnValue(of([])) } },
       ],
     });
 
@@ -242,6 +252,7 @@ describe('GastosComunes: mutaciones esperan el job del 202', () => {
       providers: [
         GastosComunes,
         { provide: GastosComunesService, useValue: mockService },
+        { provide: UnidadesService, useValue: { listar: vi.fn().mockReturnValue(of([])) } },
         {
           provide: MsalService,
           useValue: {
@@ -292,5 +303,130 @@ describe('GastosComunes: mutaciones esperan el job del 202', () => {
 
     expect((s[op.modal] as Signal)()).toBe(true);
     expect((s[op.error] as Signal)()).toBe(MENSAJE_SIN_CONFIRMAR);
+  });
+});
+
+describe('GastosComunes: selector de unidad en "Nuevo cobro"', () => {
+  const unidad = (id: number, numero: string, activa = true): Unidad => ({
+    id,
+    condominio_id: 1,
+    torre: 'A',
+    piso: '3',
+    numero,
+    activa,
+  });
+
+  let unidades$: Subject<Unidad[]>;
+  let mockUnidades: { listar: ReturnType<typeof vi.fn> };
+  let mockGastos: Record<string, ReturnType<typeof vi.fn>>;
+
+  // jsdom no implementa <dialog>.showModal(), que usa ModalDialog al montar.
+  beforeEach(() => {
+    HTMLDialogElement.prototype.showModal ??= vi.fn();
+    HTMLDialogElement.prototype.close ??= vi.fn();
+  });
+
+  const montar = () => {
+    unidades$ = new Subject();
+    mockUnidades = { listar: vi.fn().mockReturnValue(unidades$) };
+    mockGastos = {
+      listar: vi.fn().mockReturnValue(of({ content: [], totalPages: 0, totalElements: 0 })),
+      crear: vi.fn().mockReturnValue(of({ ticket_id: 't1' })),
+      esperarJob: vi.fn().mockReturnValue(NEVER),
+    };
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      imports: [GastosComunes],
+      providers: [
+        provideRouter([]),
+        { provide: GastosComunesService, useValue: mockGastos },
+        { provide: UnidadesService, useValue: mockUnidades },
+        {
+          provide: MsalService,
+          useValue: {
+            instance: {
+              getActiveAccount: vi.fn().mockReturnValue({ idTokenClaims: { roles: ['ADMIN'] } }),
+              getAllAccounts: vi.fn().mockReturnValue([]),
+            },
+          },
+        },
+        {
+          provide: CondominiosService,
+          useValue: { condominioActivo: signal({ id: 1, nombre: 'Test', tipo: 'A' }) },
+        },
+      ],
+    });
+    const fixture = TestBed.createComponent(GastosComunes);
+    fixture.detectChanges();
+    const estado = fixture.componentInstance as unknown as {
+      abrirNuevoCobro: () => void;
+      guardarCobro: () => void;
+      cobroConcepto: { set: (v: string) => void };
+      cobroMonto: { set: (v: string) => void };
+    };
+    estado.abrirNuevoCobro();
+    fixture.detectChanges();
+    const dom = fixture.nativeElement as HTMLElement;
+    const refrescar = () => fixture.detectChanges();
+    return { estado, dom, refrescar };
+  };
+
+  it('lista solo las unidades activas del condominio activo, con el texto que usa gastos', () => {
+    const { dom, refrescar } = montar();
+
+    expect(mockUnidades.listar).toHaveBeenCalledWith(1);
+    unidades$.next([unidad(1, '301'), unidad(2, '302', false)]);
+    refrescar();
+
+    const opciones = Array.from(dom.querySelectorAll<HTMLOptionElement>('#cobro-unidad option'))
+      .filter((o) => o.value)
+      .map((o) => o.value);
+    expect(opciones).toEqual(['Torre A · Piso 3 · Unidad 301']);
+  });
+
+  it('no permite guardar sin elegir una unidad', () => {
+    const { estado, dom, refrescar } = montar();
+    unidades$.next([unidad(1, '301')]);
+    estado.cobroConcepto.set('Cuota');
+    estado.cobroMonto.set('1000');
+    refrescar();
+
+    const crear = Array.from(dom.querySelectorAll('button')).find((b) =>
+      b.textContent?.includes('Crear cobro'),
+    );
+    expect(crear?.disabled).toBe(true);
+    estado.guardarCobro();
+    expect(mockGastos['crear']).not.toHaveBeenCalled();
+
+    const select = dom.querySelector<HTMLSelectElement>('#cobro-unidad')!;
+    select.value = 'Torre A · Piso 3 · Unidad 301';
+    select.dispatchEvent(new Event('change'));
+    refrescar();
+    expect(crear?.disabled).toBe(false);
+    estado.guardarCobro();
+    expect(mockGastos['crear']).toHaveBeenCalledWith(
+      expect.objectContaining({ unidadId: 'Torre A · Piso 3 · Unidad 301' }),
+    );
+  });
+
+  it('sin unidades activas muestra un aviso con enlace a Unidades', () => {
+    const { dom, refrescar } = montar();
+    unidades$.next([unidad(2, '302', false)]);
+    refrescar();
+
+    expect(dom.querySelector('#cobro-unidad')).toBeNull();
+    const enlace = dom.querySelector<HTMLAnchorElement>('a[href="/unidades"]');
+    expect(enlace).toBeTruthy();
+    expect(dom.textContent).toContain('No hay unidades activas');
+  });
+
+  it('si falla la carga de unidades muestra un error', () => {
+    const { dom, refrescar } = montar();
+    unidades$.error(new HttpErrorResponse({ status: 500 }));
+    refrescar();
+
+    const alerta = Array.from(dom.querySelectorAll('[role="alert"]')).map((a) => a.textContent);
+    expect(alerta.join(' ')).toContain(MENSAJE_ERROR_UNIDADES);
+    expect(dom.querySelector('#cobro-unidad')).toBeNull();
   });
 });
